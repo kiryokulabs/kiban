@@ -9,6 +9,7 @@ import type { UserRepository } from '../interfaces/user-repository.js';
 export interface BootstrapStatus { readonly requiresAdminSetup: boolean; }
 export interface RegisterAdminInput { readonly email: string; readonly password: string; }
 export interface LoginInput { readonly email: string; readonly password: string; }
+export interface ChangePasswordInput { readonly currentPassword: string; readonly newPassword: string; }
 
 export interface AuthManagerOptions { readonly sessionTtlMs: number; readonly now: () => Date; }
 
@@ -50,6 +51,20 @@ export class AuthManager {
     const expiresAt = new Date(this.options.now().getTime() + this.options.sessionTtlMs);
     await this.sessions.create({ userId: user.id, tokenHash, expiresAt });
     return { token, expiresAt, user };
+  }
+
+
+  /** Changes the authenticated user's password and revokes the current session. */
+  public async changePassword(token: string | null, input: ChangePasswordInput): Promise<void> {
+    const authenticated = await this.authenticate(token);
+    const passwordMatches = await this.passwordHasher.verify(input.currentPassword, authenticated.user.passwordHash);
+    if (!passwordMatches) {
+      throw new InvalidCredentialsError();
+    }
+
+    const nextHash = await this.passwordHasher.hash(input.newPassword);
+    await this.users.updatePasswordHash(authenticated.user.id, nextHash, this.options.now());
+    await this.sessions.revokeByTokenHash(authenticated.session.tokenHash, this.options.now());
   }
 
   /** Revokes the session represented by an opaque token. */

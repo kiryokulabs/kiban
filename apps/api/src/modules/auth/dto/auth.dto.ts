@@ -5,3 +5,4 @@ export interface RegisterAdminDto { readonly email: string; readonly password: s
 export interface LoginDto { readonly email: string; readonly password: string; }
 export interface AuthUserDto { readonly id: string; readonly email: string; readonly role: UserRole; }
 export interface AuthResponseDto { readonly user: AuthUserDto; }
+export interface ChangePasswordDto { readonly currentPassword: string; readonly newPassword: string; }

@@ -1,6 +1,6 @@
 import { Body, Controller, Get, HttpCode, Post, Req, Res } from '@nestjs/common';
 import type { FastifyReply, FastifyRequest } from 'fastify';
-import type { AuthResponseDto, BootstrapStatusDto, LoginDto, RegisterAdminDto } from '../dto/auth.dto';
+import type { AuthResponseDto, BootstrapStatusDto, ChangePasswordDto, LoginDto, RegisterAdminDto } from '../dto/auth.dto';
 import { AUTH_SESSION_COOKIE_NAME } from '../interfaces/auth.constants';
 import { AuthService } from '../services/auth.service';
 
@@ -33,6 +33,15 @@ export class AuthController {
       expires: result.expiresAt
     });
     return result.response;
+  }
+
+
+  /** Changes the current user's password and clears the current session cookie. */
+  @Post('change-password')
+  @HttpCode(204)
+  public async changePassword(@Body() dto: ChangePasswordDto, @Req() request: FastifyRequest, @Res({ passthrough: true }) reply: FastifyReply): Promise<void> {
+    await this.auth.changePassword(this.readSessionCookie(request), dto);
+    reply.clearCookie(AUTH_SESSION_COOKIE_NAME, { path: '/' });
   }
 
   /** Revokes the current session and clears the cookie. */

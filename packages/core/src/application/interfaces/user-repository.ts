@@ -9,4 +9,6 @@ export interface UserRepository {
   findByEmail(email: string): Promise<User | null>;
   /** Finds a user by identifier. */
   findById(id: string): Promise<User | null>;
+  /** Updates a user's stored password hash. */
+  updatePasswordHash(userId: string, passwordHash: string, updatedAt: Date): Promise<void>;
 }

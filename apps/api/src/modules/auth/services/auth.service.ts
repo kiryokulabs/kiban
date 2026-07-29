@@ -1,6 +1,6 @@
 import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { AdminRegistrationClosedError, AuthManager, InvalidCredentialsError, UnauthenticatedError } from '@kiban/core';
-import type { AuthResponseDto, BootstrapStatusDto, LoginDto, RegisterAdminDto } from '../dto/auth.dto';
+import type { AuthResponseDto, BootstrapStatusDto, ChangePasswordDto, LoginDto, RegisterAdminDto } from '../dto/auth.dto';
 import { AUTH_MANAGER } from '../interfaces/auth.constants';
 import { mapUserToAuthUserDto } from '../mappers/auth.mapper';
 
@@ -61,9 +61,33 @@ export class AuthService {
     }
   }
 
+
+  /** Changes the current user's password and revokes the current session. */
+  public async changePassword(token: string | undefined, dto: ChangePasswordDto): Promise<void> {
+    this.assertPasswordShape(dto.newPassword);
+    try {
+      await this.auth.changePassword(token ?? null, dto);
+    } catch (error: unknown) {
+      if (error instanceof InvalidCredentialsError) {
+        throw new UnauthorizedException(error.message);
+      }
+      if (error instanceof UnauthenticatedError) {
+        throw new UnauthorizedException(error.message);
+      }
+      throw error;
+    }
+  }
+
   private assertCredentialsShape(email: string, password: string): void {
-    if (!email.includes('@') || password.length < 8) {
-      throw new BadRequestException('A valid email and a password of at least 8 characters are required.');
+    if (!email.includes('@')) {
+      throw new BadRequestException('A valid email is required.');
+    }
+    this.assertPasswordShape(password);
+  }
+
+  private assertPasswordShape(password: string): void {
+    if (password.length < 8) {
+      throw new BadRequestException('A password of at least 8 characters is required.');
     }
   }
 }

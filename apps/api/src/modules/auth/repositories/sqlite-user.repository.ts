@@ -42,6 +42,12 @@ export class SqliteUserRepository implements UserRepository {
     return row ? this.toDomain(row) : null;
   }
 
+
+  /** Updates the stored password hash for a user. */
+  public async updatePasswordHash(userId: string, passwordHash: string, updatedAt: Date): Promise<void> {
+    await this.database.run('UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?', [passwordHash, updatedAt, userId]);
+  }
+
   private toDomain(row: UserRow): User {
     return { id: row.id, email: row.email, passwordHash: row.password_hash, role: row.role as UserRole, createdAt: new Date(row.created_at), updatedAt: new Date(row.updated_at) };
   }

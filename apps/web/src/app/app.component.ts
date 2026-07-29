@@ -29,7 +29,7 @@ interface NavigationItem { readonly label: string; readonly path: string; }
             <div class="flex items-center justify-between">
               <p class="text-sm text-zinc-500">Foundation v0.1</p>
               <div class="flex items-center gap-3">
-                <span class="text-sm text-zinc-500">{{ auth.user()?.email }}</span>
+                <a routerLink="/profile" class="rounded-lg px-2 py-1 text-sm text-zinc-500 hover:bg-zinc-900 hover:text-zinc-100">{{ auth.user()?.email }}</a>
                 <button class="rounded-lg border border-line px-3 py-2 text-sm text-zinc-300" type="button" (click)="logout()">Logout</button>
               </div>
             </div>

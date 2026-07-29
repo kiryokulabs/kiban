@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Observable, switchMap, tap } from 'rxjs';
-import type { AuthResponse, AuthUser, BootstrapStatus, Credentials } from './auth.models';
+import type { AuthResponse, AuthUser, BootstrapStatus, ChangePasswordRequest, Credentials } from './auth.models';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -30,6 +30,12 @@ export class AuthService {
   /** Reads the current authenticated user from the API session cookie. */
   public me(): Observable<AuthResponse> {
     return this.http.get<AuthResponse>(`${this.apiUrl}/auth/me`, { withCredentials: true }).pipe(tap((response) => this.currentUser.set(response.user)));
+  }
+
+
+  /** Changes the current password and clears local auth state after the API revokes the session. */
+  public changePassword(request: ChangePasswordRequest): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/auth/change-password`, request, { withCredentials: true }).pipe(tap(() => this.currentUser.set(null)));
   }
 
   /** Revokes the current session cookie. */
