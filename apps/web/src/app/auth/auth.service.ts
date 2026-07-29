@@ -1,13 +1,14 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, signal } from '@angular/core';
 import { Observable, switchMap, tap } from 'rxjs';
 import type { AuthResponse, AuthUser, BootstrapStatus, ChangePasswordRequest, Credentials } from './auth.models';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly http = inject(HttpClient);
   private readonly apiUrl = 'http://localhost:3000';
   private readonly currentUser = signal<AuthUser | null>(null);
+
+  public constructor(private readonly http: HttpClient) {}
 
   public readonly user = this.currentUser.asReadonly();
   public readonly isAuthenticated = computed(() => this.currentUser() !== null);

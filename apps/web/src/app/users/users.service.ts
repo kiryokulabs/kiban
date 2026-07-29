@@ -1,12 +1,13 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import type { Observable } from 'rxjs';
 import type { CreateOperatorRequest, UserListItem } from './users.models';
 
 @Injectable({ providedIn: 'root' })
 export class UsersService {
-  private readonly http = inject(HttpClient);
   private readonly apiUrl = 'http://localhost:3000';
+
+  public constructor(private readonly http: HttpClient) {}
 
   /** Lists users. Only admin can call this endpoint successfully. */
   public listUsers(): Observable<readonly UserListItem[]> {

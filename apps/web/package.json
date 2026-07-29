@@ -8,8 +8,9 @@
     "start": "ng serve",
     "typecheck": "tsc -p tsconfig.app.json --noEmit",
     "lint": "tsc -p tsconfig.app.json --noEmit",
-    "test": "echo 'No tests yet'",
-    "dev": "ng serve --host 0.0.0.0 --port 4200"
+    "test": "vitest run",
+    "dev": "ng serve --host 0.0.0.0 --port 4200",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@angular/animations": "22.0.8",
