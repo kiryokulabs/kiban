@@ -10,7 +10,12 @@
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
     "format": "prettier --write .",
-    "dev": "turbo run dev"
+    "dev": "pnpm run build:packages && turbo run dev --filter=\"./apps/*\"",
+    "build:packages": "pnpm -r --filter \"./packages/*\" build",
+    "db:check": "node -e \"require('node:child_process').execFileSync('sqlite3', ['--version'], {stdio:'inherit'})\"",
+    "db:path": "node -e \"console.log(require('node:os').homedir() + '/.kiban/database/kiban.sqlite')\"",
+    "db:status": "sqlite3 ~/.kiban/database/kiban.sqlite \"select role, count(*) from users group by role;\"",
+    "db:reset:dev": "node -e \"const fs=require('node:fs'); const p=require('node:os').homedir()+'/.kiban/database/kiban.sqlite'; if (fs.existsSync(p)) { fs.rmSync(p); console.log('Deleted '+p); } else { console.log('No database at '+p); }\""
   },
   "devDependencies": {
     "@types/node": "^22.10.0",

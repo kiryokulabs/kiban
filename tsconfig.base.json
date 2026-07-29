@@ -13,8 +13,6 @@
     "declarationMap": true,
     "sourceMap": true,
     "esModuleInterop": true,
-    "resolveJsonModule": true,
-    "baseUrl": ".",
-    "ignoreDeprecations": "6.0"
+    "resolveJsonModule": true
   }
 }

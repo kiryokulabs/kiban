@@ -1,22 +1,38 @@
-import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+export interface ProjectTable {
+  readonly id: string;
+  readonly name: string;
+  readonly description: string | null;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
+}
 
-export const projects = sqliteTable('projects', {
-  id: text('id').primaryKey(),
-  name: text('name').notNull(),
-  description: text('description'),
-  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
-  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull()
-});
+export interface SettingTable {
+  readonly key: string;
+  readonly value: string;
+  readonly updatedAt: Date;
+}
 
-export const settings = sqliteTable('settings', {
-  key: text('key').primaryKey(),
-  value: text('value').notNull(),
-  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull()
-});
+export interface InstalledPluginTable {
+  readonly id: string;
+  readonly manifestJson: string;
+  readonly installedAt: Date;
+  readonly enabled: boolean;
+}
 
-export const installedPlugins = sqliteTable('installed_plugins', {
-  id: text('id').primaryKey(),
-  manifestJson: text('manifest_json').notNull(),
-  installedAt: integer('installed_at', { mode: 'timestamp' }).notNull(),
-  enabled: integer('enabled', { mode: 'boolean' }).notNull()
-});
+export interface UserTable {
+  readonly id: string;
+  readonly email: string;
+  readonly passwordHash: string;
+  readonly role: 'admin';
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
+}
+
+export interface AuthSessionTable {
+  readonly id: string;
+  readonly userId: string;
+  readonly tokenHash: string;
+  readonly expiresAt: Date;
+  readonly createdAt: Date;
+  readonly revokedAt: Date | null;
+}

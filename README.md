@@ -18,3 +18,7 @@ Apache-2.0
 ## Local configuration
 
 Runtime data is expected under `~/.kiban/` with `config/`, `database/`, `plugins/`, `logs/` and `cache/`. The repository includes `.kiban-template/` to document that layout without writing outside the project during development.
+
+## Documentation
+
+- [Authentication](./docs/authentication.md)

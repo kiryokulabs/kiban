@@ -10,3 +10,12 @@ export * from './application/managers/project-manager.js';
 export * from './application/managers/plugin-manager.js';
 export * from './application/managers/catalog-manager.js';
 export * from './application/managers/settings-manager.js';
+
+export * from './domain/users/user.js';
+export * from './domain/auth/auth-session.js';
+export * from './domain/auth/auth-errors.js';
+export * from './application/interfaces/user-repository.js';
+export * from './application/interfaces/auth-session-repository.js';
+export * from './application/interfaces/password-hasher.js';
+export * from './application/interfaces/session-token-service.js';
+export * from './application/managers/auth-manager.js';
