@@ -10,6 +10,7 @@ import { ProjectModule } from './modules/project/project.module';
 import { ServiceModule } from './modules/service/service.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { StackModule } from './modules/stack/stack.module';
+import { UsersModule } from './modules/users/users.module';
 
-@Module({ imports: [DatabaseModule, AuthModule, ProjectModule, PluginModule, CatalogModule, DockerModule, HealthModule, SettingsModule, LogsModule, StackModule, ServiceModule] })
+@Module({ imports: [DatabaseModule, AuthModule, ProjectModule, PluginModule, CatalogModule, DockerModule, HealthModule, SettingsModule, LogsModule, StackModule, ServiceModule, UsersModule] })
 export class AppModule {}

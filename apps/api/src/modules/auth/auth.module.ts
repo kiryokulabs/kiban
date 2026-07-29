@@ -29,6 +29,6 @@ import { NodeSessionTokenService } from './services/node-session-token.service';
       inject: [SqliteUserRepository, SqliteAuthSessionRepository, NodePasswordHasherService, NodeSessionTokenService]
     }
   ],
-  exports: [AuthService]
+  exports: [AuthService, AUTH_MANAGER, SqliteUserRepository, NodePasswordHasherService]
 })
 export class AuthModule {}

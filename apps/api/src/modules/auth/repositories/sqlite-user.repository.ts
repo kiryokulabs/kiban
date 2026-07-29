@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { CreateAdminUserInput, User, UserRepository, UserRole } from '@kiban/core';
+import type { CreateAdminUserInput, CreateOperatorUserInput, User, UserRepository, UserRole } from '@kiban/core';
 import { randomUUID } from 'node:crypto';
 import { DatabaseService, SqliteRow } from '../../../database/database.service';
 
@@ -28,6 +28,26 @@ export class SqliteUserRepository implements UserRepository {
     const user: User = { id: randomUUID(), email: input.email, passwordHash: input.passwordHash, role: 'admin', createdAt: now, updatedAt: now };
     await this.database.run('INSERT INTO users (id, email, password_hash, role, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)', [user.id, user.email, user.passwordHash, user.role, user.createdAt, user.updatedAt]);
     return user;
+  }
+
+
+  /** Creates an operator user. */
+  public async createOperator(input: CreateOperatorUserInput): Promise<User> {
+    const now = new Date();
+    const user: User = { id: randomUUID(), email: input.email, passwordHash: input.passwordHash, role: 'operator', createdAt: now, updatedAt: now };
+    await this.database.run('INSERT INTO users (id, email, password_hash, role, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)', [user.id, user.email, user.passwordHash, user.role, user.createdAt, user.updatedAt]);
+    return user;
+  }
+
+  /** Lists all users ordered by creation date. */
+  public async list(): Promise<readonly User[]> {
+    const rows = await this.database.all<UserRow>('SELECT * FROM users ORDER BY created_at ASC');
+    return rows.map((row) => this.toDomain(row));
+  }
+
+  /** Deletes a user by id. */
+  public async deleteById(id: string): Promise<void> {
+    await this.database.run('DELETE FROM users WHERE id = ?', [id]);
   }
 
   /** Finds a user by normalized email. */

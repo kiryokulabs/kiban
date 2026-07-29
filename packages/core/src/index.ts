@@ -19,3 +19,5 @@ export * from './application/interfaces/auth-session-repository.js';
 export * from './application/interfaces/password-hasher.js';
 export * from './application/interfaces/session-token-service.js';
 export * from './application/managers/auth-manager.js';
+export * from './domain/users/user-errors.js';
+export * from './application/managers/user-manager.js';

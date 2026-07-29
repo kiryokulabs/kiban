@@ -3,7 +3,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthShellComponent } from './auth/auth-shell.component';
 import { AuthService } from './auth/auth.service';
 
-interface NavigationItem { readonly label: string; readonly path: string; }
+interface NavigationItem { readonly label: string; readonly path: string; readonly adminOnly?: boolean; }
 
 @Component({
   selector: 'kiban-root',
@@ -20,7 +20,9 @@ interface NavigationItem { readonly label: string; readonly path: string; }
           <div class="mb-8 flex items-center gap-3"><div class="grid h-9 w-9 place-items-center rounded-xl bg-zinc-100 text-sm font-bold text-zinc-950">K</div><div><p class="font-semibold">Kiban</p><p class="text-xs text-zinc-500">Infrastructure platform</p></div></div>
           <nav class="space-y-1">
             @for (item of navigation(); track item.path) {
+              @if (!item.adminOnly || auth.user()?.role === 'admin') {
               <a [routerLink]="item.path" routerLinkActive="bg-zinc-800 text-white" [routerLinkActiveOptions]="{ exact: item.path === '/' }" class="block rounded-lg px-3 py-2 text-sm text-zinc-400 hover:bg-zinc-900 hover:text-white">{{ item.label }}</a>
+              }
             }
           </nav>
         </aside>
@@ -48,6 +50,7 @@ export class AppComponent {
     { label: 'Projects', path: '/projects' },
     { label: 'Catalog', path: '/catalog' },
     { label: 'Installed', path: '/installed' },
+    { label: 'Users', path: '/users', adminOnly: true },
     { label: 'Logs', path: '/logs' },
     { label: 'Settings', path: '/settings' }
   ]);

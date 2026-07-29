@@ -1,4 +1,4 @@
-export type UserRole = 'admin';
+export type UserRole = 'admin' | 'operator';
 
 export interface User {
   readonly id: string;
@@ -16,6 +16,11 @@ export interface PublicUser {
 }
 
 export interface CreateAdminUserInput {
+  readonly email: string;
+  readonly passwordHash: string;
+}
+
+export interface CreateOperatorUserInput {
   readonly email: string;
   readonly passwordHash: string;
 }

@@ -101,6 +101,7 @@ The API revokes the server-side session and clears the cookie.
 | `GET` | `/auth/bootstrap-status` | Returns whether initial admin setup is required. |
 | `POST` | `/auth/register-admin` | Creates the first admin account only. |
 | `POST` | `/auth/login` | Creates an authenticated session and sets an httpOnly cookie. |
+| `POST` | `/auth/change-password` | Changes the current user password and revokes the current session. |
 | `POST` | `/auth/logout` | Revokes the current session and clears the cookie. |
 | `GET` | `/auth/me` | Returns the current authenticated user. |
 
@@ -153,6 +154,7 @@ API owns:
 - SQLite persistence adapters.
 - Password hashing implementation.
 - Session token generation/hash implementation.
+- User management controllers/services for admin-managed operators.
 
 ### Web app
 
@@ -170,6 +172,34 @@ Web owns:
 - Logout action.
 - Session restoration.
 - HTTP calls with credentials enabled.
+
+
+## Roles
+
+Kiban currently has two roles:
+
+| Role | Purpose |
+| --- | --- |
+| `admin` | The single administrator created during first-run bootstrap. There can only be one admin. |
+| `operator` | A non-admin user created by the administrator to operate Kiban without managing users. |
+
+Rules:
+
+- The first registered account is always `admin`.
+- Public registration closes permanently after the admin exists.
+- The admin can create operator accounts.
+- The admin can delete operator accounts.
+- The admin account cannot be deleted.
+- Operators can view their own profile and change their own password.
+- Operators cannot create users, delete users, or delete/modify the admin account.
+
+## User management endpoints
+
+| Method | Path | Description |
+| --- | --- | --- |
+| `GET` | `/users` | Lists users. Admin only. |
+| `POST` | `/users/operators` | Creates an operator account. Admin only. |
+| `DELETE` | `/users/:id` | Deletes an operator account. Admin only; admin deletion is blocked. |
 
 ## SQLite database
 
