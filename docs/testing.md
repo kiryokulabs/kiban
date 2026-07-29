@@ -48,3 +48,18 @@ pnpm --filter @kiban/web test
 - Local auth state clearing after password change/logout.
 - Users HTTP client calls for list/create/delete operators.
 - Theme service default mode, cookie restore and cookie persistence.
+
+## Continuous Integration
+
+GitHub Actions runs unit tests on every push and pull request using:
+
+```bash
+pnpm install --frozen-lockfile
+pnpm test
+```
+
+Workflow file:
+
+```txt
+.github/workflows/tests.yml
+```
