@@ -47,3 +47,4 @@ pnpm --filter @kiban/web test
 - Local auth state after login/session restore.
 - Local auth state clearing after password change/logout.
 - Users HTTP client calls for list/create/delete operators.
+- Theme service default mode, cookie restore and cookie persistence.
