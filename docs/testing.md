@@ -20,6 +20,9 @@ pnpm --filter @kiban/web test
 
 ### Core
 
+- Project creation with default environments.
+- Project creation rollback behaviour.
+- Project validation, update, delete and environment reads.
 - Admin bootstrap status.
 - First admin registration.
 - Blocking repeated admin registration.
@@ -32,6 +35,8 @@ pnpm --filter @kiban/web test
 
 ### API
 
+- Project service validation and DTO mapping.
+- Project not-found and validation error mapping.
 - Auth service DTO validation.
 - Core error to HTTP exception mapping.
 - Login response and cookie-token payload handoff.
@@ -42,6 +47,7 @@ pnpm --filter @kiban/web test
 
 ### Web
 
+- Projects HTTP client calls for list/create/get/update/delete/environments.
 - Auth HTTP client calls with credentials enabled.
 - Register-admin flow followed by login.
 - Local auth state after login/session restore.
