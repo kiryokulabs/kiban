@@ -8,7 +8,6 @@ import { AuthService } from '../auth/auth.service';
   imports: [FormsModule],
   template: `
     <div class="max-w-3xl">
-      <p class="mb-3 text-sm font-medium text-zinc-500">Account</p>
       <h1 class="text-3xl font-semibold tracking-tight">Profile</h1>
 
       <section class="mt-8 rounded-xl border border-line bg-panel p-6">

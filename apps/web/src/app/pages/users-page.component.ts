@@ -10,7 +10,6 @@ import { UsersService } from '../users/users.service';
   imports: [FormsModule],
   template: `
     <div class="max-w-5xl">
-      <p class="mb-3 text-sm font-medium text-zinc-500">Administration</p>
       <h1 class="text-3xl font-semibold tracking-tight">Users</h1>
       <p class="mt-3 text-zinc-400">The first Kiban user is the only administrator. Admin can create and delete operator accounts.</p>
 
