@@ -1,0 +1,36 @@
+{
+  "id": "neo4j",
+  "name": "Neo4j",
+  "description": "Official Neo4j graph database.",
+  "version": "1.0.0",
+  "author": "Kiban",
+  "category": "databases",
+  "icon": "icon.svg",
+  "docker": {
+    "image": "neo4j",
+    "tag": "5"
+  },
+  "ports": [
+    {
+      "name": "default",
+      "port": 7474,
+      "protocol": "tcp",
+      "public": true
+    }
+  ],
+  "volumes": [
+    {
+      "name": "data",
+      "mountPath": "/data",
+      "persistent": true
+    }
+  ],
+  "environment": [
+    {
+      "key": "NEO4J_AUTH",
+      "required": false,
+      "defaultValue": "${KIBAN_NEO4J_AUTH:-neo4j/kiban12345}"
+    }
+  ],
+  "minimumVersion": "0.1.0"
+}

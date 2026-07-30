@@ -1,0 +1,12 @@
+services:
+  meilisearch:
+    image: getmeili/meilisearch:v1.14
+    restart: unless-stopped
+    environment:
+      MEILI_MASTER_KEY: ${KIBAN_MEILI_MASTER_KEY:-kiban_master_key}
+    ports:
+      - "${KIBAN_MEILISEARCH_PORT:-7700}:7700"
+    volumes:
+      - meilisearch_data:/data
+volumes:
+  meilisearch_data:

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "DOCKER_INFLUXDB_INIT_MODE": {
+      "type": "string",
+      "default": "setup"
+    },
+    "DOCKER_INFLUXDB_INIT_USERNAME": {
+      "type": "string",
+      "default": "${KIBAN_INFLUXDB_USERNAME:-kiban}"
+    },
+    "DOCKER_INFLUXDB_INIT_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_INFLUXDB_PASSWORD:-kiban12345}"
+    },
+    "DOCKER_INFLUXDB_INIT_ORG": {
+      "type": "string",
+      "default": "${KIBAN_INFLUXDB_ORG:-kiban}"
+    },
+    "DOCKER_INFLUXDB_INIT_BUCKET": {
+      "type": "string",
+      "default": "${KIBAN_INFLUXDB_BUCKET:-default}"
+    }
+  }
+}

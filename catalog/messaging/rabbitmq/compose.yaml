@@ -1,0 +1,13 @@
+services:
+  rabbitmq:
+    image: rabbitmq:4-management
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${KIBAN_RABBITMQ_USER:-kiban}
+      RABBITMQ_DEFAULT_PASS: ${KIBAN_RABBITMQ_PASSWORD:-kiban}
+    ports:
+      - "${KIBAN_RABBITMQ_PORT:-5672}:5672"
+    volumes:
+      - rabbitmq_data:/data
+volumes:
+  rabbitmq_data:

@@ -1,0 +1,30 @@
+{
+  "id": "loki",
+  "name": "Loki",
+  "description": "Official Grafana Loki log aggregation system.",
+  "version": "1.0.0",
+  "author": "Kiban",
+  "category": "monitoring",
+  "icon": "icon.svg",
+  "docker": {
+    "image": "grafana/loki",
+    "tag": "3"
+  },
+  "ports": [
+    {
+      "name": "default",
+      "port": 3100,
+      "protocol": "tcp",
+      "public": true
+    }
+  ],
+  "volumes": [
+    {
+      "name": "data",
+      "mountPath": "/data",
+      "persistent": true
+    }
+  ],
+  "environment": [],
+  "minimumVersion": "0.1.0"
+}

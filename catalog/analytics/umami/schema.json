@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "DATABASE_URL": {
+      "type": "string",
+      "default": "postgresql://umami:${KIBAN_UMAMI_DB_PASSWORD:-kiban}@umami-postgres:5432/umami"
+    },
+    "DATABASE_TYPE": {
+      "type": "string",
+      "default": "postgresql"
+    },
+    "APP_SECRET": {
+      "type": "string",
+      "default": "${KIBAN_UMAMI_APP_SECRET:-change-me}"
+    }
+  }
+}

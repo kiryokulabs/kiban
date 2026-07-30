@@ -1,0 +1,30 @@
+{
+  "id": "mailpit",
+  "name": "Mailpit",
+  "description": "Official Mailpit email testing tool.",
+  "version": "1.0.0",
+  "author": "Kiban",
+  "category": "email",
+  "icon": "icon.svg",
+  "docker": {
+    "image": "axllent/mailpit",
+    "tag": "latest"
+  },
+  "ports": [
+    {
+      "name": "default",
+      "port": 8025,
+      "protocol": "tcp",
+      "public": true
+    }
+  ],
+  "volumes": [
+    {
+      "name": "data",
+      "mountPath": "/data",
+      "persistent": true
+    }
+  ],
+  "environment": [],
+  "minimumVersion": "0.1.0"
+}

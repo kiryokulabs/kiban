@@ -1,0 +1,10 @@
+services:
+  redis:
+    image: redis:8
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+volumes:
+  redis_data:

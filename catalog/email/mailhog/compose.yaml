@@ -1,0 +1,10 @@
+services:
+  mailhog:
+    image: mailhog/mailhog:latest
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_MAILHOG_PORT:-8025}:8025"
+    volumes:
+      - mailhog_data:/data
+volumes:
+  mailhog_data:

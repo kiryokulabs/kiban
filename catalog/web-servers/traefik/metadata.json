@@ -1,0 +1,30 @@
+{
+  "id": "traefik",
+  "name": "Traefik",
+  "description": "Official Traefik reverse proxy.",
+  "version": "1.0.0",
+  "author": "Kiban",
+  "category": "web-servers",
+  "icon": "icon.svg",
+  "docker": {
+    "image": "traefik",
+    "tag": "v3.3"
+  },
+  "ports": [
+    {
+      "name": "default",
+      "port": 80,
+      "protocol": "tcp",
+      "public": true
+    }
+  ],
+  "volumes": [
+    {
+      "name": "data",
+      "mountPath": "/data",
+      "persistent": true
+    }
+  ],
+  "environment": [],
+  "minimumVersion": "0.1.0"
+}

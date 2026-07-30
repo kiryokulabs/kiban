@@ -1,0 +1,46 @@
+{
+  "id": "clickhouse",
+  "name": "ClickHouse",
+  "description": "Official ClickHouse column-oriented database.",
+  "version": "1.0.0",
+  "author": "Kiban",
+  "category": "databases",
+  "icon": "icon.svg",
+  "docker": {
+    "image": "clickhouse/clickhouse-server",
+    "tag": "25"
+  },
+  "ports": [
+    {
+      "name": "default",
+      "port": 8123,
+      "protocol": "tcp",
+      "public": true
+    }
+  ],
+  "volumes": [
+    {
+      "name": "data",
+      "mountPath": "/data",
+      "persistent": true
+    }
+  ],
+  "environment": [
+    {
+      "key": "CLICKHOUSE_DB",
+      "required": false,
+      "defaultValue": "${KIBAN_CLICKHOUSE_DB:-kiban}"
+    },
+    {
+      "key": "CLICKHOUSE_USER",
+      "required": false,
+      "defaultValue": "${KIBAN_CLICKHOUSE_USER:-kiban}"
+    },
+    {
+      "key": "CLICKHOUSE_PASSWORD",
+      "required": false,
+      "defaultValue": "${KIBAN_CLICKHOUSE_PASSWORD:-kiban}"
+    }
+  ],
+  "minimumVersion": "0.1.0"
+}

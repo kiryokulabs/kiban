@@ -1,0 +1,12 @@
+services:
+  phpmyadmin:
+    image: phpmyadmin:latest
+    restart: unless-stopped
+    environment:
+      PMA_ARBITRARY: 1
+    ports:
+      - "${KIBAN_PHPMYADMIN_PORT:-80}:80"
+    volumes:
+      - phpmyadmin_data:/data
+volumes:
+  phpmyadmin_data:

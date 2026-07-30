@@ -1,0 +1,20 @@
+services:
+  supabase:
+    image: supabase/studio:latest
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${KIBAN_SUPABASE_POSTGRES_PASSWORD:-kiban}
+      JWT_SECRET: ${KIBAN_SUPABASE_JWT_SECRET:-change-me-super-secret-token}
+    ports:
+      - "${KIBAN_SUPABASE_PORT:-3000}:3000"
+    volumes:
+      - supabase_data:/data
+  supabase-db:
+    image: supabase/postgres:15.8.1.060
+    environment:
+      POSTGRES_PASSWORD: ${KIBAN_SUPABASE_POSTGRES_PASSWORD:-kiban}
+    volumes:
+      - supabase-db:/var/lib/postgresql/data
+volumes:
+  supabase_data:
+  supabase-db:

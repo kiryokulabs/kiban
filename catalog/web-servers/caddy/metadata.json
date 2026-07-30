@@ -1,0 +1,30 @@
+{
+  "id": "caddy",
+  "name": "Caddy",
+  "description": "Official Caddy web server.",
+  "version": "1.0.0",
+  "author": "Kiban",
+  "category": "web-servers",
+  "icon": "icon.svg",
+  "docker": {
+    "image": "caddy",
+    "tag": "2"
+  },
+  "ports": [
+    {
+      "name": "default",
+      "port": 80,
+      "protocol": "tcp",
+      "public": true
+    }
+  ],
+  "volumes": [
+    {
+      "name": "data",
+      "mountPath": "/data",
+      "persistent": true
+    }
+  ],
+  "environment": [],
+  "minimumVersion": "0.1.0"
+}

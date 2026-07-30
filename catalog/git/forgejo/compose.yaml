@@ -1,0 +1,13 @@
+services:
+  forgejo:
+    image: codeberg.org/forgejo/forgejo:11
+    restart: unless-stopped
+    environment:
+      USER_UID: 1000
+      USER_GID: 1000
+    ports:
+      - "${KIBAN_FORGEJO_PORT:-3000}:3000"
+    volumes:
+      - forgejo_data:/data
+volumes:
+  forgejo_data:

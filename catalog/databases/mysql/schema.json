@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "MYSQL_DATABASE": {
+      "type": "string",
+      "default": "${KIBAN_MYSQL_DATABASE:-kiban}"
+    },
+    "MYSQL_USER": {
+      "type": "string",
+      "default": "${KIBAN_MYSQL_USER:-kiban}"
+    },
+    "MYSQL_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_MYSQL_PASSWORD:-kiban}"
+    },
+    "MYSQL_ROOT_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_MYSQL_ROOT_PASSWORD:-kiban}"
+    }
+  }
+}

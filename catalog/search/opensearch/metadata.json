@@ -1,0 +1,46 @@
+{
+  "id": "opensearch",
+  "name": "OpenSearch",
+  "description": "Official OpenSearch search and analytics engine.",
+  "version": "1.0.0",
+  "author": "Kiban",
+  "category": "search",
+  "icon": "icon.svg",
+  "docker": {
+    "image": "opensearchproject/opensearch",
+    "tag": "2"
+  },
+  "ports": [
+    {
+      "name": "default",
+      "port": 9200,
+      "protocol": "tcp",
+      "public": true
+    }
+  ],
+  "volumes": [
+    {
+      "name": "data",
+      "mountPath": "/data",
+      "persistent": true
+    }
+  ],
+  "environment": [
+    {
+      "key": "discovery.type",
+      "required": false,
+      "defaultValue": "single-node"
+    },
+    {
+      "key": "plugins.security.disabled",
+      "required": false,
+      "defaultValue": "true"
+    },
+    {
+      "key": "OPENSEARCH_INITIAL_ADMIN_PASSWORD",
+      "required": false,
+      "defaultValue": "${KIBAN_OPENSEARCH_PASSWORD:-Kiban12345!}"
+    }
+  ],
+  "minimumVersion": "0.1.0"
+}

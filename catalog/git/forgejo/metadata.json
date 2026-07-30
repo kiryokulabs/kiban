@@ -1,0 +1,41 @@
+{
+  "id": "forgejo",
+  "name": "Forgejo",
+  "description": "Official Forgejo Git forge service.",
+  "version": "1.0.0",
+  "author": "Kiban",
+  "category": "git",
+  "icon": "icon.svg",
+  "docker": {
+    "image": "codeberg.org/forgejo/forgejo",
+    "tag": "11"
+  },
+  "ports": [
+    {
+      "name": "default",
+      "port": 3000,
+      "protocol": "tcp",
+      "public": true
+    }
+  ],
+  "volumes": [
+    {
+      "name": "data",
+      "mountPath": "/data",
+      "persistent": true
+    }
+  ],
+  "environment": [
+    {
+      "key": "USER_UID",
+      "required": false,
+      "defaultValue": "1000"
+    },
+    {
+      "key": "USER_GID",
+      "required": false,
+      "defaultValue": "1000"
+    }
+  ],
+  "minimumVersion": "0.1.0"
+}

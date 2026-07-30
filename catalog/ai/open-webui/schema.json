@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "OLLAMA_BASE_URL": {
+      "type": "string",
+      "default": "${KIBAN_OPENWEBUI_OLLAMA_BASE_URL:-http://host.docker.internal:11434}"
+    }
+  }
+}

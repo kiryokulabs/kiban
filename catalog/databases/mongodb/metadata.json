@@ -1,0 +1,41 @@
+{
+  "id": "mongodb",
+  "name": "MongoDB",
+  "description": "Official MongoDB document database.",
+  "version": "1.0.0",
+  "author": "Kiban",
+  "category": "databases",
+  "icon": "icon.svg",
+  "docker": {
+    "image": "mongo",
+    "tag": "8"
+  },
+  "ports": [
+    {
+      "name": "default",
+      "port": 27017,
+      "protocol": "tcp",
+      "public": true
+    }
+  ],
+  "volumes": [
+    {
+      "name": "data",
+      "mountPath": "/data",
+      "persistent": true
+    }
+  ],
+  "environment": [
+    {
+      "key": "MONGO_INITDB_ROOT_USERNAME",
+      "required": false,
+      "defaultValue": "${KIBAN_MONGO_ROOT_USERNAME:-kiban}"
+    },
+    {
+      "key": "MONGO_INITDB_ROOT_PASSWORD",
+      "required": false,
+      "defaultValue": "${KIBAN_MONGO_ROOT_PASSWORD:-kiban}"
+    }
+  ],
+  "minimumVersion": "0.1.0"
+}

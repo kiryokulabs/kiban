@@ -1,0 +1,61 @@
+{
+  "id": "matomo",
+  "name": "Matomo",
+  "description": "Official Matomo web analytics platform.",
+  "version": "1.0.0",
+  "author": "Kiban",
+  "category": "analytics",
+  "icon": "icon.svg",
+  "docker": {
+    "image": "matomo",
+    "tag": "latest"
+  },
+  "ports": [
+    {
+      "name": "default",
+      "port": 80,
+      "protocol": "tcp",
+      "public": true
+    }
+  ],
+  "volumes": [
+    {
+      "name": "data",
+      "mountPath": "/data",
+      "persistent": true
+    }
+  ],
+  "environment": [
+    {
+      "key": "MATOMO_DATABASE_HOST",
+      "required": false,
+      "defaultValue": "matomo-db"
+    },
+    {
+      "key": "MATOMO_DATABASE_ADAPTER",
+      "required": false,
+      "defaultValue": "mysql"
+    },
+    {
+      "key": "MATOMO_DATABASE_TABLES_PREFIX",
+      "required": false,
+      "defaultValue": "matomo_"
+    },
+    {
+      "key": "MATOMO_DATABASE_USERNAME",
+      "required": false,
+      "defaultValue": "matomo"
+    },
+    {
+      "key": "MATOMO_DATABASE_PASSWORD",
+      "required": false,
+      "defaultValue": "${KIBAN_MATOMO_DB_PASSWORD:-kiban}"
+    },
+    {
+      "key": "MATOMO_DATABASE_DBNAME",
+      "required": false,
+      "defaultValue": "matomo"
+    }
+  ],
+  "minimumVersion": "0.1.0"
+}

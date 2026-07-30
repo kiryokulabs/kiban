@@ -1,0 +1,61 @@
+{
+  "id": "authentik",
+  "name": "Authentik",
+  "description": "Official Authentik identity provider server.",
+  "version": "1.0.0",
+  "author": "Kiban",
+  "category": "authentication",
+  "icon": "icon.svg",
+  "docker": {
+    "image": "ghcr.io/goauthentik/server",
+    "tag": "latest"
+  },
+  "ports": [
+    {
+      "name": "default",
+      "port": 9000,
+      "protocol": "tcp",
+      "public": true
+    }
+  ],
+  "volumes": [
+    {
+      "name": "data",
+      "mountPath": "/data",
+      "persistent": true
+    }
+  ],
+  "environment": [
+    {
+      "key": "AUTHENTIK_SECRET_KEY",
+      "required": false,
+      "defaultValue": "${KIBAN_AUTHENTIK_SECRET_KEY:-change-me}"
+    },
+    {
+      "key": "AUTHENTIK_POSTGRESQL__HOST",
+      "required": false,
+      "defaultValue": "authentik-postgres"
+    },
+    {
+      "key": "AUTHENTIK_POSTGRESQL__USER",
+      "required": false,
+      "defaultValue": "authentik"
+    },
+    {
+      "key": "AUTHENTIK_POSTGRESQL__NAME",
+      "required": false,
+      "defaultValue": "authentik"
+    },
+    {
+      "key": "AUTHENTIK_POSTGRESQL__PASSWORD",
+      "required": false,
+      "defaultValue": "${KIBAN_AUTHENTIK_POSTGRES_PASSWORD:-kiban}"
+    },
+    {
+      "key": "AUTHENTIK_REDIS__HOST",
+      "required": false,
+      "defaultValue": "authentik-redis"
+    }
+  ],
+  "minimumVersion": "0.1.0"
+}

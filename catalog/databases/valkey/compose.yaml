@@ -1,0 +1,10 @@
+services:
+  valkey:
+    image: valkey/valkey:8
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_VALKEY_PORT:-6379}:6379"
+    volumes:
+      - valkey_data:/data
+volumes:
+  valkey_data:

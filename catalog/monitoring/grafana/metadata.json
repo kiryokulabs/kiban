@@ -1,0 +1,41 @@
+{
+  "id": "grafana",
+  "name": "Grafana",
+  "description": "Official Grafana observability dashboard.",
+  "version": "1.0.0",
+  "author": "Kiban",
+  "category": "monitoring",
+  "icon": "icon.svg",
+  "docker": {
+    "image": "grafana/grafana",
+    "tag": "latest"
+  },
+  "ports": [
+    {
+      "name": "default",
+      "port": 3000,
+      "protocol": "tcp",
+      "public": true
+    }
+  ],
+  "volumes": [
+    {
+      "name": "data",
+      "mountPath": "/data",
+      "persistent": true
+    }
+  ],
+  "environment": [
+    {
+      "key": "GF_SECURITY_ADMIN_USER",
+      "required": false,
+      "defaultValue": "${KIBAN_GRAFANA_USER:-admin}"
+    },
+    {
+      "key": "GF_SECURITY_ADMIN_PASSWORD",
+      "required": false,
+      "defaultValue": "${KIBAN_GRAFANA_PASSWORD:-kiban}"
+    }
+  ],
+  "minimumVersion": "0.1.0"
+}

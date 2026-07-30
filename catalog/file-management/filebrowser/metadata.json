@@ -1,0 +1,30 @@
+{
+  "id": "filebrowser",
+  "name": "FileBrowser",
+  "description": "Official FileBrowser web file manager.",
+  "version": "1.0.0",
+  "author": "Kiban",
+  "category": "file-management",
+  "icon": "icon.svg",
+  "docker": {
+    "image": "filebrowser/filebrowser",
+    "tag": "latest"
+  },
+  "ports": [
+    {
+      "name": "default",
+      "port": 80,
+      "protocol": "tcp",
+      "public": true
+    }
+  ],
+  "volumes": [
+    {
+      "name": "data",
+      "mountPath": "/data",
+      "persistent": true
+    }
+  ],
+  "environment": [],
+  "minimumVersion": "0.1.0"
+}

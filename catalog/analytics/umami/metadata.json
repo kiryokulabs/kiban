@@ -1,0 +1,46 @@
+{
+  "id": "umami",
+  "name": "Umami",
+  "description": "Official Umami privacy-focused analytics.",
+  "version": "1.0.0",
+  "author": "Kiban",
+  "category": "analytics",
+  "icon": "icon.svg",
+  "docker": {
+    "image": "ghcr.io/umami-software/umami",
+    "tag": "postgresql-latest"
+  },
+  "ports": [
+    {
+      "name": "default",
+      "port": 3000,
+      "protocol": "tcp",
+      "public": true
+    }
+  ],
+  "volumes": [
+    {
+      "name": "data",
+      "mountPath": "/data",
+      "persistent": true
+    }
+  ],
+  "environment": [
+    {
+      "key": "DATABASE_URL",
+      "required": false,
+      "defaultValue": "postgresql://umami:${KIBAN_UMAMI_DB_PASSWORD:-kiban}@umami-postgres:5432/umami"
+    },
+    {
+      "key": "DATABASE_TYPE",
+      "required": false,
+      "defaultValue": "postgresql"
+    },
+    {
+      "key": "APP_SECRET",
+      "required": false,
+      "defaultValue": "${KIBAN_UMAMI_APP_SECRET:-change-me}"
+    }
+  ],
+  "minimumVersion": "0.1.0"
+}

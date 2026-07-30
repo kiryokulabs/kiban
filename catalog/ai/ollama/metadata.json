@@ -1,0 +1,30 @@
+{
+  "id": "ollama",
+  "name": "Ollama",
+  "description": "Official Ollama local model runtime.",
+  "version": "1.0.0",
+  "author": "Kiban",
+  "category": "ai",
+  "icon": "icon.svg",
+  "docker": {
+    "image": "ollama/ollama",
+    "tag": "latest"
+  },
+  "ports": [
+    {
+      "name": "default",
+      "port": 11434,
+      "protocol": "tcp",
+      "public": true
+    }
+  ],
+  "volumes": [
+    {
+      "name": "data",
+      "mountPath": "/data",
+      "persistent": true
+    }
+  ],
+  "environment": [],
+  "minimumVersion": "0.1.0"
+}

@@ -1,0 +1,10 @@
+services:
+  redis-insight:
+    image: redis/redisinsight:latest
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_REDIS_INSIGHT_PORT:-5540}:5540"
+    volumes:
+      - redis_insight_data:/data
+volumes:
+  redis_insight_data:

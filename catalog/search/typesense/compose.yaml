@@ -1,0 +1,11 @@
+services:
+  typesense:
+    image: typesense/typesense:29.0
+    restart: unless-stopped
+    command: --data-dir /data --api-key=${KIBAN_TYPESENSE_API_KEY:-kiban}
+    ports:
+      - "${KIBAN_TYPESENSE_PORT:-8108}:8108"
+    volumes:
+      - typesense_data:/data
+volumes:
+  typesense_data:

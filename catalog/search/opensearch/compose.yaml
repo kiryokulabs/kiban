@@ -1,0 +1,14 @@
+services:
+  opensearch:
+    image: opensearchproject/opensearch:2
+    restart: unless-stopped
+    environment:
+      discovery.type: single-node
+      plugins.security.disabled: true
+      OPENSEARCH_INITIAL_ADMIN_PASSWORD: ${KIBAN_OPENSEARCH_PASSWORD:-Kiban12345!}
+    ports:
+      - "${KIBAN_OPENSEARCH_PORT:-9200}:9200"
+    volumes:
+      - opensearch_data:/data
+volumes:
+  opensearch_data:

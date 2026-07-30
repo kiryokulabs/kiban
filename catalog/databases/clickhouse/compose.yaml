@@ -1,0 +1,14 @@
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:25
+    restart: unless-stopped
+    environment:
+      CLICKHOUSE_DB: ${KIBAN_CLICKHOUSE_DB:-kiban}
+      CLICKHOUSE_USER: ${KIBAN_CLICKHOUSE_USER:-kiban}
+      CLICKHOUSE_PASSWORD: ${KIBAN_CLICKHOUSE_PASSWORD:-kiban}
+    ports:
+      - "${KIBAN_CLICKHOUSE_PORT:-8123}:8123"
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+volumes:
+  clickhouse_data:

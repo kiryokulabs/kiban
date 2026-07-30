@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "N8N_HOST": {
+      "type": "string",
+      "default": "${KIBAN_N8N_HOST:-localhost}"
+    },
+    "N8N_PORT": {
+      "type": "string",
+      "default": "5678"
+    },
+    "N8N_PROTOCOL": {
+      "type": "string",
+      "default": "http"
+    }
+  }
+}

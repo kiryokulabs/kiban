@@ -1,0 +1,30 @@
+{
+  "id": "eclipse-mosquitto",
+  "name": "Eclipse Mosquitto",
+  "description": "Official Eclipse Mosquitto MQTT broker.",
+  "version": "1.0.0",
+  "author": "Kiban",
+  "category": "messaging",
+  "icon": "icon.svg",
+  "docker": {
+    "image": "eclipse-mosquitto",
+    "tag": "2"
+  },
+  "ports": [
+    {
+      "name": "default",
+      "port": 1883,
+      "protocol": "tcp",
+      "public": true
+    }
+  ],
+  "volumes": [
+    {
+      "name": "data",
+      "mountPath": "/data",
+      "persistent": true
+    }
+  ],
+  "environment": [],
+  "minimumVersion": "0.1.0"
+}

@@ -1,0 +1,13 @@
+services:
+  grafana:
+    image: grafana/grafana:latest
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: ${KIBAN_GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${KIBAN_GRAFANA_PASSWORD:-kiban}
+    ports:
+      - "${KIBAN_GRAFANA_PORT:-3000}:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+volumes:
+  grafana_data:

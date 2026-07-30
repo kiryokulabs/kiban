@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "CLICKHOUSE_DB": {
+      "type": "string",
+      "default": "${KIBAN_CLICKHOUSE_DB:-kiban}"
+    },
+    "CLICKHOUSE_USER": {
+      "type": "string",
+      "default": "${KIBAN_CLICKHOUSE_USER:-kiban}"
+    },
+    "CLICKHOUSE_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_CLICKHOUSE_PASSWORD:-kiban}"
+    }
+  }
+}

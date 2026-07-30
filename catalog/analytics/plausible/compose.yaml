@@ -1,0 +1,29 @@
+services:
+  plausible:
+    image: plausible/analytics:latest
+    restart: unless-stopped
+    command: sh -c "sleep 10 && /entrypoint.sh db createdb && /entrypoint.sh db migrate && /entrypoint.sh run"
+    environment:
+      BASE_URL: ${KIBAN_PLAUSIBLE_BASE_URL:-http://localhost:8000}
+      SECRET_KEY_BASE: ${KIBAN_PLAUSIBLE_SECRET_KEY_BASE:-change-me-change-me-change-me}
+    ports:
+      - "${KIBAN_PLAUSIBLE_PORT:-8000}:8000"
+    volumes:
+      - plausible_data:/data
+  plausible-postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: plausible
+      POSTGRES_USER: plausible
+      POSTGRES_PASSWORD: ${KIBAN_PLAUSIBLE_DB_PASSWORD:-kiban}
+    volumes:
+      - plausible-postgres:/var/lib/postgresql/data
+  plausible-clickhouse:
+    image: clickhouse/clickhouse-server:25
+    volumes:
+      - plausible-clickhouse:/var/lib/clickhouse
+volumes:
+  plausible_data:
+  plausible_clickhouse:
+  plausible-postgres:
+  plausible-clickhouse:

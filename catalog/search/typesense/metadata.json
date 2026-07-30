@@ -1,0 +1,30 @@
+{
+  "id": "typesense",
+  "name": "Typesense",
+  "description": "Official Typesense search engine.",
+  "version": "1.0.0",
+  "author": "Kiban",
+  "category": "search",
+  "icon": "icon.svg",
+  "docker": {
+    "image": "typesense/typesense",
+    "tag": "29.0"
+  },
+  "ports": [
+    {
+      "name": "default",
+      "port": 8108,
+      "protocol": "tcp",
+      "public": true
+    }
+  ],
+  "volumes": [
+    {
+      "name": "data",
+      "mountPath": "/data",
+      "persistent": true
+    }
+  ],
+  "environment": [],
+  "minimumVersion": "0.1.0"
+}

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "AUTHENTIK_SECRET_KEY": {
+      "type": "string",
+      "default": "${KIBAN_AUTHENTIK_SECRET_KEY:-change-me}"
+    },
+    "AUTHENTIK_POSTGRESQL__HOST": {
+      "type": "string",
+      "default": "authentik-postgres"
+    },
+    "AUTHENTIK_POSTGRESQL__USER": {
+      "type": "string",
+      "default": "authentik"
+    },
+    "AUTHENTIK_POSTGRESQL__NAME": {
+      "type": "string",
+      "default": "authentik"
+    },
+    "AUTHENTIK_POSTGRESQL__PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_AUTHENTIK_POSTGRES_PASSWORD:-kiban}"
+    },
+    "AUTHENTIK_REDIS__HOST": {
+      "type": "string",
+      "default": "authentik-redis"
+    }
+  }
+}

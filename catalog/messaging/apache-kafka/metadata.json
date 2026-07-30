@@ -1,0 +1,81 @@
+{
+  "id": "apache-kafka",
+  "name": "Apache Kafka",
+  "description": "Official Apache Kafka broker in KRaft mode.",
+  "version": "1.0.0",
+  "author": "Kiban",
+  "category": "messaging",
+  "icon": "icon.svg",
+  "docker": {
+    "image": "apache/kafka",
+    "tag": "latest"
+  },
+  "ports": [
+    {
+      "name": "default",
+      "port": 9092,
+      "protocol": "tcp",
+      "public": true
+    }
+  ],
+  "volumes": [
+    {
+      "name": "data",
+      "mountPath": "/data",
+      "persistent": true
+    }
+  ],
+  "environment": [
+    {
+      "key": "KAFKA_NODE_ID",
+      "required": false,
+      "defaultValue": "1"
+    },
+    {
+      "key": "KAFKA_PROCESS_ROLES",
+      "required": false,
+      "defaultValue": "broker,controller"
+    },
+    {
+      "key": "KAFKA_CONTROLLER_QUORUM_VOTERS",
+      "required": false,
+      "defaultValue": "1@apache-kafka:9093"
+    },
+    {
+      "key": "KAFKA_LISTENERS",
+      "required": false,
+      "defaultValue": "PLAINTEXT://:9092,CONTROLLER://:9093"
+    },
+    {
+      "key": "KAFKA_ADVERTISED_LISTENERS",
+      "required": false,
+      "defaultValue": "PLAINTEXT://localhost:9092"
+    },
+    {
+      "key": "KAFKA_CONTROLLER_LISTENER_NAMES",
+      "required": false,
+      "defaultValue": "CONTROLLER"
+    },
+    {
+      "key": "KAFKA_INTER_BROKER_LISTENER_NAME",
+      "required": false,
+      "defaultValue": "PLAINTEXT"
+    },
+    {
+      "key": "KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR",
+      "required": false,
+      "defaultValue": "1"
+    },
+    {
+      "key": "KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR",
+      "required": false,
+      "defaultValue": "1"
+    },
+    {
+      "key": "KAFKA_TRANSACTION_STATE_LOG_MIN_ISR",
+      "required": false,
+      "defaultValue": "1"
+    }
+  ],
+  "minimumVersion": "0.1.0"
+}

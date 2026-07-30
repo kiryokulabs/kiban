@@ -1,0 +1,30 @@
+{
+  "id": "seaweedfs",
+  "name": "SeaweedFS",
+  "description": "SeaweedFS distributed object store and file system.",
+  "version": "1.0.0",
+  "author": "Kiban",
+  "category": "storage",
+  "icon": "icon.svg",
+  "docker": {
+    "image": "chrislusf/seaweedfs",
+    "tag": "latest"
+  },
+  "ports": [
+    {
+      "name": "default",
+      "port": 8888,
+      "protocol": "tcp",
+      "public": true
+    }
+  ],
+  "volumes": [
+    {
+      "name": "data",
+      "mountPath": "/data",
+      "persistent": true
+    }
+  ],
+  "environment": [],
+  "minimumVersion": "0.1.0"
+}

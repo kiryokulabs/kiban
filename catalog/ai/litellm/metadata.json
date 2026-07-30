@@ -1,0 +1,36 @@
+{
+  "id": "litellm",
+  "name": "LiteLLM",
+  "description": "Official LiteLLM proxy for model providers.",
+  "version": "1.0.0",
+  "author": "Kiban",
+  "category": "ai",
+  "icon": "icon.svg",
+  "docker": {
+    "image": "ghcr.io/berriai/litellm",
+    "tag": "main-latest"
+  },
+  "ports": [
+    {
+      "name": "default",
+      "port": 4000,
+      "protocol": "tcp",
+      "public": true
+    }
+  ],
+  "volumes": [
+    {
+      "name": "data",
+      "mountPath": "/data",
+      "persistent": true
+    }
+  ],
+  "environment": [
+    {
+      "key": "LITELLM_MASTER_KEY",
+      "required": false,
+      "defaultValue": "${KIBAN_LITELLM_MASTER_KEY:-sk-kiban}"
+    }
+  ],
+  "minimumVersion": "0.1.0"
+}

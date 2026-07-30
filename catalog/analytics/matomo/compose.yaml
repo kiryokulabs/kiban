@@ -1,0 +1,27 @@
+services:
+  matomo:
+    image: matomo:latest
+    restart: unless-stopped
+    environment:
+      MATOMO_DATABASE_HOST: matomo-db
+      MATOMO_DATABASE_ADAPTER: mysql
+      MATOMO_DATABASE_TABLES_PREFIX: matomo_
+      MATOMO_DATABASE_USERNAME: matomo
+      MATOMO_DATABASE_PASSWORD: ${KIBAN_MATOMO_DB_PASSWORD:-kiban}
+      MATOMO_DATABASE_DBNAME: matomo
+    ports:
+      - "${KIBAN_MATOMO_PORT:-80}:80"
+    volumes:
+      - matomo_data:/data
+  matomo-db:
+    image: mariadb:11
+    environment:
+      MARIADB_DATABASE: matomo
+      MARIADB_USER: matomo
+      MARIADB_PASSWORD: ${KIBAN_MATOMO_DB_PASSWORD:-kiban}
+      MARIADB_ROOT_PASSWORD: ${KIBAN_MATOMO_ROOT_PASSWORD:-kiban}
+    volumes:
+      - matomo-db:/var/lib/mysql
+volumes:
+  matomo_data:
+  matomo-db:

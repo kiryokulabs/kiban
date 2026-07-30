@@ -1,0 +1,11 @@
+services:
+  traefik:
+    image: traefik:v3.3
+    restart: unless-stopped
+    command: --api.insecure=true --providers.docker=false
+    ports:
+      - "${KIBAN_TRAEFIK_PORT:-80}:80"
+    volumes:
+      - traefik_data:/data
+volumes:
+  traefik_data:

@@ -1,0 +1,30 @@
+{
+  "id": "valkey",
+  "name": "Valkey",
+  "description": "Official Valkey in-memory data store.",
+  "version": "1.0.0",
+  "author": "Kiban",
+  "category": "databases",
+  "icon": "icon.svg",
+  "docker": {
+    "image": "valkey/valkey",
+    "tag": "8"
+  },
+  "ports": [
+    {
+      "name": "default",
+      "port": 6379,
+      "protocol": "tcp",
+      "public": true
+    }
+  ],
+  "volumes": [
+    {
+      "name": "data",
+      "mountPath": "/data",
+      "persistent": true
+    }
+  ],
+  "environment": [],
+  "minimumVersion": "0.1.0"
+}

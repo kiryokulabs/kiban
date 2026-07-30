@@ -1,0 +1,12 @@
+services:
+  neo4j:
+    image: neo4j:5
+    restart: unless-stopped
+    environment:
+      NEO4J_AUTH: ${KIBAN_NEO4J_AUTH:-neo4j/kiban12345}
+    ports:
+      - "${KIBAN_NEO4J_PORT:-7474}:7474"
+    volumes:
+      - neo4j_data:/data
+volumes:
+  neo4j_data:

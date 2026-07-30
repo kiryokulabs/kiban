@@ -1,0 +1,51 @@
+{
+  "id": "mysql",
+  "name": "MySQL",
+  "description": "Official MySQL relational database.",
+  "version": "1.0.0",
+  "author": "Kiban",
+  "category": "databases",
+  "icon": "icon.svg",
+  "docker": {
+    "image": "mysql",
+    "tag": "9"
+  },
+  "ports": [
+    {
+      "name": "default",
+      "port": 3306,
+      "protocol": "tcp",
+      "public": true
+    }
+  ],
+  "volumes": [
+    {
+      "name": "data",
+      "mountPath": "/data",
+      "persistent": true
+    }
+  ],
+  "environment": [
+    {
+      "key": "MYSQL_DATABASE",
+      "required": false,
+      "defaultValue": "${KIBAN_MYSQL_DATABASE:-kiban}"
+    },
+    {
+      "key": "MYSQL_USER",
+      "required": false,
+      "defaultValue": "${KIBAN_MYSQL_USER:-kiban}"
+    },
+    {
+      "key": "MYSQL_PASSWORD",
+      "required": false,
+      "defaultValue": "${KIBAN_MYSQL_PASSWORD:-kiban}"
+    },
+    {
+      "key": "MYSQL_ROOT_PASSWORD",
+      "required": false,
+      "defaultValue": "${KIBAN_MYSQL_ROOT_PASSWORD:-kiban}"
+    }
+  ],
+  "minimumVersion": "0.1.0"
+}

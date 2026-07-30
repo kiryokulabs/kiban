@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "POSTGRES_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_SUPABASE_POSTGRES_PASSWORD:-kiban}"
+    },
+    "JWT_SECRET": {
+      "type": "string",
+      "default": "${KIBAN_SUPABASE_JWT_SECRET:-change-me-super-secret-token}"
+    }
+  }
+}
