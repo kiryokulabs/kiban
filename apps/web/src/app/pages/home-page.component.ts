@@ -24,7 +24,7 @@ import { ProjectsService } from '../projects/projects.service';
             <a [routerLink]="['/projects', project.id]" class="rounded-xl border kb-border kb-panel p-5 transition-colors hover:opacity-90">
               <h2 class="font-medium kb-text">{{ project.name }}</h2>
               <p class="mt-2 text-sm kb-muted">{{ project.description || 'No description' }}</p>
-              <div class="mt-5 flex items-center justify-between text-xs kb-muted"><span>{{ project.environmentCount }} environments</span><span>{{ project.createdAt | slice:0:10 }}</span></div>
+              <div class="mt-5 flex items-center justify-between text-xs kb-muted"><span>{{ project.environmentCount }} envs</span><span>{{ project.createdAt | slice:0:10 }}</span></div><div class="mt-3 flex items-center gap-2 text-xs"><span class="h-2.5 w-2.5 rounded-full" [class.bg-emerald-500]="project.healthStatus === 'healthy'" [class.bg-red-500]="project.healthStatus === 'degraded'" [class.bg-zinc-500]="project.healthStatus === 'empty'"></span><span class="kb-muted">{{ project.runningServiceCount }}/{{ project.serviceCount }} services running</span></div>
             </a>
           }
         </section>

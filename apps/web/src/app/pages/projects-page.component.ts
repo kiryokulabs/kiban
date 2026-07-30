@@ -28,14 +28,18 @@ import { ModalComponent } from '../shared/modal.component';
       </div>
     } @else {
       <div class="mt-8 overflow-hidden rounded-xl border kb-border kb-panel">
-        <div class="grid grid-cols-[1fr_1fr_140px_180px] gap-4 border-b kb-border px-6 py-3 text-xs uppercase tracking-wide kb-muted">
-          <span>Name</span><span>Description</span><span>Environments</span><span>Actions</span>
+        <div class="grid grid-cols-[1.2fr_1fr_150px_180px_180px] gap-4 border-b kb-border px-6 py-3 text-xs uppercase tracking-wide kb-muted">
+          <span>Name</span><span>Description</span><span>Environments</span><span>Services</span><span>Actions</span>
         </div>
         @for (project of projects(); track project.id) {
-          <div class="grid grid-cols-[1fr_1fr_140px_180px] items-center gap-4 border-b kb-border px-6 py-4 last:border-b-0">
+          <div class="grid grid-cols-[1.2fr_1fr_150px_180px_180px] items-center gap-4 border-b kb-border px-6 py-4 last:border-b-0">
             <div><p class="font-medium kb-text">{{ project.name }}</p><p class="mt-1 text-xs kb-muted">{{ project.createdAt | slice:0:10 }}</p></div>
             <p class="text-sm kb-muted">{{ project.description || '—' }}</p>
             <p class="text-sm kb-muted">{{ project.environmentCount }}</p>
+            <div class="flex items-center gap-2 text-sm">
+              <span class="h-2.5 w-2.5 rounded-full" [class.bg-emerald-500]="project.healthStatus === 'healthy'" [class.bg-red-500]="project.healthStatus === 'degraded'" [class.bg-zinc-500]="project.healthStatus === 'empty'"></span>
+              <span class="kb-muted">{{ project.runningServiceCount }}/{{ project.serviceCount }} running</span>
+            </div>
             <div class="flex gap-2">
               <a [routerLink]="['/projects', project.id]" class="rounded-lg border kb-border px-3 py-2 text-sm kb-muted">Open</a>
               <button class="rounded-lg border kb-border px-3 py-2 text-sm kb-muted" type="button" (click)="openEditModal(project)">Edit</button>

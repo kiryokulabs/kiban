@@ -17,6 +17,9 @@ export interface ProjectSummary {
   readonly name: string;
   readonly description: string | null;
   readonly environmentCount: number;
+  readonly serviceCount: number;
+  readonly runningServiceCount: number;
+  readonly healthStatus: 'empty' | 'healthy' | 'degraded';
   readonly createdAt: string;
   readonly updatedAt: string;
 }
