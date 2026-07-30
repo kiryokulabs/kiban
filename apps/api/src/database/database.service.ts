@@ -82,6 +82,7 @@ export class DatabaseService implements OnModuleInit {
         name TEXT NOT NULL,
         status TEXT NOT NULL,
         configuration_json TEXT NOT NULL,
+        runtime_json TEXT,
         created_at INTEGER NOT NULL,
         updated_at INTEGER NOT NULL,
         UNIQUE(environment_id, name),
@@ -90,6 +91,7 @@ export class DatabaseService implements OnModuleInit {
     `);
 
     await this.addColumnIfMissing('environments', 'description', 'TEXT');
+    await this.addColumnIfMissing('installed_services', 'runtime_json', 'TEXT');
   }
 
   private async addColumnIfMissing(table: string, column: string, definition: string): Promise<void> {
