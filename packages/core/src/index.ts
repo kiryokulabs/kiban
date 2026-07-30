@@ -22,3 +22,7 @@ export * from './application/interfaces/session-token-service.js';
 export * from './application/managers/auth-manager.js';
 export * from './domain/users/user-errors.js';
 export * from './application/managers/user-manager.js';
+
+export * from './domain/services/installed-service.js';
+export * from './application/interfaces/installed-service-repository.js';
+export * from './application/managers/installed-service-manager.js';

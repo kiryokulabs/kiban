@@ -24,9 +24,14 @@ export interface ProjectDetails {
   readonly environments: readonly Environment[];
 }
 
+export type ProjectHealthStatus = 'empty' | 'healthy' | 'degraded';
+
 export interface ProjectSummary {
   readonly project: Project;
   readonly environmentCount: number;
+  readonly serviceCount: number;
+  readonly runningServiceCount: number;
+  readonly healthStatus: ProjectHealthStatus;
 }
 
 export interface CreateProjectInput {

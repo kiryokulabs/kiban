@@ -22,7 +22,7 @@ class MemoryProjectRepository implements ProjectRepository {
   }
 
   public async list(): Promise<readonly ProjectSummary[]> {
-    return [...this.projects.values()].map((project) => ({ project, environmentCount: 3 }));
+    return [...this.projects.values()].map((project) => ({ project, environmentCount: 3, serviceCount: 0, runningServiceCount: 0, healthStatus: 'empty' as const }));
   }
 
   public async update(id: string, input: { readonly name: string; readonly description: string | null }): Promise<Project | null> {
@@ -139,7 +139,7 @@ describe('ProjectManager', () => {
     await manager.createProject({ name: 'CrossMetrics', description: null });
 
     await expect(manager.listProjects()).resolves.toMatchObject([
-      { project: { id: 'project-1', name: 'CrossMetrics' }, environmentCount: 3 }
+      { project: { id: 'project-1', name: 'CrossMetrics' }, environmentCount: 3, serviceCount: 0, runningServiceCount: 0, healthStatus: 'empty' }
     ]);
   });
 
