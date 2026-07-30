@@ -74,6 +74,19 @@ export class DatabaseService implements OnModuleInit {
         updated_at INTEGER NOT NULL,
         FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
       );
+
+      CREATE TABLE IF NOT EXISTS installed_services (
+        id TEXT PRIMARY KEY,
+        environment_id TEXT NOT NULL,
+        service_id TEXT NOT NULL,
+        name TEXT NOT NULL,
+        status TEXT NOT NULL,
+        configuration_json TEXT NOT NULL,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        UNIQUE(environment_id, name),
+        FOREIGN KEY (environment_id) REFERENCES environments(id) ON DELETE CASCADE
+      );
     `);
 
     await this.addColumnIfMissing('environments', 'description', 'TEXT');
