@@ -12,6 +12,7 @@ import type { EnvironmentItem, ProjectDetails } from '../projects/projects.model
 import { ProjectsService } from '../projects/projects.service';
 import { ConfirmModalComponent } from '../shared/confirm-modal.component';
 import { ModalComponent } from '../shared/modal.component';
+import { IconsComponent } from '../shared/icons.component';
 
 type InstallStep = 1 | 2 | 3;
 interface SchemaField { readonly key: string; readonly label: string; readonly required: boolean; readonly defaultValue: string; }
@@ -19,110 +20,308 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
 @Component({
   selector: 'kiban-project-details-page',
   standalone: true,
-  imports: [FormsModule, RouterLink, SlicePipe, ConfirmModalComponent, ModalComponent],
+  imports: [FormsModule, RouterLink, SlicePipe, ConfirmModalComponent, ModalComponent, IconsComponent],
   template: `
-    <a routerLink="/projects" class="text-sm kb-muted">← Projects</a>
-    @if (project()) {
-      <div class="mt-6 flex items-start justify-between gap-6">
-        <div><p class="mb-3 text-sm font-medium kb-muted">Project</p><h1 class="text-3xl font-semibold tracking-tight kb-text">{{ project()?.name }}</h1><p class="mt-3 kb-muted">{{ project()?.description || 'No description' }}</p></div>
-        <button type="button" class="rounded-lg bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-950" (click)="openEnvironmentModal()">Add Environment</button>
+    <div class="space-y-6">
+      <!-- Back & header -->
+      <div class="flex items-center gap-3 text-sm">
+        <a routerLink="/projects" class="btn-ghost btn gap-1.5">
+          <kiban-icon name="arrow-left" [size]="14" />
+          Projects
+        </a>
       </div>
-      @if (message()) { <p class="mt-5 rounded-lg border kb-border kb-panel px-3 py-2 text-sm kb-muted">{{ message() }}</p> }
-      <div class="mt-8 grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">
-        @for (environment of project()?.environments; track environment.id) {
-          <article class="flex min-h-[420px] flex-col rounded-xl border kb-border kb-panel p-5">
-            <div class="flex items-start justify-between gap-4 border-b kb-border pb-4">
-              <div>
-                <div class="flex items-center gap-2">
-                  <h2 class="font-medium kb-text">{{ environment.name }}</h2>
-                  <span class="rounded-full border kb-border px-2 py-0.5 text-[11px] uppercase tracking-wide kb-muted">{{ environment.type }}</span>
-                </div>
-                <p class="mt-3 text-sm leading-6 kb-muted">{{ environmentCardDescription(environment) }}</p>
-              </div>
-              <span class="rounded-full border kb-border px-2 py-1 text-xs kb-muted">{{ environment.status }}</span>
-            </div>
 
-            <div class="mt-5 flex flex-1 flex-col">
-              <div class="flex items-center justify-between gap-4">
+      @if (project()) {
+        <!-- Project header -->
+        <div class="card p-5">
+          <div class="flex items-start justify-between gap-4">
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-2.5">
+                <div class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand/20 text-brand-light">
+                  <kiban-icon name="projects" [size]="16" />
+                </div>
                 <div>
-                  <h3 class="font-medium kb-text">Services</h3>
-                  <p class="mt-1 text-xs kb-muted">{{ installedFor(environment.id).length }} installed</p>
+                  <h1 class="text-xl font-semibold kb-text">{{ project()?.name }}</h1>
+                  <p class="mt-0.5 text-sm c-muted">{{ project()?.description || 'No description' }}</p>
                 </div>
-                <button class="rounded-lg bg-zinc-100 px-3 py-2 text-sm font-medium text-zinc-950" type="button" (click)="openInstallDialog(environment)">Install</button>
+              </div>
+            </div>
+            <button type="button" class="btn-primary btn gap-1.5" (click)="openEnvironmentModal()">
+              <kiban-icon name="plus" [size]="14" />
+              Environment
+            </button>
+          </div>
+        </div>
+
+        @if (message()) {
+          <div class="card-subtle flex items-center gap-2.5 px-4 py-3">
+            <kiban-icon name="info" [size]="14" class="c-muted shrink-0" />
+            <p class="text-sm c-muted">{{ message() }}</p>
+          </div>
+        }
+
+        <!-- Environment grid -->
+        <div class="grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">
+          @for (environment of project()?.environments; track environment.id) {
+            <article class="card flex flex-col overflow-hidden">
+              <!-- Environment header -->
+              <div class="flex items-start justify-between gap-3 border-b kb-border px-4 py-3">
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-2">
+                    <h2 class="text-sm font-medium kb-text truncate">{{ environment.name }}</h2>
+                    <span class="badge shrink-0">{{ environment.type }}</span>
+                  </div>
+                  <p class="mt-1 text-xs c-muted leading-relaxed">{{ environmentCardDescription(environment) }}</p>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                  <span class="status-dot status-dot-muted"></span>
+                  <span class="text-xs c-subtle">{{ environment.status }}</span>
+                </div>
               </div>
 
-              @if (installedFor(environment.id).length === 0) {
-                <div class="mt-5 flex flex-1 items-center justify-center rounded-lg border border-dashed kb-border p-6 text-center">
-                  <div>
-                    <p class="font-medium kb-text">No services installed</p>
-                    <p class="mt-2 text-sm kb-muted">Install a catalog service in this isolated environment.</p>
+              <!-- Services -->
+              <div class="flex-1 p-4">
+                <div class="flex items-center justify-between gap-3 mb-3">
+                  <div class="flex items-center gap-2">
+                    <kiban-icon name="box" [size]="14" class="c-muted" />
+                    <span class="text-xs font-medium c-muted">Services</span>
+                    <span class="text-xs c-subtle">({{ installedFor(environment.id).length }})</span>
                   </div>
+                  <button class="btn-secondary btn gap-1" type="button" (click)="openInstallDialog(environment)">
+                    <kiban-icon name="plus" [size]="12" />
+                    Install
+                  </button>
                 </div>
-              } @else {
-                <div class="mt-5 grid gap-3">
-                  @for (service of installedFor(environment.id); track service.id) {
-                    <div class="rounded-lg border kb-border bg-surface p-4">
-                      <div class="flex items-start justify-between gap-3">
-                        <div>
-                          <p class="font-medium kb-text">{{ service.name }}</p>
-                          <p class="mt-1 text-xs uppercase tracking-wide kb-muted">{{ service.status }} · {{ service.createdAt | slice:0:10 }}</p>@if (accessUrls(service).length > 0) { <div class="mt-2 flex flex-wrap gap-2">@for (url of accessUrls(service); track url) { <a class="rounded-full border kb-border px-2 py-1 text-xs kb-muted transition hover:kb-text" [href]="url" target="_blank">{{ url }}</a> }</div> }
+
+                @if (installedFor(environment.id).length === 0) {
+                  <div class="flex flex-col items-center justify-center rounded-lg border border-dashed kb-border py-8 text-center">
+                    <kiban-icon name="box" [size]="20" class="c-subtle" />
+                    <p class="mt-2 text-xs font-medium c-muted">No services</p>
+                    <p class="mt-0.5 text-xs c-subtle">Install a catalog service.</p>
+                  </div>
+                } @else {
+                  <div class="space-y-2">
+                    @for (service of installedFor(environment.id); track service.id) {
+                      <div class="rounded-lg border kb-border p-3">
+                        <div class="flex items-start justify-between gap-2">
+                          <div class="min-w-0 flex-1">
+                            <div class="flex items-center gap-2">
+                              <p class="text-sm font-medium kb-text truncate">{{ service.name }}</p>
+                              <span class="badge text-[10px] px-1.5 py-0.5 leading-none" [class.badge-success]="service.status === 'running'" [class.badge-warning]="service.status === 'installing'" [class.badge-danger]="service.status === 'failed' || service.status === 'stopped' || service.status === 'removing'">
+                                {{ service.status }}
+                              </span>
+                            </div>
+                            @if (accessUrls(service).length > 0) {
+                              <div class="mt-1.5 flex flex-wrap gap-1.5">
+                                @for (url of accessUrls(service); track url) {
+                                  <a class="inline-flex items-center gap-1 rounded-full border kb-border px-2 py-0.5 text-[11px] c-muted hover:c-text transition-colors" [href]="url" target="_blank">
+                                    {{ url }}
+                                    <kiban-icon name="external-link" [size]="10" />
+                                  </a>
+                                }
+                              </div>
+                            }
+                            <p class="mt-1 text-[11px] c-subtle">{{ service.createdAt | slice:0:10 }}</p>
+                          </div>
+                          <button class="btn-danger btn gap-1 text-[11px] px-2 py-1" type="button" (click)="requestDeleteInstalledService(service)">
+                            <kiban-icon name="trash" [size]="12" />
+                          </button>
                         </div>
-                        <button class="rounded-lg border border-red-900/60 px-3 py-2 text-xs text-red-300" type="button" (click)="requestDeleteInstalledService(service)">Delete</button>
+                        <div class="mt-2 flex flex-wrap gap-1.5">
+                          <button class="btn-ghost btn gap-1 text-[11px] px-2 py-1" type="button" (click)="startInstalledService(service)" [disabled]="service.status === 'running'">
+                            <kiban-icon name="play" [size]="12" />
+                            Start
+                          </button>
+                          <button class="btn-ghost btn gap-1 text-[11px] px-2 py-1" type="button" (click)="stopInstalledService(service)" [disabled]="service.status !== 'running'">
+                            <kiban-icon name="stop" [size]="12" />
+                            Stop
+                          </button>
+                          <button class="btn-ghost btn gap-1 text-[11px] px-2 py-1" type="button" (click)="restartInstalledService(service)">
+                            <kiban-icon name="restart" [size]="12" />
+                            Restart
+                          </button>
+                        </div>
                       </div>
-                      <div class="mt-4 flex flex-wrap gap-2">
-                        <button class="rounded-lg border kb-border px-3 py-2 text-xs kb-muted transition hover:kb-text" type="button" (click)="startInstalledService(service)">Start</button>
-                        <button class="rounded-lg border kb-border px-3 py-2 text-xs kb-muted transition hover:kb-text" type="button" (click)="stopInstalledService(service)">Stop</button>
-                        <button class="rounded-lg border kb-border px-3 py-2 text-xs kb-muted transition hover:kb-text" type="button" (click)="restartInstalledService(service)">Restart</button>
-                      </div>
-                    </div>
-                  }
+                    }
+                  </div>
+                }
+              </div>
+
+              <!-- Environment actions -->
+              @if (environment.type === 'custom') {
+                <div class="border-t kb-border px-4 py-2.5">
+                  <button type="button" class="btn-danger btn gap-1 text-xs w-full justify-center" (click)="requestDeleteEnvironment(environment)">
+                    <kiban-icon name="trash" [size]="12" />
+                    Delete environment
+                  </button>
                 </div>
               }
+            </article>
+          }
+        </div>
+
+        <!-- Install modal -->
+        @if (installEnvironment()) {
+          <kiban-modal title="Install Service" (close)="closeInstallDialog()">
+            <div class="mb-5">
+              <div class="flex items-center gap-2 text-xs c-muted">
+                <span [class.c-text]="installStep() === 1" [class.c-muted]="installStep() !== 1" class="flex items-center gap-1.5 font-medium">
+                  @if (installStep() > 1) { <kiban-icon name="check" [size]="12" class="text-success" /> } @else { <span class="grid h-5 w-5 place-items-center rounded-full bg-brand/20 text-[10px] font-medium text-brand-light">1</span> }
+                  Choose
+                </span>
+                <span class="mx-1 c-subtle">—</span>
+                <span [class.c-text]="installStep() === 2" [class.c-muted]="installStep() !== 2" class="flex items-center gap-1.5 font-medium">
+                  @if (installStep() > 2) { <kiban-icon name="check" [size]="12" class="text-success" /> } @else { <span class="grid h-5 w-5 place-items-center rounded-full bg-brand/20 text-[10px] font-medium text-brand-light">2</span> }
+                  Configure
+                </span>
+                <span class="mx-1 c-subtle">—</span>
+                <span [class.c-text]="installStep() === 3" [class.c-muted]="installStep() !== 3" class="flex items-center gap-1.5 font-medium">
+                  <span class="grid h-5 w-5 place-items-center rounded-full bg-brand/20 text-[10px] font-medium text-brand-light">3</span>
+                  Review
+                </span>
+              </div>
             </div>
 
-            @if (environment.type === 'custom') {
-              <button type="button" class="mt-5 rounded-lg border border-red-900/60 px-3 py-2 text-sm text-red-300" (click)="requestDeleteEnvironment(environment)">Delete Environment</button>
-            }
-          </article>
-        }
-      </div>
-
-      @if (installEnvironment()) {
-        <kiban-modal title="Install Service" (close)="closeInstallDialog()">
-          <div class="mb-5 space-y-4">
-            <div class="flex gap-2 text-xs kb-muted"><span [class.kb-text]="installStep() === 1">1 Choose</span><span>→</span><span [class.kb-text]="installStep() === 2">2 Configure</span><span>→</span><span [class.kb-text]="installStep() === 3">3 Review</span></div>
             @if (installingService()) {
-              <div class="rounded-xl border kb-border bg-surface p-4">
+              <div class="card-subtle mb-5 p-4">
                 <div class="flex items-center justify-between gap-4 text-sm">
-                  <span class="font-medium kb-text">Installing service</span>
-                  <span class="kb-muted">Please wait…</span>
+                  <span class="flex items-center gap-2 font-medium kb-text">
+                    <kiban-icon name="box" [size]="14" class="text-brand-light" />
+                    Installing service
+                  </span>
+                  <span class="text-xs c-muted">Please wait…</span>
                 </div>
-                <div class="mt-3 h-2 overflow-hidden rounded-full border kb-border bg-panel">
-                  <div class="h-full w-1/3 animate-[kiban-progress_1.1s_ease-in-out_infinite] rounded-full bg-zinc-100"></div>
+                <div class="mt-3 h-1.5 overflow-hidden rounded-full kb-border bg-panel">
+                  <div class="h-full w-1/3 animate-[kiban-progress_1.1s_ease-in-out_infinite] rounded-full bg-brand"></div>
                 </div>
-                <p class="mt-3 text-xs leading-5 kb-muted">Kiban is pulling the image, creating runtime resources and starting the service. Some services can take a few minutes.</p>
+                <p class="mt-3 text-xs leading-5 c-muted">Kiban is pulling the image, creating runtime resources and starting the service.</p>
               </div>
             }
-          </div>
-          @if (installStep() === 1) {
-            <input name="serviceSearch" [(ngModel)]="serviceSearch" placeholder="Search service..." class="w-full rounded-lg border kb-border bg-surface px-3 py-2 kb-text outline-none" />
-            <div class="mt-4 flex flex-wrap gap-2"><button type="button" class="rounded-full border px-3 py-1 text-xs" [class.bg-zinc-100]="selectedCatalogCategory() === 'all'" [class.text-zinc-950]="selectedCatalogCategory() === 'all'" (click)="selectedCatalogCategory.set('all')">All</button>@for (category of catalogCategories(); track category.id) { <button type="button" class="rounded-full border kb-border px-3 py-1 text-xs kb-muted" [class.bg-zinc-100]="selectedCatalogCategory() === category.id" [class.text-zinc-950]="selectedCatalogCategory() === category.id" (click)="selectedCatalogCategory.set(category.id)">{{ category.name }}</button> }</div>
-            <div class="mt-5 max-h-80 space-y-2 overflow-auto">@for (item of selectableServices(); track item.id) { <button type="button" class="w-full rounded-lg border kb-border p-3 text-left transition hover:border-zinc-500" (click)="selectService(item)"><span class="font-medium kb-text">{{ item.name }}</span><span class="mt-1 block text-sm kb-muted">{{ item.description }}</span></button> }</div>
-          }
-          @if (installStep() === 2 && selectedService()) {
-            <form (ngSubmit)="goToReview()"><p class="mb-4 text-sm kb-muted">Configuration generated from schema.json.</p>@for (field of schemaFields(); track field.key) { <label class="mt-4 block text-sm"><span class="mb-2 block kb-muted">{{ field.label }} @if (field.required) { <span>*</span> }</span><input [name]="field.key" [(ngModel)]="configurationValues[field.key]" class="w-full rounded-lg border kb-border bg-surface px-3 py-2 kb-text outline-none" /></label> }<div class="mt-6 flex justify-end gap-3"><button class="rounded-lg border kb-border px-4 py-2 text-sm kb-muted" type="button" (click)="installStep.set(1)">Back</button><button class="rounded-lg bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-950" type="submit">Review</button></div></form>
-          }
-          @if (installStep() === 3 && selectedService()) {
-            <div class="space-y-4 text-sm"><div><p class="kb-muted">Name</p><p class="font-medium kb-text">{{ selectedService()?.name }}</p></div><div><p class="kb-muted">Image</p><p class="font-medium kb-text">{{ imageLabel(selectedService()!) }}</p></div><div><p class="kb-muted">Ports</p><p class="kb-text">{{ manifestList(selectedService()!, 'ports') }}</p></div><div><p class="kb-muted">Volumes</p><p class="kb-text">{{ manifestList(selectedService()!, 'volumes') }}</p></div><div><p class="kb-muted">Environment Variables</p><p class="kb-text">{{ configurationKeys().join(', ') || 'None' }}</p></div></div>
-            <div class="mt-6 flex justify-end gap-3"><button class="rounded-lg border kb-border px-4 py-2 text-sm kb-muted disabled:cursor-not-allowed disabled:opacity-60" type="button" [disabled]="installingService()" (click)="installStep.set(2)">Back</button><button class="rounded-lg bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-950 disabled:cursor-not-allowed disabled:opacity-60" type="button" [disabled]="installingService()" (click)="installSelectedService()">{{ installingService() ? 'Installing...' : 'Install' }}</button></div>
-          }
-        </kiban-modal>
-      }
 
-      @if (environmentModalOpen()) { <kiban-modal title="Create Environment" (close)="closeEnvironmentModal()"><form (ngSubmit)="createEnvironment()"><p class="mb-5 text-sm leading-6 kb-muted">Create an isolated custom environment for this project.</p><label class="block text-sm"><span class="mb-2 block kb-muted">Environment Name</span><input name="environmentName" [(ngModel)]="environmentName" placeholder="QA, Demo, Preview..." class="w-full rounded-lg border kb-border bg-surface px-3 py-2 kb-text outline-none" required maxlength="100" /></label><label class="mt-4 block text-sm"><span class="mb-2 block kb-muted">Description</span><textarea name="environmentDescriptionText" [(ngModel)]="environmentDescriptionText" class="min-h-24 w-full rounded-lg border kb-border bg-surface px-3 py-2 kb-text outline-none"></textarea></label><div class="mt-6 flex justify-end gap-3"><button class="rounded-lg border kb-border px-4 py-2 text-sm kb-muted" type="button" (click)="closeEnvironmentModal()">Cancel</button><button class="rounded-lg bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-950" type="submit" [disabled]="!environmentName.trim()">Create</button></div></form></kiban-modal> }
-      @if (installedServicePendingDelete()) { <kiban-confirm-modal title="Delete service" [message]="deleteInstalledServiceMessage()" confirmLabel="Delete service" [destructive]="true" (cancel)="cancelDeleteInstalledService()" (confirm)="confirmDeleteInstalledService()" /> }
-      @if (environmentPendingDelete()) { <kiban-confirm-modal title="Delete environment" [message]="deleteEnvironmentMessage()" confirmLabel="Delete environment" [destructive]="true" (cancel)="cancelDeleteEnvironment()" (confirm)="confirmDeleteEnvironment()" /> }
-    } @else { <div class="mt-8 rounded-xl border kb-border kb-panel p-8 kb-muted">Loading project…</div> }
+            <!-- Step 1: Choose -->
+            @if (installStep() === 1) {
+              <div class="relative">
+                <kiban-icon name="search" [size]="14" class="absolute left-3 top-1/2 -translate-y-1/2 c-subtle pointer-events-none" />
+                <input name="serviceSearch" [(ngModel)]="serviceSearch" placeholder="Search service..." class="input pl-9" />
+              </div>
+              <div class="mt-3 flex flex-wrap gap-1.5">
+                <button type="button" class="btn gap-1 text-xs px-2.5 py-1.5" [class.btn-primary]="selectedCatalogCategory() === 'all'" [class.btn-ghost]="selectedCatalogCategory() !== 'all'" (click)="selectedCatalogCategory.set('all')">
+                  <kiban-icon name="grid" [size]="12" />
+                  All
+                </button>
+                @for (category of catalogCategories(); track category.id) {
+                  <button type="button" class="btn gap-1 text-xs px-2.5 py-1.5" [class.btn-primary]="selectedCatalogCategory() === category.id" [class.btn-ghost]="selectedCatalogCategory() !== category.id" (click)="selectedCatalogCategory.set(category.id)">
+                    {{ category.name }}
+                  </button>
+                }
+              </div>
+              <div class="mt-3 max-h-72 space-y-1 overflow-auto">
+                @for (item of selectableServices(); track item.id) {
+                  <button type="button" class="flex w-full items-start gap-3 rounded-lg border kb-border p-3 text-left transition hover:border-brand/50 hover:bg-hover" (click)="selectService(item)">
+                    <div class="grid h-8 w-8 shrink-0 place-items-center rounded-lg border kb-border bg-surface" [innerHTML]="item.icon"></div>
+                    <div class="min-w-0 flex-1">
+                      <span class="text-sm font-medium kb-text">{{ item.name }}</span>
+                      <span class="mt-0.5 block text-xs c-muted leading-relaxed line-clamp-2">{{ item.description }}</span>
+                    </div>
+                    <kiban-icon name="chevron-right" [size]="14" class="c-subtle shrink-0 mt-1" />
+                  </button>
+                }
+              </div>
+            }
+
+            <!-- Step 2: Configure -->
+            @if (installStep() === 2 && selectedService()) {
+              <form (ngSubmit)="goToReview()">
+                <p class="mb-4 text-xs c-muted">Configure the service parameters.</p>
+                @for (field of schemaFields(); track field.key) {
+                  <label class="mt-3 block text-xs">
+                    <span class="mb-1.5 block c-muted">
+                      {{ field.label }}
+                      @if (field.required) { <span class="text-danger">*</span> }
+                    </span>
+                    <input [name]="field.key" [(ngModel)]="configurationValues[field.key]" class="input" />
+                  </label>
+                }
+                <div class="mt-5 flex justify-end gap-2">
+                  <button class="btn-ghost btn" type="button" (click)="installStep.set(1)">Back</button>
+                  <button class="btn-primary btn" type="submit">Review</button>
+                </div>
+              </form>
+            }
+
+            <!-- Step 3: Review -->
+            @if (installStep() === 3 && selectedService()) {
+              <div class="space-y-3 text-sm">
+                <div class="flex items-center justify-between border-b kb-border pb-2">
+                  <span class="text-xs c-muted">Name</span>
+                  <span class="text-xs font-medium kb-text">{{ selectedService()?.name }}</span>
+                </div>
+                <div class="flex items-center justify-between border-b kb-border pb-2">
+                  <span class="text-xs c-muted">Image</span>
+                  <span class="text-xs font-medium kb-text">{{ imageLabel(selectedService()!) }}</span>
+                </div>
+                <div class="flex items-center justify-between border-b kb-border pb-2">
+                  <span class="text-xs c-muted">Ports</span>
+                  <span class="text-xs kb-text">{{ manifestList(selectedService()!, 'ports') }}</span>
+                </div>
+                <div class="flex items-center justify-between border-b kb-border pb-2">
+                  <span class="text-xs c-muted">Volumes</span>
+                  <span class="text-xs kb-text">{{ manifestList(selectedService()!, 'volumes') }}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="text-xs c-muted">Env variables</span>
+                  <span class="text-xs kb-text">{{ configurationKeys().join(', ') || 'None' }}</span>
+                </div>
+              </div>
+              <div class="mt-5 flex justify-end gap-2">
+                <button class="btn-ghost btn" type="button" [disabled]="installingService()" (click)="installStep.set(2)">Back</button>
+                <button class="btn-primary btn gap-1" type="button" [disabled]="installingService()" (click)="installSelectedService()">
+                  @if (installingService()) {
+                    <span>Installing…</span>
+                  } @else {
+                    <kiban-icon name="plus" [size]="14" />
+                    <span>Install</span>
+                  }
+                </button>
+              </div>
+            }
+          </kiban-modal>
+        }
+
+        <!-- Environment modal -->
+        @if (environmentModalOpen()) {
+          <kiban-modal title="Create Environment" (close)="closeEnvironmentModal()">
+            <form (ngSubmit)="createEnvironment()">
+              <p class="mb-5 text-xs leading-6 c-muted">Create an isolated custom environment for this project.</p>
+              <label class="block text-xs">
+                <span class="mb-1.5 block c-muted">Environment Name</span>
+                <input name="environmentName" [(ngModel)]="environmentName" placeholder="QA, Demo, Preview..." class="input" required maxlength="100" />
+              </label>
+              <label class="mt-3 block text-xs">
+                <span class="mb-1.5 block c-muted">Description</span>
+                <textarea name="environmentDescriptionText" [(ngModel)]="environmentDescriptionText" class="input min-h-[5rem]"></textarea>
+              </label>
+              <div class="mt-5 flex justify-end gap-2">
+                <button class="btn-ghost btn" type="button" (click)="closeEnvironmentModal()">Cancel</button>
+                <button class="btn-primary btn" type="submit" [disabled]="!environmentName.trim()">Create</button>
+              </div>
+            </form>
+          </kiban-modal>
+        }
+
+        <!-- Delete confirmations -->
+        @if (installedServicePendingDelete()) {
+          <kiban-confirm-modal title="Delete service" [message]="deleteInstalledServiceMessage()" confirmLabel="Delete service" [destructive]="true" (cancel)="cancelDeleteInstalledService()" (confirm)="confirmDeleteInstalledService()" />
+        }
+        @if (environmentPendingDelete()) {
+          <kiban-confirm-modal title="Delete environment" [message]="deleteEnvironmentMessage()" confirmLabel="Delete environment" [destructive]="true" (cancel)="cancelDeleteEnvironment()" (confirm)="confirmDeleteEnvironment()" />
+        }
+      } @else {
+        <div class="card p-8 text-center">
+          <p class="text-sm c-muted">Loading project…</p>
+        </div>
+      }
+    </div>
   `
 })
 export class ProjectDetailsPageComponent {
@@ -147,19 +346,9 @@ export class ProjectDetailsPageComponent {
   protected restartInstalledService(service: InstalledService): void { this.installedServices.restart(service.id).subscribe({ next: () => this.loadInstalledServices(service.environmentId), error: () => this.message.set('Could not restart service.') }); }
   protected requestDeleteInstalledService(service: InstalledService): void { this.installedServicePendingDelete.set(service); }
   protected cancelDeleteInstalledService(): void { this.installedServicePendingDelete.set(null); }
-  protected deleteInstalledServiceMessage(): string { const service = this.installedServicePendingDelete(); return service ? `Delete service \"${service.name}\"? This will stop and remove its running runtime resources.` : ''; }
+  protected deleteInstalledServiceMessage(): string { const service = this.installedServicePendingDelete(); return service ? `Delete service "${service.name}"? This will stop and remove its running runtime resources.` : ''; }
   protected confirmDeleteInstalledService(): void { const service = this.installedServicePendingDelete(); if (!service) return; this.installedServices.delete(service.id).subscribe({ next: () => { this.installedServicePendingDelete.set(null); this.loadInstalledServices(service.environmentId); }, error: () => this.message.set('Could not delete service.') }); }
-
-  protected accessUrls(service: InstalledService): readonly string[] {
-    const assignedPorts = service.runtime?.['assignedPorts'];
-    if (!Array.isArray(assignedPorts)) return [];
-    return assignedPorts.flatMap((entry) => {
-      if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return [];
-      const port = (entry as Readonly<Record<string, unknown>>)['hostPort'];
-      return typeof port === 'string' && port ? [`http://localhost:${port}`] : [];
-    });
-  }
-
+  protected accessUrls(service: InstalledService): readonly string[] { const assignedPorts = service.runtime?.['assignedPorts']; if (!Array.isArray(assignedPorts)) return []; return assignedPorts.flatMap((entry) => { if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return []; const port = (entry as Readonly<Record<string, unknown>>)['hostPort']; return typeof port === 'string' && port ? [`http://localhost:${port}`] : []; }); }
   protected configurationKeys(): readonly string[] { return Object.keys(this.configurationValues).filter((key) => this.configurationValues[key]); }
   protected imageLabel(item: CatalogItem): string { const docker = item.metadata['docker']; if (!docker || typeof docker !== 'object' || Array.isArray(docker)) return item.id; const image = (docker as Readonly<Record<string, unknown>>)['image']; const tag = (docker as Readonly<Record<string, unknown>>)['tag']; return `${typeof image === 'string' ? image : item.id}${typeof tag === 'string' ? `:${tag}` : ''}`; }
   protected manifestList(item: CatalogItem, key: 'ports' | 'volumes'): string { const value = item.metadata[key]; return Array.isArray(value) && value.length > 0 ? `${value.length} defined` : 'None'; }

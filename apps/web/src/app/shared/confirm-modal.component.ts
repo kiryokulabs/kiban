@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { ConfirmationDialogPresenter } from './confirmation-dialog.presenter';
 import { ModalComponent } from './modal.component';
+import { IconsComponent } from './icons.component';
 
 /**
  * Reusable confirmation dialog for destructive or important actions.
@@ -8,22 +9,34 @@ import { ModalComponent } from './modal.component';
 @Component({
   selector: 'kiban-confirm-modal',
   standalone: true,
-  imports: [ModalComponent],
+  imports: [ModalComponent, IconsComponent],
   template: `
     <kiban-modal [title]="title" (close)="cancelAction()">
-      <p class="text-sm leading-6 kb-muted">{{ message }}</p>
-      <div class="mt-6 flex justify-end gap-3">
-        <button class="rounded-lg border kb-border px-4 py-2 text-sm kb-muted transition hover:kb-text" type="button" (click)="cancelAction()">{{ cancelLabel }}</button>
+      @if (destructive) {
+        <div class="flex items-start gap-3 mb-4">
+          <div class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-danger/10" style="color: var(--color-danger)">
+            <kiban-icon name="warning" [size]="16" />
+          </div>
+          <div>
+            <p class="text-sm font-medium kb-text">Are you sure?</p>
+            <p class="mt-1 text-xs leading-relaxed c-muted">{{ message }}</p>
+          </div>
+        </div>
+      } @else {
+        <p class="text-sm leading-relaxed c-muted">{{ message }}</p>
+      }
+      <div class="mt-5 flex justify-end gap-2">
+        <button class="btn-ghost btn" type="button" (click)="cancelAction()">{{ cancelLabel }}</button>
         <button
-          class="rounded-lg px-4 py-2 text-sm font-medium transition"
-          [class.bg-red-500]="destructive"
-          [class.text-white]="destructive"
-          [class.hover:bg-red-400]="destructive"
-          [class.bg-zinc-100]="!destructive"
-          [class.text-zinc-950]="!destructive"
+          class="btn gap-1.5"
+          [class.btn-danger]="destructive"
+          [class.btn-primary]="!destructive"
           type="button"
           (click)="confirmAction()"
-        >{{ confirmLabel }}</button>
+        >
+          @if (destructive) { <kiban-icon name="trash" [size]="14" /> }
+          {{ confirmLabel }}
+        </button>
       </div>
     </kiban-modal>
   `

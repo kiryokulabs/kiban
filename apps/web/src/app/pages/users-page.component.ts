@@ -3,49 +3,91 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../auth/auth.service';
 import type { UserListItem } from '../users/users.models';
 import { UsersService } from '../users/users.service';
+import { IconsComponent } from '../shared/icons.component';
 
 @Component({
   selector: 'kiban-users-page',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, IconsComponent],
   template: `
-    <div class="max-w-5xl">
-      <h1 class="text-3xl font-semibold tracking-tight">Users</h1>
-      <p class="mt-3 text-zinc-400">The first Kiban user is the only administrator. Admin can create and delete operator accounts.</p>
+    <div class="space-y-6 max-w-3xl">
+      <!-- Header -->
+      <div>
+        <div class="flex items-center gap-2.5">
+          <div class="grid h-7 w-7 place-items-center rounded-lg bg-brand/20 text-brand-light">
+            <kiban-icon name="users" [size]="15" />
+          </div>
+          <h1 class="text-xl font-semibold kb-text">Users</h1>
+        </div>
+        <p class="mt-0.5 text-sm c-muted">The first Kiban user is the only administrator. Admin can create and delete operator accounts.</p>
+      </div>
 
       @if (auth.user()?.role !== 'admin') {
-        <div class="mt-8 rounded-xl border border-line bg-panel p-8 text-zinc-400">Only the administrator can manage users.</div>
+        <div class="card p-6 text-center">
+          <kiban-icon name="users" [size]="20" class="c-muted mb-2" />
+          <p class="text-sm c-muted">Only the administrator can manage users.</p>
+        </div>
       } @else {
-        <section class="mt-8 rounded-xl border border-line bg-panel p-6">
-          <h2 class="text-lg font-medium">Create operator</h2>
-          <form class="mt-5 grid gap-4 md:grid-cols-[1fr_1fr_auto]" (ngSubmit)="createOperator()">
-            <input name="email" type="email" autocomplete="email" placeholder="operator@example.com" [(ngModel)]="email" class="rounded-lg border border-line bg-surface px-3 py-2 text-sm text-zinc-100 outline-none focus:border-zinc-500" required />
-            <input name="password" type="password" autocomplete="new-password" placeholder="Temporary password" [(ngModel)]="password" class="rounded-lg border border-line bg-surface px-3 py-2 text-sm text-zinc-100 outline-none focus:border-zinc-500" required minlength="8" />
-            <button type="submit" class="rounded-lg bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-950 disabled:opacity-60" [disabled]="loading()">Create</button>
+        <!-- Create operator -->
+        <div class="card p-5">
+          <div class="flex items-center gap-2 mb-4">
+            <kiban-icon name="plus" [size]="14" class="c-muted" />
+            <h2 class="text-sm font-medium kb-text">Create operator</h2>
+          </div>
+          <form class="flex flex-col gap-3 sm:flex-row" (ngSubmit)="createOperator()">
+            <input name="email" type="email" autocomplete="email" placeholder="operator@example.com" [(ngModel)]="email" class="input flex-1" required />
+            <input name="password" type="password" autocomplete="new-password" placeholder="Temporary password" [(ngModel)]="password" class="input flex-1" required minlength="8" />
+            <button type="submit" class="btn-primary btn gap-1.5 shrink-0" [disabled]="loading()">
+              <kiban-icon name="plus" [size]="14" />
+              Create
+            </button>
           </form>
           @if (message()) {
-            <p class="mt-4 rounded-lg border border-line bg-surface px-3 py-2 text-sm text-zinc-300">{{ message() }}</p>
+            <div class="card-subtle flex items-center gap-2.5 px-4 py-3 mt-3">
+              <kiban-icon name="info" [size]="14" class="c-muted shrink-0" />
+              <p class="text-sm c-muted">{{ message() }}</p>
+            </div>
           }
-        </section>
+        </div>
 
-        <section class="mt-6 overflow-hidden rounded-xl border border-line bg-panel">
-          <div class="border-b border-line px-6 py-4"><h2 class="font-medium">Accounts</h2></div>
-          <div class="divide-y divide-line">
+        <!-- Accounts list -->
+        <div class="card overflow-hidden">
+          <div class="px-5 py-3 border-b kb-border">
+            <div class="flex items-center gap-2">
+              <kiban-icon name="users" [size]="14" class="c-muted" />
+              <h2 class="text-sm font-medium kb-text">Accounts</h2>
+            </div>
+          </div>
+          <div class="divide-y kb-border">
             @for (user of users(); track user.id) {
-              <div class="flex items-center justify-between px-6 py-4">
-                <div>
-                  <p class="font-medium">{{ user.email }}</p>
-                  <p class="mt-1 text-xs uppercase tracking-wide text-zinc-500">{{ user.role }}</p>
+              <div class="flex items-center justify-between px-5 py-3.5 hover:bg-hover/30 transition-colors">
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-brand/10 text-brand-light text-[11px] font-medium">
+                    {{ user.email.charAt(0).toUpperCase() }}
+                  </div>
+                  <div class="min-w-0">
+                    <p class="text-sm font-medium kb-text truncate">{{ user.email }}</p>
+                    <div class="flex items-center gap-2 mt-0.5">
+                      <span class="badge text-[9px] px-1 py-0.5 leading-none">{{ user.role }}</span>
+                    </div>
+                  </div>
                 </div>
-                <button type="button" class="rounded-lg border border-red-900/60 px-3 py-2 text-sm text-red-300 disabled:cursor-not-allowed disabled:opacity-40" [disabled]="user.role === 'admin' || deleting() === user.id" (click)="deleteUser(user)">
-                  {{ deleting() === user.id ? 'Deleting…' : 'Delete' }}
+                <button type="button" class="btn-danger btn gap-1 text-xs" [disabled]="user.role === 'admin' || deleting() === user.id" (click)="deleteUser(user)">
+                  @if (deleting() === user.id) {
+                    <span>Deleting…</span>
+                  } @else {
+                    <kiban-icon name="trash" [size]="12" />
+                    <span class="hidden sm:inline">Delete</span>
+                  }
                 </button>
               </div>
             } @empty {
-              <div class="px-6 py-10 text-center text-zinc-500">No users found.</div>
+              <div class="px-5 py-10 text-center">
+                <p class="text-xs c-muted">No users found.</p>
+              </div>
             }
           </div>
-        </section>
+        </div>
       }
     </div>
   `
@@ -66,12 +108,10 @@ export class UsersPageComponent {
     this.loadUsers();
   }
 
-  /** Loads user accounts for admin view. */
   protected loadUsers(): void {
     this.usersService.listUsers().subscribe({ next: (users) => this.users.set(users), error: () => undefined });
   }
 
-  /** Creates an operator account. */
   protected createOperator(): void {
     if (this.loading()) {
       return;
@@ -93,7 +133,6 @@ export class UsersPageComponent {
     });
   }
 
-  /** Deletes an operator account; admin deletion is blocked by UI and API. */
   protected deleteUser(user: UserListItem): void {
     if (user.role === 'admin' || this.deleting()) {
       return;
