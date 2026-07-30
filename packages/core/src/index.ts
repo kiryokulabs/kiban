@@ -1,4 +1,5 @@
 export * from './domain/projects/project.js';
+export * from './domain/projects/project-errors.js';
 export * from './domain/plugins/installed-plugin.js';
 export * from './domain/settings/setting.js';
 export * from './domain/catalog/catalog-item.js';
