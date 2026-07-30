@@ -1,5 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post } from '@nestjs/common';
 import type { InstalledServiceDto } from '../dto/service.dto';
+import type { ServiceLogsDto, ServiceRuntimeDto } from '../dto/runtime.dto';
 import { ServiceService } from '../services/service.service';
 
 @Controller()
@@ -18,9 +19,21 @@ export class ServiceController {
     return this.service.install(projectId, environmentId, body);
   }
 
+  /** Lists every installed service. */
+  @Get('services')
+  public listAll(): Promise<readonly InstalledServiceDto[]> { return this.service.listAll(); }
+
   /** Gets one installed service. */
   @Get('services/:id')
   public get(@Param('id') id: string): Promise<InstalledServiceDto> { return this.service.get(id); }
+
+  /** Gets runtime metadata for one installed service. */
+  @Get('services/:id/runtime')
+  public runtime(@Param('id') id: string): Promise<ServiceRuntimeDto> { return this.service.runtimeMetadata(id); }
+
+  /** Gets recent runtime logs for one installed service. */
+  @Get('services/:id/logs')
+  public logs(@Param('id') id: string): Promise<ServiceLogsDto> { return this.service.logs(id); }
 
   /** Deletes one installed service record. */
   @Delete('services/:id')

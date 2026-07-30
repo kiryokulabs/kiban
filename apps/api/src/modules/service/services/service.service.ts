@@ -1,12 +1,18 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { InstalledServiceManager, ProjectNotFoundError, ProjectValidationError } from '@kiban/core';
+import { InstalledServiceManager, ProjectNotFoundError, ProjectValidationError, type RuntimeProvider } from '@kiban/core';
 import type { InstallServiceDto, InstalledServiceDto } from '../dto/service.dto';
-import { INSTALLED_SERVICE_MANAGER } from '../interfaces/service.constants';
+import type { ServiceLogsDto, ServiceRuntimeDto } from '../dto/runtime.dto';
+import { INSTALLED_SERVICE_MANAGER, RUNTIME_PROVIDER } from '../interfaces/service.constants';
 import { mapInstalledServiceToDto } from '../mappers/service.mapper';
 
 @Injectable()
 export class ServiceService {
-  public constructor(@Inject(INSTALLED_SERVICE_MANAGER) private readonly services: InstalledServiceManager) {}
+  public constructor(@Inject(INSTALLED_SERVICE_MANAGER) private readonly services: InstalledServiceManager, @Inject(RUNTIME_PROVIDER) private readonly runtime: RuntimeProvider) {}
+
+  /** Lists every installed service. */
+  public async listAll(): Promise<readonly InstalledServiceDto[]> {
+    try { return (await this.services.listAll()).map(mapInstalledServiceToDto); } catch (error: unknown) { this.mapError(error); }
+  }
 
   /** Lists services installed in an environment. */
   public async list(projectId: string, environmentId: string): Promise<readonly InstalledServiceDto[]> {
@@ -22,6 +28,20 @@ export class ServiceService {
   /** Gets one installed service. */
   public async get(id: string): Promise<InstalledServiceDto> {
     try { return mapInstalledServiceToDto(await this.services.get(id)); } catch (error: unknown) { this.mapError(error); }
+  }
+
+
+  /** Returns runtime metadata for an installed service. */
+  public async runtimeMetadata(id: string): Promise<ServiceRuntimeDto> {
+    try { return { runtime: (await this.services.get(id)).runtime }; } catch (error: unknown) { this.mapError(error); }
+  }
+
+  /** Returns recent runtime logs for an installed service. */
+  public async logs(id: string): Promise<ServiceLogsDto> {
+    try {
+      const service = await this.services.get(id);
+      return { logs: this.runtime.getLogs ? await this.runtime.getLogs(service) : '' };
+    } catch (error: unknown) { this.mapError(error); }
   }
 
   /** Removes one installed service record. */

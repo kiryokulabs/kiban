@@ -9,6 +9,7 @@ export const mapInstalledServiceToDto = (service: InstalledService): InstalledSe
   name: service.name,
   status: service.status,
   configuration: service.configuration,
+  runtime: service.runtime,
   createdAt: service.createdAt.toISOString(),
   updatedAt: service.updatedAt.toISOString()
 });
