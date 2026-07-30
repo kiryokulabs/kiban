@@ -6,6 +6,7 @@ export interface InstalledService {
   readonly name: string;
   readonly status: InstalledServiceStatus;
   readonly configuration: Readonly<Record<string, unknown>>;
+  readonly runtime: Readonly<Record<string, unknown>> | null;
   readonly createdAt: string;
   readonly updatedAt: string;
 }

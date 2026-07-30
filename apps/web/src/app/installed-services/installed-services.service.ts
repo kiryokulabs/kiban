@@ -7,6 +7,8 @@ import type { InstallServiceRequest, InstalledService } from './installed-servic
 export class InstalledServicesService {
   private readonly apiUrl = 'http://localhost:3000';
   public constructor(private readonly http: HttpClient) {}
+  /** Lists every installed service. */
+  public listAll(): Observable<readonly InstalledService[]> { return this.http.get<readonly InstalledService[]>(`${this.apiUrl}/services`, { withCredentials: true }); }
   /** Lists services installed in an environment. */
   public list(projectId: string, environmentId: string): Observable<readonly InstalledService[]> { return this.http.get<readonly InstalledService[]>(`${this.apiUrl}/projects/${projectId}/environments/${environmentId}/services`, { withCredentials: true }); }
   /** Installs a catalog service in an environment. */

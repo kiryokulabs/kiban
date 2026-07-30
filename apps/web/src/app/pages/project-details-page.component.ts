@@ -65,9 +65,9 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
                       <div class="flex items-start justify-between gap-3">
                         <div>
                           <p class="font-medium kb-text">{{ service.name }}</p>
-                          <p class="mt-1 text-xs uppercase tracking-wide kb-muted">{{ service.status }} · {{ service.createdAt | slice:0:10 }}</p>
+                          <p class="mt-1 text-xs uppercase tracking-wide kb-muted">{{ service.status }} · {{ service.createdAt | slice:0:10 }}</p>@if (accessUrls(service).length > 0) { <div class="mt-2 flex flex-wrap gap-2">@for (url of accessUrls(service); track url) { <a class="rounded-full border kb-border px-2 py-1 text-xs kb-muted transition hover:kb-text" [href]="url" target="_blank">{{ url }}</a> }</div> }
                         </div>
-                        <button class="rounded-lg border border-red-900/60 px-3 py-2 text-xs text-red-300" type="button" (click)="deleteInstalledService(service)">Delete</button>
+                        <button class="rounded-lg border border-red-900/60 px-3 py-2 text-xs text-red-300" type="button" (click)="requestDeleteInstalledService(service)">Delete</button>
                       </div>
                       <div class="mt-4 flex flex-wrap gap-2">
                         <button class="rounded-lg border kb-border px-3 py-2 text-xs kb-muted transition hover:kb-text" type="button" (click)="startInstalledService(service)">Start</button>
@@ -89,7 +89,21 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
 
       @if (installEnvironment()) {
         <kiban-modal title="Install Service" (close)="closeInstallDialog()">
-          <div class="mb-5 flex gap-2 text-xs kb-muted"><span [class.kb-text]="installStep() === 1">1 Choose</span><span>→</span><span [class.kb-text]="installStep() === 2">2 Configure</span><span>→</span><span [class.kb-text]="installStep() === 3">3 Review</span></div>
+          <div class="mb-5 space-y-4">
+            <div class="flex gap-2 text-xs kb-muted"><span [class.kb-text]="installStep() === 1">1 Choose</span><span>→</span><span [class.kb-text]="installStep() === 2">2 Configure</span><span>→</span><span [class.kb-text]="installStep() === 3">3 Review</span></div>
+            @if (installingService()) {
+              <div class="rounded-xl border kb-border bg-surface p-4">
+                <div class="flex items-center justify-between gap-4 text-sm">
+                  <span class="font-medium kb-text">Installing service</span>
+                  <span class="kb-muted">Please wait…</span>
+                </div>
+                <div class="mt-3 h-2 overflow-hidden rounded-full border kb-border bg-panel">
+                  <div class="h-full w-1/3 animate-[kiban-progress_1.1s_ease-in-out_infinite] rounded-full bg-zinc-100"></div>
+                </div>
+                <p class="mt-3 text-xs leading-5 kb-muted">Kiban is pulling the image, creating runtime resources and starting the service. Some services can take a few minutes.</p>
+              </div>
+            }
+          </div>
           @if (installStep() === 1) {
             <input name="serviceSearch" [(ngModel)]="serviceSearch" placeholder="Search service..." class="w-full rounded-lg border kb-border bg-surface px-3 py-2 kb-text outline-none" />
             <div class="mt-4 flex flex-wrap gap-2"><button type="button" class="rounded-full border px-3 py-1 text-xs" [class.bg-zinc-100]="selectedCatalogCategory() === 'all'" [class.text-zinc-950]="selectedCatalogCategory() === 'all'" (click)="selectedCatalogCategory.set('all')">All</button>@for (category of catalogCategories(); track category.id) { <button type="button" class="rounded-full border kb-border px-3 py-1 text-xs kb-muted" [class.bg-zinc-100]="selectedCatalogCategory() === category.id" [class.text-zinc-950]="selectedCatalogCategory() === category.id" (click)="selectedCatalogCategory.set(category.id)">{{ category.name }}</button> }</div>
@@ -100,19 +114,20 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
           }
           @if (installStep() === 3 && selectedService()) {
             <div class="space-y-4 text-sm"><div><p class="kb-muted">Name</p><p class="font-medium kb-text">{{ selectedService()?.name }}</p></div><div><p class="kb-muted">Image</p><p class="font-medium kb-text">{{ imageLabel(selectedService()!) }}</p></div><div><p class="kb-muted">Ports</p><p class="kb-text">{{ manifestList(selectedService()!, 'ports') }}</p></div><div><p class="kb-muted">Volumes</p><p class="kb-text">{{ manifestList(selectedService()!, 'volumes') }}</p></div><div><p class="kb-muted">Environment Variables</p><p class="kb-text">{{ configurationKeys().join(', ') || 'None' }}</p></div></div>
-            <div class="mt-6 flex justify-end gap-3"><button class="rounded-lg border kb-border px-4 py-2 text-sm kb-muted" type="button" (click)="installStep.set(2)">Back</button><button class="rounded-lg bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-950" type="button" (click)="installSelectedService()">Install</button></div>
+            <div class="mt-6 flex justify-end gap-3"><button class="rounded-lg border kb-border px-4 py-2 text-sm kb-muted disabled:cursor-not-allowed disabled:opacity-60" type="button" [disabled]="installingService()" (click)="installStep.set(2)">Back</button><button class="rounded-lg bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-950 disabled:cursor-not-allowed disabled:opacity-60" type="button" [disabled]="installingService()" (click)="installSelectedService()">{{ installingService() ? 'Installing...' : 'Install' }}</button></div>
           }
         </kiban-modal>
       }
 
       @if (environmentModalOpen()) { <kiban-modal title="Create Environment" (close)="closeEnvironmentModal()"><form (ngSubmit)="createEnvironment()"><p class="mb-5 text-sm leading-6 kb-muted">Create an isolated custom environment for this project.</p><label class="block text-sm"><span class="mb-2 block kb-muted">Environment Name</span><input name="environmentName" [(ngModel)]="environmentName" placeholder="QA, Demo, Preview..." class="w-full rounded-lg border kb-border bg-surface px-3 py-2 kb-text outline-none" required maxlength="100" /></label><label class="mt-4 block text-sm"><span class="mb-2 block kb-muted">Description</span><textarea name="environmentDescriptionText" [(ngModel)]="environmentDescriptionText" class="min-h-24 w-full rounded-lg border kb-border bg-surface px-3 py-2 kb-text outline-none"></textarea></label><div class="mt-6 flex justify-end gap-3"><button class="rounded-lg border kb-border px-4 py-2 text-sm kb-muted" type="button" (click)="closeEnvironmentModal()">Cancel</button><button class="rounded-lg bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-950" type="submit" [disabled]="!environmentName.trim()">Create</button></div></form></kiban-modal> }
+      @if (installedServicePendingDelete()) { <kiban-confirm-modal title="Delete service" [message]="deleteInstalledServiceMessage()" confirmLabel="Delete service" [destructive]="true" (cancel)="cancelDeleteInstalledService()" (confirm)="confirmDeleteInstalledService()" /> }
       @if (environmentPendingDelete()) { <kiban-confirm-modal title="Delete environment" [message]="deleteEnvironmentMessage()" confirmLabel="Delete environment" [destructive]="true" (cancel)="cancelDeleteEnvironment()" (confirm)="confirmDeleteEnvironment()" /> }
     } @else { <div class="mt-8 rounded-xl border kb-border kb-panel p-8 kb-muted">Loading project…</div> }
   `
 })
 export class ProjectDetailsPageComponent {
   private readonly route = inject(ActivatedRoute); private readonly projectsService = inject(ProjectsService); private readonly installedServices = inject(InstalledServicesService); private readonly catalogService = inject(CatalogService); private readonly environmentPresenter = new EnvironmentCardPresenter(); private readonly catalogPresenter = new CatalogPagePresenter();
-  protected readonly project = signal<ProjectDetails | null>(null); protected readonly message = signal<string | null>(null); protected readonly environmentPendingDelete = signal<EnvironmentItem | null>(null); protected readonly environmentModalOpen = signal(false); protected readonly servicesByEnvironment = signal<Readonly<Record<string, readonly InstalledService[]>>>({}); protected readonly catalogCategories = signal<readonly CatalogCategory[]>([]); protected readonly catalogItems = signal<readonly CatalogItem[]>([]); protected readonly installEnvironment = signal<EnvironmentItem | null>(null); protected readonly selectedService = signal<CatalogItem | null>(null); protected readonly installStep = signal<InstallStep>(1); protected readonly selectedCatalogCategory = signal('all');
+  protected readonly project = signal<ProjectDetails | null>(null); protected readonly message = signal<string | null>(null); protected readonly environmentPendingDelete = signal<EnvironmentItem | null>(null); protected readonly installedServicePendingDelete = signal<InstalledService | null>(null); protected readonly environmentModalOpen = signal(false); protected readonly servicesByEnvironment = signal<Readonly<Record<string, readonly InstalledService[]>>>({}); protected readonly catalogCategories = signal<readonly CatalogCategory[]>([]); protected readonly catalogItems = signal<readonly CatalogItem[]>([]); protected readonly installEnvironment = signal<EnvironmentItem | null>(null); protected readonly selectedService = signal<CatalogItem | null>(null); protected readonly installStep = signal<InstallStep>(1); protected readonly installingService = signal(false); protected readonly selectedCatalogCategory = signal('all');
   protected environmentName = ''; protected environmentDescriptionText = ''; protected serviceSearch = ''; protected configurationValues: Record<string, string> = {}; private readonly projectId: string | null;
   public constructor() { this.projectId = this.route.snapshot.paramMap.get('id'); this.loadCatalog(); this.loadProject(); }
   protected loadProject(): void { if (this.projectId) this.projectsService.getProject(this.projectId).subscribe({ next: (project) => { this.project.set(project); for (const environment of project.environments) this.loadInstalledServices(environment.id); }, error: () => this.message.set('Could not load project.') }); }
@@ -120,17 +135,31 @@ export class ProjectDetailsPageComponent {
   protected installedFor(environmentId: string): readonly InstalledService[] { return this.servicesByEnvironment()[environmentId] ?? []; }
   private loadInstalledServices(environmentId: string): void { if (!this.projectId) return; this.installedServices.list(this.projectId, environmentId).subscribe({ next: (services) => this.servicesByEnvironment.set({ ...this.servicesByEnvironment(), [environmentId]: services }), error: () => this.message.set('Could not load installed services.') }); }
   protected openInstallDialog(environment: EnvironmentItem): void { this.installEnvironment.set(environment); this.selectedService.set(null); this.installStep.set(1); this.configurationValues = {}; this.serviceSearch = ''; this.selectedCatalogCategory.set('all'); }
-  protected closeInstallDialog(): void { this.installEnvironment.set(null); }
+  protected closeInstallDialog(): void { if (this.installingService()) return; this.installEnvironment.set(null); }
   protected selectableServices(): readonly CatalogItem[] { const searched = this.catalogItems().filter((item) => `${item.name} ${item.description}`.toLowerCase().includes(this.serviceSearch.toLowerCase())); return this.catalogPresenter.visibleItems(searched, this.selectedCatalogCategory()); }
   protected selectService(item: CatalogItem): void { this.selectedService.set(item); this.configurationValues = Object.fromEntries(this.schemaFieldsFor(item).map((field) => [field.key, field.defaultValue])); this.installStep.set(2); }
   protected schemaFields(): readonly SchemaField[] { const item = this.selectedService(); return item ? this.schemaFieldsFor(item) : []; }
   private schemaFieldsFor(item: CatalogItem): readonly SchemaField[] { const properties = item.schema['properties']; const required = Array.isArray(item.schema['required']) ? item.schema['required'] : []; if (!properties || typeof properties !== 'object' || Array.isArray(properties)) return []; return Object.entries(properties).map(([key, value]) => { const record = value && typeof value === 'object' && !Array.isArray(value) ? value as Readonly<Record<string, unknown>> : {}; const title = typeof record['title'] === 'string' ? record['title'] : key; const defaultValue = typeof record['default'] === 'string' ? record['default'] : ''; return { key, label: title, required: required.includes(key), defaultValue }; }); }
   protected goToReview(): void { this.installStep.set(3); }
-  protected installSelectedService(): void { const env = this.installEnvironment(); const service = this.selectedService(); if (!this.projectId || !env || !service) return; this.installedServices.install(this.projectId, env.id, { serviceId: service.id, configuration: this.configurationValues }).subscribe({ next: () => { this.closeInstallDialog(); this.loadInstalledServices(env.id); }, error: () => this.message.set('Could not install service. Check configuration and duplicates.') }); }
+  protected installSelectedService(): void { const env = this.installEnvironment(); const service = this.selectedService(); if (!this.projectId || !env || !service || this.installingService()) return; this.installingService.set(true); this.message.set('Installing service. This can take a few minutes while Kiban pulls the image and creates runtime resources.'); this.installedServices.install(this.projectId, env.id, { serviceId: service.id, configuration: this.configurationValues }).subscribe({ next: () => { this.installingService.set(false); this.closeInstallDialog(); this.message.set(null); this.loadInstalledServices(env.id); }, error: () => { this.installingService.set(false); this.message.set('Could not install service. Check configuration and duplicates.'); } }); }
   protected startInstalledService(service: InstalledService): void { this.installedServices.start(service.id).subscribe({ next: () => this.loadInstalledServices(service.environmentId), error: () => this.message.set('Could not start service.') }); }
   protected stopInstalledService(service: InstalledService): void { this.installedServices.stop(service.id).subscribe({ next: () => this.loadInstalledServices(service.environmentId), error: () => this.message.set('Could not stop service.') }); }
   protected restartInstalledService(service: InstalledService): void { this.installedServices.restart(service.id).subscribe({ next: () => this.loadInstalledServices(service.environmentId), error: () => this.message.set('Could not restart service.') }); }
-  protected deleteInstalledService(service: InstalledService): void { this.installedServices.delete(service.id).subscribe({ next: () => this.loadInstalledServices(service.environmentId), error: () => this.message.set('Could not delete service.') }); }
+  protected requestDeleteInstalledService(service: InstalledService): void { this.installedServicePendingDelete.set(service); }
+  protected cancelDeleteInstalledService(): void { this.installedServicePendingDelete.set(null); }
+  protected deleteInstalledServiceMessage(): string { const service = this.installedServicePendingDelete(); return service ? `Delete service \"${service.name}\"? This will stop and remove its running runtime resources.` : ''; }
+  protected confirmDeleteInstalledService(): void { const service = this.installedServicePendingDelete(); if (!service) return; this.installedServices.delete(service.id).subscribe({ next: () => { this.installedServicePendingDelete.set(null); this.loadInstalledServices(service.environmentId); }, error: () => this.message.set('Could not delete service.') }); }
+
+  protected accessUrls(service: InstalledService): readonly string[] {
+    const assignedPorts = service.runtime?.['assignedPorts'];
+    if (!Array.isArray(assignedPorts)) return [];
+    return assignedPorts.flatMap((entry) => {
+      if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return [];
+      const port = (entry as Readonly<Record<string, unknown>>)['hostPort'];
+      return typeof port === 'string' && port ? [`http://localhost:${port}`] : [];
+    });
+  }
+
   protected configurationKeys(): readonly string[] { return Object.keys(this.configurationValues).filter((key) => this.configurationValues[key]); }
   protected imageLabel(item: CatalogItem): string { const docker = item.metadata['docker']; if (!docker || typeof docker !== 'object' || Array.isArray(docker)) return item.id; const image = (docker as Readonly<Record<string, unknown>>)['image']; const tag = (docker as Readonly<Record<string, unknown>>)['tag']; return `${typeof image === 'string' ? image : item.id}${typeof tag === 'string' ? `:${tag}` : ''}`; }
   protected manifestList(item: CatalogItem, key: 'ports' | 'volumes'): string { const value = item.metadata[key]; return Array.isArray(value) && value.length > 0 ? `${value.length} defined` : 'None'; }
