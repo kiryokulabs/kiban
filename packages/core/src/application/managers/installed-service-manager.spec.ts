@@ -50,16 +50,17 @@ class MemoryInstalledServiceRepository implements InstalledServiceRepository {
     return service;
   }
   public async findById(id: string): Promise<InstalledService | null> { return this.services.get(id) ?? null; }
+  public async listAll(): Promise<readonly InstalledService[]> { return [...this.services.values()]; }
   public async listByEnvironmentId(environmentId: string): Promise<readonly InstalledService[]> { return [...this.services.values()].filter((service) => service.environmentId === environmentId); }
   public async findByEnvironmentIdAndName(environmentId: string, name: string): Promise<InstalledService | null> { return [...this.services.values()].find((service) => service.environmentId === environmentId && service.name === name) ?? null; }
-  public async updateStatus(id: string, status: InstalledService['status']): Promise<InstalledService | null> { const service = this.services.get(id); if (!service) return null; const updated = { ...service, status, updatedAt: now }; this.services.set(id, updated); return updated; }
+  public async updateStatus(id: string, status: InstalledService['status'], runtime?: Readonly<Record<string, unknown>> | null): Promise<InstalledService | null> { const service = this.services.get(id); if (!service) return null; const updated = { ...service, status, runtime: runtime === undefined ? service.runtime : runtime, updatedAt: now }; this.services.set(id, updated); return updated; }
   public async delete(id: string): Promise<boolean> { return this.services.delete(id); }
 }
 
 const createManager = (catalog: CatalogRepository = new MemoryCatalogRepository()) => {
   const installed = new MemoryInstalledServiceRepository();
   const environments = new MemoryEnvironmentRepository();
-  const runtime: RuntimeProvider = { install: vi.fn(async () => ({ status: 'running' as const })), uninstall: vi.fn(async () => ({ status: 'stopped' as const })), start: vi.fn(async () => ({ status: 'running' as const })), stop: vi.fn(async () => ({ status: 'stopped' as const })), restart: vi.fn(async () => ({ status: 'running' as const })), health: vi.fn(async () => ({ status: 'healthy' as const })) };
+  const runtime: RuntimeProvider = { install: vi.fn(async () => ({ status: 'running' as const, runtime: { provider: 'test' } })), uninstall: vi.fn(async () => ({ status: 'stopped' as const, runtime: { provider: 'test' } })), start: vi.fn(async () => ({ status: 'running' as const, runtime: { provider: 'test' } })), stop: vi.fn(async () => ({ status: 'stopped' as const, runtime: { provider: 'test' } })), restart: vi.fn(async () => ({ status: 'running' as const, runtime: { provider: 'test' } })), health: vi.fn(async () => ({ status: 'healthy' as const })) };
   const manager = new InstalledServiceManager(installed, environments, catalog, runtime);
   return { manager, installed, environments, runtime };
 };
@@ -99,31 +100,31 @@ describe('InstalledServiceManager', () => {
     await expect(manager.listByEnvironment('project-1', 'env-1')).resolves.toHaveLength(1);
   });
 
-  it('deletes an installed service record without calling uninstall runtime', async () => {
+  it('uninstalls runtime resources before deleting an installed service record', async () => {
     const { manager, runtime } = createManager();
     const service = await manager.install('project-1', 'env-1', { serviceId: 'postgresql', configuration: { POSTGRES_PASSWORD: 'secret' } });
     await manager.delete(service.id);
     await expect(manager.get(service.id)).rejects.toBeInstanceOf(ProjectNotFoundError);
-    expect(runtime.uninstall).not.toHaveBeenCalled();
+    expect(runtime.uninstall).toHaveBeenCalledWith(expect.objectContaining({ id: service.id }));
   });
 
   it('starts a stopped service', async () => {
     const { manager } = createManager();
     const service = await manager.install('project-1', 'env-1', { serviceId: 'postgresql', configuration: { POSTGRES_PASSWORD: 'secret' } });
     await manager.stop(service.id);
-    await expect(manager.start(service.id)).resolves.toMatchObject({ status: 'running' as const });
+    await expect(manager.start(service.id)).resolves.toMatchObject({ status: 'running' as const, runtime: { provider: 'test' } });
   });
 
   it('stops a running service', async () => {
     const { manager } = createManager();
     const service = await manager.install('project-1', 'env-1', { serviceId: 'postgresql', configuration: { POSTGRES_PASSWORD: 'secret' } });
-    await expect(manager.stop(service.id)).resolves.toMatchObject({ status: 'stopped' as const });
+    await expect(manager.stop(service.id)).resolves.toMatchObject({ status: 'stopped' as const, runtime: { provider: 'test' } });
   });
 
   it('restarts a service', async () => {
     const { manager, runtime } = createManager();
     const service = await manager.install('project-1', 'env-1', { serviceId: 'postgresql', configuration: { POSTGRES_PASSWORD: 'secret' } });
-    await expect(manager.restart(service.id)).resolves.toMatchObject({ status: 'running' as const });
+    await expect(manager.restart(service.id)).resolves.toMatchObject({ status: 'running' as const, runtime: { provider: 'test' } });
     expect(runtime.restart).toHaveBeenCalledOnce();
   });
 

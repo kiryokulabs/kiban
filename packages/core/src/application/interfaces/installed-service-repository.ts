@@ -11,7 +11,7 @@ export interface InstallationPlan {
   readonly ports: readonly unknown[];
 }
 
-export interface RuntimeResult { readonly status: InstalledServiceStatus; readonly message?: string; }
+export interface RuntimeResult { readonly status: InstalledServiceStatus; readonly runtime?: Readonly<Record<string, unknown>> | null; readonly message?: string; }
 export interface RuntimeHealth { readonly status: 'healthy' | 'unhealthy' | 'unknown'; readonly message?: string; }
 
 export interface RuntimeProvider {
@@ -21,13 +21,15 @@ export interface RuntimeProvider {
   stop(service: InstalledService): Promise<RuntimeResult>;
   restart(service: InstalledService): Promise<RuntimeResult>;
   health(service: InstalledService): Promise<RuntimeHealth>;
+  getLogs?(service: InstalledService): Promise<string>;
 }
 
 export interface InstalledServiceRepository {
   create(input: Omit<InstalledService, 'id' | 'createdAt' | 'updatedAt'>): Promise<InstalledService>;
   findById(id: string): Promise<InstalledService | null>;
+  listAll(): Promise<readonly InstalledService[]>;
   listByEnvironmentId(environmentId: string): Promise<readonly InstalledService[]>;
   findByEnvironmentIdAndName(environmentId: string, name: string): Promise<InstalledService | null>;
-  updateStatus(id: string, status: InstalledServiceStatus): Promise<InstalledService | null>;
+  updateStatus(id: string, status: InstalledServiceStatus, runtime?: Readonly<Record<string, unknown>> | null): Promise<InstalledService | null>;
   delete(id: string): Promise<boolean>;
 }

@@ -36,7 +36,12 @@ export class InstalledServiceManager {
     const plan = this.createInstallationPlan(environment, serviceDefinition, input.configuration);
     const result = await this.runtime.install(plan);
     const status = result.status === 'running' ? 'running' : 'failed';
-    return this.installedServices.create({ environmentId: environment.id, serviceId: serviceDefinition.id, name: serviceDefinition.name, status, configuration: input.configuration });
+    return this.installedServices.create({ environmentId: environment.id, serviceId: serviceDefinition.id, name: serviceDefinition.name, status, configuration: input.configuration, runtime: result.runtime ?? null });
+  }
+
+  /** Lists every installed service. */
+  public listAll(): Promise<readonly InstalledService[]> {
+    return this.installedServices.listAll();
   }
 
   /** Lists installed services in an environment. */
@@ -56,6 +61,8 @@ export class InstalledServiceManager {
 
   /** Removes only the installed service record. Runtime resources are out of scope for this milestone. */
   public async delete(id: string): Promise<void> {
+    const service = await this.get(id);
+    await this.runtime.uninstall(service);
     const deleted = await this.installedServices.delete(id);
     if (!deleted) {
       throw new ProjectNotFoundError();
@@ -66,23 +73,23 @@ export class InstalledServiceManager {
   public async start(id: string): Promise<InstalledService> {
     const service = await this.get(id);
     this.assertTransition(service.status, 'running');
-    await this.runtime.start(service);
-    return this.updateStatus(id, 'running');
+    const result = await this.runtime.start(service);
+    return this.updateStatus(id, result.status, result.runtime);
   }
 
   /** Stops a running service through the runtime provider. */
   public async stop(id: string): Promise<InstalledService> {
     const service = await this.get(id);
     this.assertTransition(service.status, 'stopped');
-    await this.runtime.stop(service);
-    return this.updateStatus(id, 'stopped');
+    const result = await this.runtime.stop(service);
+    return this.updateStatus(id, result.status, result.runtime);
   }
 
   /** Restarts a service through the runtime provider. */
   public async restart(id: string): Promise<InstalledService> {
     const service = await this.get(id);
-    await this.runtime.restart(service);
-    return this.updateStatus(id, 'running');
+    const result = await this.runtime.restart(service);
+    return this.updateStatus(id, result.status, result.runtime);
   }
 
   private async validateEnvironment(projectId: string, environmentId: string): Promise<Environment> {
@@ -140,8 +147,8 @@ export class InstalledServiceManager {
     }
   }
 
-  private async updateStatus(id: string, status: InstalledServiceStatus): Promise<InstalledService> {
-    const service = await this.installedServices.updateStatus(id, status);
+  private async updateStatus(id: string, status: InstalledServiceStatus, runtime: Readonly<Record<string, unknown>> | null | undefined): Promise<InstalledService> {
+    const service = await this.installedServices.updateStatus(id, status, runtime);
     if (!service) {
       throw new ProjectNotFoundError();
     }
