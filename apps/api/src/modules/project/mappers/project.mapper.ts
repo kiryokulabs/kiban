@@ -30,6 +30,9 @@ export const mapProjectSummaryToDto = (summary: ProjectSummary): ProjectSummaryD
   name: summary.project.name,
   description: summary.project.description,
   environmentCount: summary.environmentCount,
+  serviceCount: summary.serviceCount,
+  runningServiceCount: summary.runningServiceCount,
+  healthStatus: summary.healthStatus,
   createdAt: summary.project.createdAt.toISOString(),
   updatedAt: summary.project.updatedAt.toISOString()
 });

@@ -10,7 +10,7 @@ export interface DatabaseExecutor {
 }
 
 interface ProjectRow extends SqliteRow { readonly id: string; readonly name: string; readonly description: string | null; readonly created_at: number; readonly updated_at: number; }
-interface ProjectSummaryRow extends ProjectRow { readonly environment_count: number; }
+interface ProjectSummaryRow extends ProjectRow { readonly environment_count: number; readonly service_count: number; readonly running_service_count: number; readonly non_running_service_count: number; }
 
 @Injectable()
 export class SqliteProjectRepository implements ProjectRepository {
@@ -31,8 +31,13 @@ export class SqliteProjectRepository implements ProjectRepository {
 
   /** Lists project summaries with environment counts. */
   public async list(): Promise<readonly ProjectSummary[]> {
-    const rows = await this.database.all<ProjectSummaryRow>('SELECT p.*, COUNT(e.id) as environment_count FROM projects p LEFT JOIN environments e ON e.project_id = p.id GROUP BY p.id ORDER BY p.created_at DESC');
-    return rows.map((row) => ({ project: this.toProject(row), environmentCount: row.environment_count }));
+    const rows = await this.database.all<ProjectSummaryRow>(`SELECT p.*, COUNT(DISTINCT e.id) as environment_count, COUNT(s.id) as service_count, SUM(CASE WHEN s.status = 'running' THEN 1 ELSE 0 END) as running_service_count, SUM(CASE WHEN s.id IS NOT NULL AND s.status != 'running' THEN 1 ELSE 0 END) as non_running_service_count FROM projects p LEFT JOIN environments e ON e.project_id = p.id LEFT JOIN installed_services s ON s.environment_id = e.id GROUP BY p.id ORDER BY p.created_at DESC`);
+    return rows.map((row) => {
+      const serviceCount = Number(row.service_count ?? 0);
+      const runningServiceCount = Number(row.running_service_count ?? 0);
+      const nonRunningServiceCount = Number(row.non_running_service_count ?? 0);
+      return { project: this.toProject(row), environmentCount: Number(row.environment_count), serviceCount, runningServiceCount, healthStatus: serviceCount === 0 ? 'empty' : nonRunningServiceCount === 0 ? 'healthy' : 'degraded' };
+    });
   }
 
   /** Updates editable project fields. */

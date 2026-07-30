@@ -1,5 +1,14 @@
-import type { ServiceDto } from '../dto/service.dto';
-import type { ServiceEntity } from '../entities/service.entity';
+import type { InstalledService } from '@kiban/core';
+import type { InstalledServiceDto } from '../dto/service.dto';
 
-/** Maps service entities to API DTOs. */
-export const mapServiceEntityToDto = (entity: ServiceEntity): ServiceDto => ({ id: entity.id });
+/** Maps an installed service to its API DTO. */
+export const mapInstalledServiceToDto = (service: InstalledService): InstalledServiceDto => ({
+  id: service.id,
+  environmentId: service.environmentId,
+  serviceId: service.serviceId,
+  name: service.name,
+  status: service.status,
+  configuration: service.configuration,
+  createdAt: service.createdAt.toISOString(),
+  updatedAt: service.updatedAt.toISOString()
+});

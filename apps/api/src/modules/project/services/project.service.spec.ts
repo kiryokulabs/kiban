@@ -39,8 +39,8 @@ describe('API ProjectService', () => {
   });
 
   it('lists project summaries', async () => {
-    const service = createService({ listProjects: vi.fn(async () => [{ project: details.project, environmentCount: 3 }]) });
-    await expect(service.list()).resolves.toEqual([{ id: 'project-1', name: 'CrossMetrics', description: 'Analytics', environmentCount: 3, createdAt: details.project.createdAt.toISOString(), updatedAt: details.project.updatedAt.toISOString() }]);
+    const service = createService({ listProjects: vi.fn(async () => [{ project: details.project, environmentCount: 3, serviceCount: 2, runningServiceCount: 1, healthStatus: 'degraded' as const }]) });
+    await expect(service.list()).resolves.toEqual([{ id: 'project-1', name: 'CrossMetrics', description: 'Analytics', environmentCount: 3, serviceCount: 2, runningServiceCount: 1, healthStatus: 'degraded', createdAt: details.project.createdAt.toISOString(), updatedAt: details.project.updatedAt.toISOString() }]);
   });
 
   it('gets a project by id', async () => {
