@@ -118,6 +118,10 @@ export class DatabaseService implements OnModuleInit {
   }
 
   /** Renders a parameterized SQL statement for sqlite3 CLI execution. */
+  public toStatement(sql: string, params: readonly SqliteParameter[] = []): string {
+    return this.interpolate(sql, params);
+  }
+
   private interpolate(sql: string, params: readonly SqliteParameter[]): string {
     let index = 0;
     return sql.replace(/\?/g, () => {
