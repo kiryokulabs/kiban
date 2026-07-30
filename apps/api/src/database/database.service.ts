@@ -62,7 +62,28 @@ export class DatabaseService implements OnModuleInit {
         revoked_at INTEGER,
         FOREIGN KEY (user_id) REFERENCES users(id)
       );
+
+      CREATE TABLE IF NOT EXISTS environments (
+        id TEXT PRIMARY KEY,
+        project_id TEXT NOT NULL,
+        name TEXT NOT NULL,
+        slug TEXT NOT NULL,
+        type TEXT NOT NULL,
+        description TEXT,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+      );
     `);
+
+    await this.addColumnIfMissing('environments', 'description', 'TEXT');
+  }
+
+  private async addColumnIfMissing(table: string, column: string, definition: string): Promise<void> {
+    const columns = await this.all<{ readonly name: string }>(`PRAGMA table_info(${table})`);
+    if (!columns.some((existing) => existing.name === column)) {
+      await this.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition};`);
+    }
   }
 
   /** Executes a SQL statement without returning rows. */
