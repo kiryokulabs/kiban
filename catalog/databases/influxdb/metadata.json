@@ -2,55 +2,22 @@
   "id": "influxdb",
   "name": "InfluxDB",
   "description": "Official InfluxDB time-series database.",
-  "version": "1.0.0",
-  "author": "Kiban",
   "category": "databases",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
   "icon": "icon.svg",
-  "docker": {
-    "image": "influxdb",
-    "tag": "2"
-  },
-  "ports": [
+  "accessPoints": [
     {
-      "name": "default",
-      "port": 8086,
-      "protocol": "tcp",
-      "public": true
+      "name": "Web UI",
+      "kind": "web",
+      "service": "influxdb",
+      "port": 8086
+    },
+    {
+      "name": "Database",
+      "kind": "influxdb",
+      "service": "influxdb",
+      "port": 8086
     }
-  ],
-  "volumes": [
-    {
-      "name": "data",
-      "mountPath": "/data",
-      "persistent": true
-    }
-  ],
-  "environment": [
-    {
-      "key": "DOCKER_INFLUXDB_INIT_MODE",
-      "required": false,
-      "defaultValue": "setup"
-    },
-    {
-      "key": "DOCKER_INFLUXDB_INIT_USERNAME",
-      "required": false,
-      "defaultValue": "${KIBAN_INFLUXDB_USERNAME:-kiban}"
-    },
-    {
-      "key": "DOCKER_INFLUXDB_INIT_PASSWORD",
-      "required": false,
-      "defaultValue": "${KIBAN_INFLUXDB_PASSWORD:-kiban12345}"
-    },
-    {
-      "key": "DOCKER_INFLUXDB_INIT_ORG",
-      "required": false,
-      "defaultValue": "${KIBAN_INFLUXDB_ORG:-kiban}"
-    },
-    {
-      "key": "DOCKER_INFLUXDB_INIT_BUCKET",
-      "required": false,
-      "defaultValue": "${KIBAN_INFLUXDB_BUCKET:-default}"
-    }
-  ],
-  "minimumVersion": "0.1.0"
+  ]
 }

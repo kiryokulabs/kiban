@@ -2,40 +2,16 @@
   "id": "supabase",
   "name": "Supabase Self-Hosted",
   "description": "Supabase self-hosted foundation using official Supabase images.",
-  "version": "1.0.0",
-  "author": "Kiban",
   "category": "backend-platforms",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
   "icon": "icon.svg",
-  "docker": {
-    "image": "supabase/studio",
-    "tag": "latest"
-  },
-  "ports": [
+  "accessPoints": [
     {
-      "name": "default",
-      "port": 3000,
-      "protocol": "tcp",
-      "public": true
+      "name": "Web UI",
+      "kind": "web",
+      "service": "supabase",
+      "port": 3000
     }
-  ],
-  "volumes": [
-    {
-      "name": "data",
-      "mountPath": "/data",
-      "persistent": true
-    }
-  ],
-  "environment": [
-    {
-      "key": "POSTGRES_PASSWORD",
-      "required": false,
-      "defaultValue": "${KIBAN_SUPABASE_POSTGRES_PASSWORD:-kiban}"
-    },
-    {
-      "key": "JWT_SECRET",
-      "required": false,
-      "defaultValue": "${KIBAN_SUPABASE_JWT_SECRET:-change-me-super-secret-token}"
-    }
-  ],
-  "minimumVersion": "0.1.0"
+  ]
 }

@@ -2,29 +2,16 @@
   "id": "valkey",
   "name": "Valkey",
   "description": "Official Valkey in-memory data store.",
-  "version": "1.0.0",
-  "author": "Kiban",
   "category": "databases",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
   "icon": "icon.svg",
-  "docker": {
-    "image": "valkey/valkey",
-    "tag": "8"
-  },
-  "ports": [
+  "accessPoints": [
     {
-      "name": "default",
-      "port": 6379,
-      "protocol": "tcp",
-      "public": true
+      "name": "Database",
+      "kind": "redis",
+      "service": "valkey",
+      "port": 6379
     }
-  ],
-  "volumes": [
-    {
-      "name": "data",
-      "mountPath": "/data",
-      "persistent": true
-    }
-  ],
-  "environment": [],
-  "minimumVersion": "0.1.0"
+  ]
 }

@@ -2,35 +2,16 @@
   "id": "flowise",
   "name": "Flowise",
   "description": "Official Flowise low-code AI workflow builder.",
-  "version": "1.0.0",
-  "author": "Kiban",
   "category": "ai",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
   "icon": "icon.svg",
-  "docker": {
-    "image": "flowiseai/flowise",
-    "tag": "latest"
-  },
-  "ports": [
+  "accessPoints": [
     {
-      "name": "default",
-      "port": 3000,
-      "protocol": "tcp",
-      "public": true
+      "name": "Web UI",
+      "kind": "web",
+      "service": "flowise",
+      "port": 3000
     }
-  ],
-  "volumes": [
-    {
-      "name": "data",
-      "mountPath": "/data",
-      "persistent": true
-    }
-  ],
-  "environment": [
-    {
-      "key": "PORT",
-      "required": false,
-      "defaultValue": "3000"
-    }
-  ],
-  "minimumVersion": "0.1.0"
+  ]
 }

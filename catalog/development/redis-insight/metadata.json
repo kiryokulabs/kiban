@@ -2,29 +2,16 @@
   "id": "redis-insight",
   "name": "Redis Insight",
   "description": "Official Redis Insight administration UI.",
-  "version": "1.0.0",
-  "author": "Kiban",
   "category": "development",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
   "icon": "icon.svg",
-  "docker": {
-    "image": "redis/redisinsight",
-    "tag": "latest"
-  },
-  "ports": [
+  "accessPoints": [
     {
-      "name": "default",
-      "port": 5540,
-      "protocol": "tcp",
-      "public": true
+      "name": "Web UI",
+      "kind": "web",
+      "service": "redis-insight",
+      "port": 5540
     }
-  ],
-  "volumes": [
-    {
-      "name": "data",
-      "mountPath": "/data",
-      "persistent": true
-    }
-  ],
-  "environment": [],
-  "minimumVersion": "0.1.0"
+  ]
 }

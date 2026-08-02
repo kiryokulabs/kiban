@@ -2,45 +2,16 @@
   "id": "activepieces",
   "name": "Activepieces",
   "description": "Official Activepieces automation platform.",
-  "version": "1.0.0",
-  "author": "Kiban",
   "category": "automation",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
   "icon": "icon.svg",
-  "docker": {
-    "image": "activepieces/activepieces",
-    "tag": "latest"
-  },
-  "ports": [
+  "accessPoints": [
     {
-      "name": "default",
-      "port": 80,
-      "protocol": "tcp",
-      "public": true
+      "name": "Web UI",
+      "kind": "web",
+      "service": "activepieces",
+      "port": 80
     }
-  ],
-  "volumes": [
-    {
-      "name": "data",
-      "mountPath": "/data",
-      "persistent": true
-    }
-  ],
-  "environment": [
-    {
-      "key": "AP_QUEUE_MODE",
-      "required": false,
-      "defaultValue": "MEMORY"
-    },
-    {
-      "key": "AP_DB_TYPE",
-      "required": false,
-      "defaultValue": "SQLITE3"
-    },
-    {
-      "key": "AP_FRONTEND_URL",
-      "required": false,
-      "defaultValue": "${KIBAN_ACTIVEPIECES_FRONTEND_URL:-http://localhost}"
-    }
-  ],
-  "minimumVersion": "0.1.0"
+  ]
 }

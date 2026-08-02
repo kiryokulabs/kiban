@@ -2,40 +2,20 @@
   "id": "pgadmin",
   "name": "pgAdmin",
   "description": "Official pgAdmin PostgreSQL administration UI.",
-  "version": "1.0.0",
-  "author": "Kiban",
   "category": "development",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
   "icon": "icon.svg",
-  "docker": {
-    "image": "dpage/pgadmin4",
-    "tag": "latest"
-  },
-  "ports": [
+  "accessPoints": [
     {
-      "name": "default",
+      "name": "Web UI",
+      "kind": "web",
+      "service": "pgadmin",
       "port": 80,
-      "protocol": "tcp",
-      "public": true
+      "connection": {
+        "username": "PGADMIN_DEFAULT_EMAIL",
+        "password": "PGADMIN_DEFAULT_PASSWORD"
+      }
     }
-  ],
-  "volumes": [
-    {
-      "name": "data",
-      "mountPath": "/data",
-      "persistent": true
-    }
-  ],
-  "environment": [
-    {
-      "key": "PGADMIN_DEFAULT_EMAIL",
-      "required": false,
-      "defaultValue": "${KIBAN_PGADMIN_EMAIL:-admin@example.com}"
-    },
-    {
-      "key": "PGADMIN_DEFAULT_PASSWORD",
-      "required": false,
-      "defaultValue": "${KIBAN_PGADMIN_PASSWORD:-kiban}"
-    }
-  ],
-  "minimumVersion": "0.1.0"
+  ]
 }

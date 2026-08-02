@@ -2,29 +2,16 @@
   "id": "prometheus",
   "name": "Prometheus",
   "description": "Official Prometheus monitoring system.",
-  "version": "1.0.0",
-  "author": "Kiban",
   "category": "monitoring",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
   "icon": "icon.svg",
-  "docker": {
-    "image": "prom/prometheus",
-    "tag": "latest"
-  },
-  "ports": [
+  "accessPoints": [
     {
-      "name": "default",
-      "port": 9090,
-      "protocol": "tcp",
-      "public": true
+      "name": "Web UI",
+      "kind": "web",
+      "service": "prometheus",
+      "port": 9090
     }
-  ],
-  "volumes": [
-    {
-      "name": "data",
-      "mountPath": "/data",
-      "persistent": true
-    }
-  ],
-  "environment": [],
-  "minimumVersion": "0.1.0"
+  ]
 }

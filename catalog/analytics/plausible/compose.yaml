@@ -19,7 +19,7 @@ services:
     volumes:
       - plausible-postgres:/var/lib/postgresql/data
   plausible-clickhouse:
-    image: clickhouse/clickhouse-server:25
+    image: clickhouse/clickhouse-server:25.8
     volumes:
       - plausible-clickhouse:/var/lib/clickhouse
 volumes:

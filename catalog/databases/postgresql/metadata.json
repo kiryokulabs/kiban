@@ -2,45 +2,21 @@
   "id": "postgresql",
   "name": "PostgreSQL",
   "description": "Official PostgreSQL relational database.",
-  "version": "1.0.0",
-  "author": "Kiban",
   "category": "databases",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
   "icon": "icon.svg",
-  "docker": {
-    "image": "postgres",
-    "tag": "17"
-  },
-  "ports": [
+  "accessPoints": [
     {
-      "name": "default",
+      "name": "Database",
+      "kind": "postgres",
+      "service": "postgresql",
       "port": 5432,
-      "protocol": "tcp",
-      "public": true
+      "connection": {
+        "username": "POSTGRES_USER",
+        "password": "POSTGRES_PASSWORD",
+        "database": "POSTGRES_DB"
+      }
     }
-  ],
-  "volumes": [
-    {
-      "name": "data",
-      "mountPath": "/data",
-      "persistent": true
-    }
-  ],
-  "environment": [
-    {
-      "key": "POSTGRES_DB",
-      "required": false,
-      "defaultValue": "${KIBAN_POSTGRES_DB:-kiban}"
-    },
-    {
-      "key": "POSTGRES_USER",
-      "required": false,
-      "defaultValue": "${KIBAN_POSTGRES_USER:-kiban}"
-    },
-    {
-      "key": "POSTGRES_PASSWORD",
-      "required": false,
-      "defaultValue": "${KIBAN_POSTGRES_PASSWORD:-kiban}"
-    }
-  ],
-  "minimumVersion": "0.1.0"
+  ]
 }

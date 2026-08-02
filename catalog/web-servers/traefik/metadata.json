@@ -2,29 +2,16 @@
   "id": "traefik",
   "name": "Traefik",
   "description": "Official Traefik reverse proxy.",
-  "version": "1.0.0",
-  "author": "Kiban",
   "category": "web-servers",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
   "icon": "icon.svg",
-  "docker": {
-    "image": "traefik",
-    "tag": "v3.3"
-  },
-  "ports": [
+  "accessPoints": [
     {
-      "name": "default",
-      "port": 80,
-      "protocol": "tcp",
-      "public": true
+      "name": "Web UI",
+      "kind": "web",
+      "service": "traefik",
+      "port": 80
     }
-  ],
-  "volumes": [
-    {
-      "name": "data",
-      "mountPath": "/data",
-      "persistent": true
-    }
-  ],
-  "environment": [],
-  "minimumVersion": "0.1.0"
+  ]
 }

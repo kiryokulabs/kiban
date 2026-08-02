@@ -2,40 +2,30 @@
   "id": "rabbitmq",
   "name": "RabbitMQ",
   "description": "Official RabbitMQ message broker with management UI.",
-  "version": "1.0.0",
-  "author": "Kiban",
   "category": "messaging",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
   "icon": "icon.svg",
-  "docker": {
-    "image": "rabbitmq",
-    "tag": "4-management"
-  },
-  "ports": [
+  "accessPoints": [
     {
-      "name": "default",
+      "name": "AMQP",
+      "kind": "amqp",
+      "service": "rabbitmq",
       "port": 5672,
-      "protocol": "tcp",
-      "public": true
-    }
-  ],
-  "volumes": [
-    {
-      "name": "data",
-      "mountPath": "/data",
-      "persistent": true
-    }
-  ],
-  "environment": [
-    {
-      "key": "RABBITMQ_DEFAULT_USER",
-      "required": false,
-      "defaultValue": "${KIBAN_RABBITMQ_USER:-kiban}"
+      "connection": {
+        "username": "RABBITMQ_DEFAULT_USER",
+        "password": "RABBITMQ_DEFAULT_PASS"
+      }
     },
     {
-      "key": "RABBITMQ_DEFAULT_PASS",
-      "required": false,
-      "defaultValue": "${KIBAN_RABBITMQ_PASSWORD:-kiban}"
+      "name": "Management UI",
+      "kind": "web",
+      "service": "rabbitmq",
+      "port": 15672,
+      "connection": {
+        "username": "RABBITMQ_DEFAULT_USER",
+        "password": "RABBITMQ_DEFAULT_PASS"
+      }
     }
-  ],
-  "minimumVersion": "0.1.0"
+  ]
 }

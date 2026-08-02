@@ -2,40 +2,16 @@
   "id": "gitea",
   "name": "Gitea",
   "description": "Official Gitea lightweight Git service.",
-  "version": "1.0.0",
-  "author": "Kiban",
   "category": "git",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
   "icon": "icon.svg",
-  "docker": {
-    "image": "gitea/gitea",
-    "tag": "latest"
-  },
-  "ports": [
+  "accessPoints": [
     {
-      "name": "default",
-      "port": 3000,
-      "protocol": "tcp",
-      "public": true
+      "name": "Web UI",
+      "kind": "web",
+      "service": "gitea",
+      "port": 3000
     }
-  ],
-  "volumes": [
-    {
-      "name": "data",
-      "mountPath": "/data",
-      "persistent": true
-    }
-  ],
-  "environment": [
-    {
-      "key": "USER_UID",
-      "required": false,
-      "defaultValue": "1000"
-    },
-    {
-      "key": "USER_GID",
-      "required": false,
-      "defaultValue": "1000"
-    }
-  ],
-  "minimumVersion": "0.1.0"
+  ]
 }

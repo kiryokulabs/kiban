@@ -2,29 +2,16 @@
   "id": "tempo",
   "name": "Tempo",
   "description": "Official Grafana Tempo distributed tracing backend.",
-  "version": "1.0.0",
-  "author": "Kiban",
   "category": "monitoring",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
   "icon": "icon.svg",
-  "docker": {
-    "image": "grafana/tempo",
-    "tag": "2"
-  },
-  "ports": [
+  "accessPoints": [
     {
-      "name": "default",
-      "port": 3200,
-      "protocol": "tcp",
-      "public": true
+      "name": "Web UI",
+      "kind": "web",
+      "service": "tempo",
+      "port": 3200
     }
-  ],
-  "volumes": [
-    {
-      "name": "data",
-      "mountPath": "/data",
-      "persistent": true
-    }
-  ],
-  "environment": [],
-  "minimumVersion": "0.1.0"
+  ]
 }

@@ -2,29 +2,16 @@
   "id": "nats",
   "name": "NATS",
   "description": "Official NATS messaging server.",
-  "version": "1.0.0",
-  "author": "Kiban",
   "category": "messaging",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
   "icon": "icon.svg",
-  "docker": {
-    "image": "nats",
-    "tag": "2"
-  },
-  "ports": [
+  "accessPoints": [
     {
-      "name": "default",
-      "port": 4222,
-      "protocol": "tcp",
-      "public": true
+      "name": "NATS",
+      "kind": "nats",
+      "service": "nats",
+      "port": 4222
     }
-  ],
-  "volumes": [
-    {
-      "name": "data",
-      "mountPath": "/data",
-      "persistent": true
-    }
-  ],
-  "environment": [],
-  "minimumVersion": "0.1.0"
+  ]
 }

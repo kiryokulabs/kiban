@@ -2,40 +2,20 @@
   "id": "minio",
   "name": "MinIO",
   "description": "Official MinIO object storage.",
-  "version": "1.0.0",
-  "author": "Kiban",
   "category": "storage",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
   "icon": "icon.svg",
-  "docker": {
-    "image": "minio/minio",
-    "tag": "latest"
-  },
-  "ports": [
+  "accessPoints": [
     {
-      "name": "default",
+      "name": "Web UI",
+      "kind": "web",
+      "service": "minio",
       "port": 9000,
-      "protocol": "tcp",
-      "public": true
+      "connection": {
+        "username": "MINIO_ROOT_USER",
+        "password": "MINIO_ROOT_PASSWORD"
+      }
     }
-  ],
-  "volumes": [
-    {
-      "name": "data",
-      "mountPath": "/data",
-      "persistent": true
-    }
-  ],
-  "environment": [
-    {
-      "key": "MINIO_ROOT_USER",
-      "required": false,
-      "defaultValue": "${KIBAN_MINIO_ROOT_USER:-kiban}"
-    },
-    {
-      "key": "MINIO_ROOT_PASSWORD",
-      "required": false,
-      "defaultValue": "${KIBAN_MINIO_ROOT_PASSWORD:-kiban12345}"
-    }
-  ],
-  "minimumVersion": "0.1.0"
+  ]
 }

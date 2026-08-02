@@ -2,45 +2,16 @@
   "id": "n8n",
   "name": "n8n",
   "description": "Official n8n workflow automation platform.",
-  "version": "1.0.0",
-  "author": "Kiban",
   "category": "automation",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
   "icon": "icon.svg",
-  "docker": {
-    "image": "n8nio/n8n",
-    "tag": "latest"
-  },
-  "ports": [
+  "accessPoints": [
     {
-      "name": "default",
-      "port": 5678,
-      "protocol": "tcp",
-      "public": true
+      "name": "Web UI",
+      "kind": "web",
+      "service": "n8n",
+      "port": 5678
     }
-  ],
-  "volumes": [
-    {
-      "name": "data",
-      "mountPath": "/data",
-      "persistent": true
-    }
-  ],
-  "environment": [
-    {
-      "key": "N8N_HOST",
-      "required": false,
-      "defaultValue": "${KIBAN_N8N_HOST:-localhost}"
-    },
-    {
-      "key": "N8N_PORT",
-      "required": false,
-      "defaultValue": "5678"
-    },
-    {
-      "key": "N8N_PROTOCOL",
-      "required": false,
-      "defaultValue": "http"
-    }
-  ],
-  "minimumVersion": "0.1.0"
+  ]
 }

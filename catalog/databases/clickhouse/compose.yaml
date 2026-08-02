@@ -1,6 +1,6 @@
 services:
   clickhouse:
-    image: clickhouse/clickhouse-server:25
+    image: clickhouse/clickhouse-server:25.8
     restart: unless-stopped
     environment:
       CLICKHOUSE_DB: ${KIBAN_CLICKHOUSE_DB:-kiban}

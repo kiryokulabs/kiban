@@ -2,40 +2,20 @@
   "id": "keycloak",
   "name": "Keycloak",
   "description": "Official Keycloak identity and access management server.",
-  "version": "1.0.0",
-  "author": "Kiban",
   "category": "authentication",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
   "icon": "icon.svg",
-  "docker": {
-    "image": "keycloak/keycloak",
-    "tag": "latest"
-  },
-  "ports": [
+  "accessPoints": [
     {
-      "name": "default",
+      "name": "Web UI",
+      "kind": "web",
+      "service": "keycloak",
       "port": 8080,
-      "protocol": "tcp",
-      "public": true
+      "connection": {
+        "username": "KC_BOOTSTRAP_ADMIN_USERNAME",
+        "password": "KC_BOOTSTRAP_ADMIN_PASSWORD"
+      }
     }
-  ],
-  "volumes": [
-    {
-      "name": "data",
-      "mountPath": "/data",
-      "persistent": true
-    }
-  ],
-  "environment": [
-    {
-      "key": "KC_BOOTSTRAP_ADMIN_USERNAME",
-      "required": false,
-      "defaultValue": "${KIBAN_KEYCLOAK_ADMIN:-admin}"
-    },
-    {
-      "key": "KC_BOOTSTRAP_ADMIN_PASSWORD",
-      "required": false,
-      "defaultValue": "${KIBAN_KEYCLOAK_PASSWORD:-kiban}"
-    }
-  ],
-  "minimumVersion": "0.1.0"
+  ]
 }

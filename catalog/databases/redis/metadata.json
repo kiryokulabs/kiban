@@ -2,29 +2,16 @@
   "id": "redis",
   "name": "Redis",
   "description": "Official Redis in-memory data store.",
-  "version": "1.0.0",
-  "author": "Kiban",
   "category": "databases",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
   "icon": "icon.svg",
-  "docker": {
-    "image": "redis",
-    "tag": "8"
-  },
-  "ports": [
+  "accessPoints": [
     {
-      "name": "default",
-      "port": 6379,
-      "protocol": "tcp",
-      "public": true
+      "name": "Database",
+      "kind": "redis",
+      "service": "redis",
+      "port": 6379
     }
-  ],
-  "volumes": [
-    {
-      "name": "data",
-      "mountPath": "/data",
-      "persistent": true
-    }
-  ],
-  "environment": [],
-  "minimumVersion": "0.1.0"
+  ]
 }

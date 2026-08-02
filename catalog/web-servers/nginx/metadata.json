@@ -2,29 +2,16 @@
   "id": "nginx",
   "name": "Nginx",
   "description": "Official Nginx web server.",
-  "version": "1.0.0",
-  "author": "Kiban",
   "category": "web-servers",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
   "icon": "icon.svg",
-  "docker": {
-    "image": "nginx",
-    "tag": "alpine"
-  },
-  "ports": [
+  "accessPoints": [
     {
-      "name": "default",
-      "port": 80,
-      "protocol": "tcp",
-      "public": true
+      "name": "Web UI",
+      "kind": "web",
+      "service": "nginx",
+      "port": 80
     }
-  ],
-  "volumes": [
-    {
-      "name": "data",
-      "mountPath": "/data",
-      "persistent": true
-    }
-  ],
-  "environment": [],
-  "minimumVersion": "0.1.0"
+  ]
 }

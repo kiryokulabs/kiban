@@ -2,40 +2,16 @@
   "id": "plausible",
   "name": "Plausible",
   "description": "Official Plausible Analytics self-hosted service.",
-  "version": "1.0.0",
-  "author": "Kiban",
   "category": "analytics",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
   "icon": "icon.svg",
-  "docker": {
-    "image": "plausible/analytics",
-    "tag": "latest"
-  },
-  "ports": [
+  "accessPoints": [
     {
-      "name": "default",
-      "port": 8000,
-      "protocol": "tcp",
-      "public": true
+      "name": "Web UI",
+      "kind": "web",
+      "service": "plausible",
+      "port": 8000
     }
-  ],
-  "volumes": [
-    {
-      "name": "data",
-      "mountPath": "/data",
-      "persistent": true
-    }
-  ],
-  "environment": [
-    {
-      "key": "BASE_URL",
-      "required": false,
-      "defaultValue": "${KIBAN_PLAUSIBLE_BASE_URL:-http://localhost:8000}"
-    },
-    {
-      "key": "SECRET_KEY_BASE",
-      "required": false,
-      "defaultValue": "${KIBAN_PLAUSIBLE_SECRET_KEY_BASE:-change-me-change-me-change-me}"
-    }
-  ],
-  "minimumVersion": "0.1.0"
+  ]
 }

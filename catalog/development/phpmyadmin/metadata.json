@@ -2,35 +2,16 @@
   "id": "phpmyadmin",
   "name": "phpMyAdmin",
   "description": "Official phpMyAdmin MySQL and MariaDB administration UI.",
-  "version": "1.0.0",
-  "author": "Kiban",
   "category": "development",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
   "icon": "icon.svg",
-  "docker": {
-    "image": "phpmyadmin",
-    "tag": "latest"
-  },
-  "ports": [
+  "accessPoints": [
     {
-      "name": "default",
-      "port": 80,
-      "protocol": "tcp",
-      "public": true
+      "name": "Web UI",
+      "kind": "web",
+      "service": "phpmyadmin",
+      "port": 80
     }
-  ],
-  "volumes": [
-    {
-      "name": "data",
-      "mountPath": "/data",
-      "persistent": true
-    }
-  ],
-  "environment": [
-    {
-      "key": "PMA_ARBITRARY",
-      "required": false,
-      "defaultValue": "1"
-    }
-  ],
-  "minimumVersion": "0.1.0"
+  ]
 }

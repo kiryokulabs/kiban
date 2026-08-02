@@ -2,35 +2,16 @@
   "id": "meilisearch",
   "name": "Meilisearch",
   "description": "Official Meilisearch search engine.",
-  "version": "1.0.0",
-  "author": "Kiban",
   "category": "search",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
   "icon": "icon.svg",
-  "docker": {
-    "image": "getmeili/meilisearch",
-    "tag": "v1.14"
-  },
-  "ports": [
+  "accessPoints": [
     {
-      "name": "default",
-      "port": 7700,
-      "protocol": "tcp",
-      "public": true
+      "name": "Web UI",
+      "kind": "web",
+      "service": "meilisearch",
+      "port": 7700
     }
-  ],
-  "volumes": [
-    {
-      "name": "data",
-      "mountPath": "/data",
-      "persistent": true
-    }
-  ],
-  "environment": [
-    {
-      "key": "MEILI_MASTER_KEY",
-      "required": false,
-      "defaultValue": "${KIBAN_MEILI_MASTER_KEY:-kiban_master_key}"
-    }
-  ],
-  "minimumVersion": "0.1.0"
+  ]
 }

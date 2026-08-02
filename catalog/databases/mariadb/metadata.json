@@ -2,50 +2,21 @@
   "id": "mariadb",
   "name": "MariaDB",
   "description": "Official MariaDB relational database.",
-  "version": "1.0.0",
-  "author": "Kiban",
   "category": "databases",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
   "icon": "icon.svg",
-  "docker": {
-    "image": "mariadb",
-    "tag": "11"
-  },
-  "ports": [
+  "accessPoints": [
     {
-      "name": "default",
+      "name": "Database",
+      "kind": "mysql",
+      "service": "mariadb",
       "port": 3306,
-      "protocol": "tcp",
-      "public": true
+      "connection": {
+        "username": "MARIADB_USER",
+        "password": "MARIADB_PASSWORD",
+        "database": "MARIADB_DATABASE"
+      }
     }
-  ],
-  "volumes": [
-    {
-      "name": "data",
-      "mountPath": "/data",
-      "persistent": true
-    }
-  ],
-  "environment": [
-    {
-      "key": "MARIADB_DATABASE",
-      "required": false,
-      "defaultValue": "${KIBAN_MARIADB_DATABASE:-kiban}"
-    },
-    {
-      "key": "MARIADB_USER",
-      "required": false,
-      "defaultValue": "${KIBAN_MARIADB_USER:-kiban}"
-    },
-    {
-      "key": "MARIADB_PASSWORD",
-      "required": false,
-      "defaultValue": "${KIBAN_MARIADB_PASSWORD:-kiban}"
-    },
-    {
-      "key": "MARIADB_ROOT_PASSWORD",
-      "required": false,
-      "defaultValue": "${KIBAN_MARIADB_ROOT_PASSWORD:-kiban}"
-    }
-  ],
-  "minimumVersion": "0.1.0"
+  ]
 }

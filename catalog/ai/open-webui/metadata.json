@@ -2,35 +2,16 @@
   "id": "open-webui",
   "name": "Open WebUI",
   "description": "Official Open WebUI interface for local AI workflows.",
-  "version": "1.0.0",
-  "author": "Kiban",
   "category": "ai",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
   "icon": "icon.svg",
-  "docker": {
-    "image": "ghcr.io/open-webui/open-webui",
-    "tag": "main"
-  },
-  "ports": [
+  "accessPoints": [
     {
-      "name": "default",
-      "port": 8080,
-      "protocol": "tcp",
-      "public": true
+      "name": "Web UI",
+      "kind": "web",
+      "service": "open-webui",
+      "port": 8080
     }
-  ],
-  "volumes": [
-    {
-      "name": "data",
-      "mountPath": "/data",
-      "persistent": true
-    }
-  ],
-  "environment": [
-    {
-      "key": "OLLAMA_BASE_URL",
-      "required": false,
-      "defaultValue": "${KIBAN_OPENWEBUI_OLLAMA_BASE_URL:-http://host.docker.internal:11434}"
-    }
-  ],
-  "minimumVersion": "0.1.0"
+  ]
 }
