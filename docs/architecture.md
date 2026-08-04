@@ -152,18 +152,66 @@ Service Definitions are immutable.
 
 # Runtime
 
-Kiban does not depend directly on Docker.
+Kiban keeps runtime execution behind the `RuntimeProvider` interface.
 
-Docker is the first Runtime Provider.
+The first production runtime backend is **Docker Compose**. Kiban may execute Docker Compose internally, but the user never works with Compose concepts directly. The user still works only with Projects, Environments and Services.
+
+Current flow for catalog services:
+
+```
+ServiceDefinition
+  compose.yaml
+  schema.json
+  metadata.json
+        ↓
+RuntimeProvider.install()
+        ↓
+~/.kiban/runtime/services/<environmentId-serviceId>/
+  compose.yaml
+  .env
+        ↓
+docker compose up -d
+```
+
+Docker Compose is an infrastructure detail. Controllers, core managers and UI components must not execute shell commands or know Compose lifecycle details. Only the infrastructure runtime provider may run Compose commands.
+
+Runtime workspaces are ephemeral generated state. When an installed service is deleted, Kiban runs `docker compose down -v` and then removes that service workspace from `~/.kiban/runtime/services/`. When configuration is saved from the UI, Kiban recreates runtime resources and rewrites the generated `.env` file from the current saved configuration.
+
+## Default Reverse Proxy
+
+Kiban owns HTTP routing.
+
+On API startup the Docker Compose runtime provider attempts to prepare one shared internal reverse proxy for the whole Kiban installation:
+
+- shared network: `kiban`
+- reverse proxy project: `kiban-traefik`
+- reverse proxy workspace: `~/.kiban/runtime/traefik/`
+- public ports: `80` and `443`
+
+Catalog `compose.yaml` files remain untouched. During installation Kiban writes a generated runtime `compose.yaml` into the service workspace. For web access points, that generated file:
+
+- connects the target service to the shared `kiban` network
+- removes the matching host-published HTTP port
+- adds `expose` for the internal service port
+- injects Traefik labels with the generated host
+
+Non-web/TCP access points, such as databases and caches, may still publish host ports when the catalog definition intentionally exposes direct local access.
+
+Public service URLs are generated only by the backend `DomainService`. Callers must not concatenate hostnames manually. The first local format is:
+
+```
+{service}.{project}.localhost
+```
+
+Changing base domains is a configuration concern (`KIBAN_DOMAIN_DEVELOPMENT`, `KIBAN_DOMAIN_STAGING`, `KIBAN_DOMAIN_PRODUCTION`, `KIBAN_DOMAIN_DEFAULT`, `KIBAN_DOMAIN_PROTOCOL`) and must not require changing catalog definitions or frontend code.
 
 Future runtimes may include:
 
-- Docker
 - Podman
 - Kubernetes
 - Nomad
 
-Application code must never reference Docker directly.
+Application code must never reference Docker or Docker Compose directly.
 
 ---
 
@@ -218,6 +266,40 @@ Business logic must never depend on infrastructure.
 # Runtime Providers
 
 Every runtime implements the same interface.
+
+The Docker Compose provider maps generic service lifecycle operations to Compose commands:
+
+```
+install   -> docker compose up -d
+start     -> docker compose start
+stop      -> docker compose stop
+restart   -> docker compose restart
+delete    -> docker compose down -v
+logs      -> docker compose logs --no-color
+status    -> docker compose ps --format json
+```
+
+Shell execution is allowed only inside this infrastructure provider and must use argument arrays (`spawn`) rather than interpolated shell strings.
+
+Before starting a service, the provider resolves catalog host port placeholders such as:
+
+```
+${KIBAN_GITEA_PORT:-3000}:3000
+```
+
+into concrete values in the generated `.env` file. If the preferred host port is already occupied, Kiban assigns the next available host port automatically. This prevents catalog services from failing when common ports such as `3000`, `80`, `8080`, `5432` or `6379` are already in use.
+
+If Docker still reports a port collision during `compose up`, the provider treats it as runtime feedback, rewrites only the affected host-port variable in `.env`, and retries the install. This retry logic is generic and applies to every catalog service.
+
+The provider must accept both Docker Compose `ps --format json` output shapes: a single JSON array and JSON Lines output where each container is emitted as one JSON object per line.
+
+To avoid exhausting Docker's predefined address pools, Kiban does not allow Compose to create one isolated default network per installed service. The provider creates or reuses one external runtime network per environment:
+
+```
+kiban-env-<environmentId>
+```
+
+The generated runtime `compose.yaml` attaches every service to that environment network through Compose's `default` network. This keeps environment isolation while avoiding unbounded Docker network creation.
 
 ```
 RuntimeProvider

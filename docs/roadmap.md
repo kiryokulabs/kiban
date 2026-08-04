@@ -32,8 +32,10 @@ Infrastructure Foundation
 - Service Catalog
 - Installed Services
 - Runtime abstraction
-- Docker Runtime Provider
+- Docker Compose Runtime Provider
 - Service lifecycle
+- Default Traefik reverse proxy
+- Automatic local URLs for HTTP services
 
 Supported services:
 
@@ -107,18 +109,21 @@ Backend Platforms
 
 # Phase 3
 
-Docker Integration
+Docker Compose Runtime Hardening
 
 Features
 
-- Docker Engine API
-- Container lifecycle
-- Networks
-- Volumes
-- Image pulling
-- Health checks
-- Resource limits
-- Restart policies
+- Compose workspace management
+- Compose project naming
+- Container lifecycle through RuntimeProvider
+- Logs through Compose
+- Status through Compose ps
+- Volumes through Compose down/up semantics
+- Health/status mapping
+- Safer .env generation
+- Automatic host port assignment when preferred catalog ports are unavailable
+- Shared Traefik network for proxied HTTP services
+- Generated Traefik labels without modifying catalog compose templates
 
 ---
 
@@ -130,9 +135,8 @@ Features
 
 - Variables
 - Secrets
-- Domains
-- HTTPS
-- Reverse Proxy
+- Custom domains
+- Managed HTTPS
 - Logs
 - Backups
 - Monitoring
