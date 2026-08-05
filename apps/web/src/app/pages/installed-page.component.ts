@@ -1,13 +1,16 @@
 import { SlicePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import type { InstalledService } from '../installed-services/installed-services.models';
 import { InstalledServicesService } from '../installed-services/installed-services.service';
+import { ServiceDetailsPresenter } from '../service-details/service-details.presenter';
+import { ModalComponent } from '../shared/modal.component';
 import { IconsComponent } from '../shared/icons.component';
 
 @Component({
   selector: 'kiban-installed-page',
   standalone: true,
-  imports: [SlicePipe, IconsComponent],
+  imports: [SlicePipe, ModalComponent, IconsComponent, RouterLink],
   template: `
     <div class="space-y-6">
       <!-- Header -->
@@ -63,19 +66,46 @@ import { IconsComponent } from '../shared/icons.component';
                   {{ service.status }}
                 </span>
               </div>
-              <div class="mt-4 space-y-1.5 text-xs c-subtle">
-                <div class="flex items-center justify-between">
-                  <span>Service ID</span>
-                  <span class="kb-text font-mono">{{ service.serviceId }}</span>
+
+              <!-- Access links / Details -->
+              @if (detailsPresenter.hasWebAccess(detailsPresenter.accessPointsFor(service))) {
+                <div class="mt-3 flex items-center justify-between gap-3">
+                  @if (firstWebUrl(service); as url) {
+                    <a class="min-w-0 truncate rounded-full border kb-border px-2 py-0.5 font-mono text-[11px] c-muted hover:c-text transition-colors" [href]="url" target="_blank">
+                      {{ url }}
+                    </a>
+                  }
+                  <a class="btn-ghost btn shrink-0 gap-1 text-[11px] px-2 py-0.5" [routerLink]="['/services', service.id]">
+                    <kiban-icon name="info" [size]="11" />
+                    Manage
+                  </a>
                 </div>
-                <div class="flex items-center justify-between">
-                  <span>Environment</span>
-                  <span class="kb-text">{{ service.environmentId }}</span>
+              } @else {
+                <div class="mt-3 flex justify-end">
+                  <a class="btn-ghost btn shrink-0 gap-1 text-[11px] px-2 py-0.5" [routerLink]="['/services', service.id]">
+                    <kiban-icon name="info" [size]="11" />
+                    Manage
+                  </a>
+                </div>
+              }
+
+              <div class="mt-3 space-y-1.5 text-xs c-subtle">
+                <div class="flex items-center justify-between gap-3">
+                  <span class="flex items-center gap-1"><kiban-icon name="box" [size]="10" /> Service ID</span>
+                  <span class="kb-text font-mono truncate">{{ service.serviceId }}</span>
+                </div>
+                <div class="flex items-center justify-between gap-3">
+                  <span class="flex items-center gap-1"><kiban-icon name="folder" [size]="10" /> Location</span>
+                  <span class="kb-text truncate">{{ locationLabel(service) }}</span>
+                </div>
+                <div class="flex items-center justify-between gap-3">
+                  <span class="flex items-center gap-1"><kiban-icon name="grid" [size]="10" /> Environment</span>
+                  <span class="kb-text truncate">{{ service.environmentId }}</span>
                 </div>
                 @if (containerId(service)) {
-                  <div class="flex items-center justify-between">
-                    <span>Container</span>
-                    <span class="kb-text font-mono text-[11px]">{{ containerId(service) }}</span>
+                  <div class="flex items-center justify-between gap-3">
+                    <span class="flex items-center gap-1"><kiban-icon name="server" [size]="10" /> Container</span>
+                    <span class="kb-text font-mono text-[11px] truncate">{{ containerId(service) }}</span>
                   </div>
                 }
               </div>
@@ -84,13 +114,127 @@ import { IconsComponent } from '../shared/icons.component';
         </div>
       }
     </div>
+
+    <!-- Service details modal -->
+    @if (serviceForDetails(); as service) {
+      <kiban-modal title="{{ service.name }}" (close)="closeDetails()">
+        <div class="grid gap-4 sm:grid-cols-2">
+          <!-- Service info -->
+          <div class="col-span-full space-y-1.5 pb-3 border-b kb-border mb-2">
+            <div class="flex items-center gap-2 text-sm">
+              <span class="c-muted">Status</span>
+              <span class="badge text-[10px] px-1.5 py-0.5 leading-none"
+                [class.badge-success]="service.status === 'running'"
+                [class.badge-warning]="service.status === 'installing'"
+                [class.badge-danger]="service.status === 'failed' || service.status === 'stopped' || service.status === 'removing'">{{ service.status }}</span>
+            </div>
+            <div class="flex items-center gap-2 text-sm">
+              <span class="c-muted">Runtime</span>
+              <span class="kb-text">{{ detailsPresenter.serviceLabel(service.runtime) }}</span>
+            </div>
+          </div>
+
+          <!-- Access points -->
+          @for (ap of detailsPresenter.accessPointsFor(service); track ap.kind + '-' + ap.port; let i = $index) {
+            <div class="col-span-full">
+              <h3 class="text-xs font-medium c-muted mb-2">{{ ap.name }}</h3>
+              <div class="grid gap-2 sm:grid-cols-2">
+                <!-- Host -->
+                <div class="flex items-center justify-between gap-2 rounded-lg border kb-border px-3 py-2">
+                  <div class="min-w-0">
+                    <span class="block text-[10px] c-subtle">Host</span>
+                    <span class="block text-xs font-medium kb-text truncate">{{ ap.host }}</span>
+                  </div>
+                  <button type="button" class="btn-icon shrink-0" (click)="copyToClipboard(ap.host)" title="Copy host">
+                    <kiban-icon name="copy" [size]="12" />
+                  </button>
+                </div>
+
+                <!-- Port -->
+                <div class="flex items-center justify-between gap-2 rounded-lg border kb-border px-3 py-2">
+                  <div class="min-w-0">
+                    <span class="block text-[10px] c-subtle">Port</span>
+                    <span class="block text-xs font-medium kb-text truncate">{{ ap.hostPort ?? ap.port }}</span>
+                  </div>
+                  <button type="button" class="btn-icon shrink-0" (click)="copyToClipboard('' + (ap.hostPort ?? ap.port))" title="Copy port">
+                    <kiban-icon name="copy" [size]="12" />
+                  </button>
+                </div>
+
+                <!-- Username -->
+                @if (ap.username) {
+                  <div class="flex items-center justify-between gap-2 rounded-lg border kb-border px-3 py-2">
+                    <div class="min-w-0">
+                      <span class="block text-[10px] c-subtle">Username</span>
+                      <span class="block text-xs font-medium kb-text truncate">{{ ap.username }}</span>
+                    </div>
+                    <button type="button" class="btn-icon shrink-0" (click)="copyToClipboard(ap.username!)" title="Copy username">
+                      <kiban-icon name="copy" [size]="12" />
+                    </button>
+                  </div>
+                }
+
+                <!-- Password -->
+                @if (ap.password) {
+                  <div class="flex items-center justify-between gap-2 rounded-lg border kb-border px-3 py-2">
+                    <div class="min-w-0">
+                      <span class="block text-[10px] c-subtle">Password</span>
+                      <span class="block text-xs font-medium kb-text truncate font-mono">{{ visiblePasswords().has(i) ? ap.password : '••••••••' }}</span>
+                    </div>
+                    <div class="flex items-center gap-1 shrink-0">
+                      <button type="button" class="btn-icon" (click)="togglePassword(i)" [title]="visiblePasswords().has(i) ? 'Hide password' : 'Show password'">
+                        <kiban-icon [name]="visiblePasswords().has(i) ? 'eye-off' : 'eye'" [size]="12" />
+                      </button>
+                      <button type="button" class="btn-icon" (click)="copyToClipboard(ap.password!)" title="Copy password">
+                        <kiban-icon name="copy" [size]="12" />
+                      </button>
+                    </div>
+                  </div>
+                }
+
+                <!-- Database -->
+                @if (ap.database) {
+                  <div class="flex items-center justify-between gap-2 rounded-lg border kb-border px-3 py-2">
+                    <div class="min-w-0">
+                      <span class="block text-[10px] c-subtle">Database</span>
+                      <span class="block text-xs font-medium kb-text truncate">{{ ap.database }}</span>
+                    </div>
+                    <button type="button" class="btn-icon shrink-0" (click)="copyToClipboard(ap.database!)" title="Copy database">
+                      <kiban-icon name="copy" [size]="12" />
+                    </button>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Connection string -->
+            @if (ap.connectionString) {
+              <div class="col-span-full mt-1">
+                <div class="flex items-center justify-between gap-2 rounded-lg border kb-border px-3 py-2">
+                  <div class="min-w-0 flex-1">
+                    <span class="block text-[10px] c-subtle">Connection String</span>
+                    <span class="block text-xs font-medium kb-text truncate font-mono">{{ visiblePasswords().has(i) ? ap.connectionString : detailsPresenter.obfuscatedConnectionString(ap) }}</span>
+                  </div>
+                  <button type="button" class="btn-icon shrink-0" (click)="copyToClipboard(ap.connectionString!)" title="Copy connection string">
+                    <kiban-icon name="copy" [size]="12" />
+                  </button>
+                </div>
+              </div>
+            }
+          }
+        </div>
+      </kiban-modal>
+    }
   `
 })
 export class InstalledPageComponent {
   private readonly installedServices = inject(InstalledServicesService);
+  protected readonly detailsPresenter = new ServiceDetailsPresenter();
   protected readonly services = signal<readonly InstalledService[]>([]);
   protected readonly loading = signal(true);
   protected readonly message = signal<string | null>(null);
+  protected readonly serviceForDetails = signal<InstalledService | null>(null);
+  protected readonly visiblePasswords = signal<ReadonlySet<number>>(new Set());
 
   public constructor() { this.loadServices(); }
 
@@ -103,4 +247,17 @@ export class InstalledPageComponent {
     const value = service.runtime?.['containerId'];
     return typeof value === 'string' ? value : null;
   }
+
+  protected firstWebUrl(service: InstalledService): string | null {
+    return this.detailsPresenter.webUrls(this.detailsPresenter.accessPointsFor(service))[0] ?? null;
+  }
+
+  protected locationLabel(service: InstalledService): string {
+    return service.location ? `${service.location.project.name} / ${service.location.environment.name}` : service.environmentId;
+  }
+
+  protected openDetails(service: InstalledService): void { this.serviceForDetails.set(service); this.visiblePasswords.set(new Set()); }
+  protected closeDetails(): void { this.serviceForDetails.set(null); }
+  protected copyToClipboard(value: string): void { if (typeof navigator !== 'undefined' && navigator.clipboard) navigator.clipboard.writeText(value).catch(() => {}); }
+  protected togglePassword(index: number): void { const current = this.visiblePasswords(); const next = new Set(current); if (next.has(index)) { next.delete(index); } else { next.add(index); } this.visiblePasswords.set(next); }
 }
