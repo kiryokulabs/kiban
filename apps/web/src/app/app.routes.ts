@@ -2,6 +2,7 @@ import type { Routes } from '@angular/router';
 import { CatalogPageComponent } from './pages/catalog-page.component';
 import { HomePageComponent } from './pages/home-page.component';
 import { InstalledPageComponent } from './pages/installed-page.component';
+import { InstalledServiceDetailsPageComponent } from './pages/installed-service-details-page.component';
 import { LogsPageComponent } from './pages/logs-page.component';
 import { ProfilePageComponent } from './pages/profile-page.component';
 import { ProjectDetailsPageComponent } from './pages/project-details-page.component';
@@ -16,6 +17,7 @@ export const routes: Routes = [
   { path: 'profile', component: ProfilePageComponent, title: 'Profile · Kiban' },
   { path: 'catalog', component: CatalogPageComponent, title: 'Catalog · Kiban' },
   { path: 'installed', component: InstalledPageComponent, title: 'Installed · Kiban' },
+  { path: 'services/:id', component: InstalledServiceDetailsPageComponent, title: 'Service · Kiban' },
   { path: 'users', component: UsersPageComponent, title: 'Users · Kiban' },
   { path: 'logs', component: LogsPageComponent, title: 'Logs · Kiban' },
   { path: 'settings', component: SettingsPageComponent, title: 'Settings · Kiban' }
