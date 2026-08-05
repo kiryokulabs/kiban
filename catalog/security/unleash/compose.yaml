@@ -1,0 +1,42 @@
+services:
+  unleash-db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: unleash
+      POSTGRES_USER: unleash
+      POSTGRES_PASSWORD: ${KIBAN_UNLEASH_DB_PASSWORD:-unleash}
+    volumes:
+      - unleash_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U unleash"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  unleash:
+    image: unleashorg/unleash-server:latest
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_UNLEASH_PORT:-4242}:4242"
+    depends_on:
+      unleash-db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://unleash:${KIBAN_UNLEASH_DB_PASSWORD:-unleash}@unleash-db/unleash
+      DATABASE_SSL: "false"
+      UNLEASH_URL: http://localhost:${KIBAN_UNLEASH_PORT:-4242}
+      UNLEASH_APP_NAME: Unleash
+      UNLEASH_ADMIN_EMAIL: admin@unleash.io
+      UNLEASH_ADMIN_PASSWORD: ${KIBAN_UNLEASH_DB_PASSWORD:-unleash}
+      UNLEASH_DEFAULT_OWNER_NAME: admin
+      UNLEASH_DEFAULT_OWNER_EMAIL: admin@unleash.io
+      KIBAN_UNLEASH_PORT: ${KIBAN_UNLEASH_PORT:-4242}
+      KIBAN_UNLEASH_DB_PASSWORD: ${KIBAN_UNLEASH_DB_PASSWORD:-unleash}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4242/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+volumes:
+  unleash_db_data:

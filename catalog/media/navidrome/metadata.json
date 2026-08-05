@@ -1,0 +1,17 @@
+{
+  "id": "navidrome",
+  "name": "Navidrome",
+  "description": "Modern music server and streamer compatible with Subsonic/Airsonic APIs.",
+  "category": "media",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "navidrome",
+      "port": 4533
+    }
+  ]
+}

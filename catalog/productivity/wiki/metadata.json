@@ -1,0 +1,17 @@
+{
+  "id": "wiki",
+  "name": "Wiki.js",
+  "description": "Modern, lightweight and powerful wiki app built with Node.js, Git under the hood, and Markdown support.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "wiki",
+      "port": 3000
+    }
+  ]
+}

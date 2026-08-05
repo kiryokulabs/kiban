@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_WIKI_PORT": {
+      "type": "string",
+      "default": "${KIBAN_WIKI_PORT:-3000}"
+    },
+    "KIBAN_WIKI_DB_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_WIKI_DB_PASSWORD:-wiki}"
+    }
+  }
+}

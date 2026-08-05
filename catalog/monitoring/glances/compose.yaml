@@ -1,0 +1,9 @@
+services:
+  glances:
+    image: nicolargo/glances:latest
+    restart: unless-stopped
+    environment:
+      GLANCES_OPT: "-w"
+    ports:
+      - "${KIBAN_GLANCES_PORT:-61208}:61208"
+volumes: {}

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_DRAGONFLY_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_DRAGONFLY_PASSWORD:-kiban}"
+    }
+  }
+}

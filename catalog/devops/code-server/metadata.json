@@ -1,0 +1,17 @@
+{
+  "id": "code-server",
+  "name": "code-server",
+  "description": "VS Code in the browser. Accessible, configurable, and extensible.",
+  "category": "devops",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "code-server",
+      "port": 8080
+    }
+  ]
+}

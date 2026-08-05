@@ -1,0 +1,17 @@
+{
+  "id": "memcached",
+  "name": "Memcached",
+  "description": "High-performance, distributed memory object caching system for speeding up dynamic web applications.",
+  "category": "databases",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Memcached",
+      "kind": "database",
+      "service": "memcached",
+      "port": 11211
+    }
+  ]
+}

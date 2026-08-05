@@ -1,0 +1,17 @@
+{
+  "id": "vert",
+  "name": "Vert",
+  "description": "Open-source file format converter — PDF, images, videos, and more.",
+  "category": "misc",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "vert",
+      "port": 3000
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "id": "searxng",
+  "name": "SearXNG",
+  "description": "Privacy-respecting, hackable metasearch engine that aggregates results from multiple search services.",
+  "category": "ai",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "searxng",
+      "port": 8080
+    }
+  ]
+}

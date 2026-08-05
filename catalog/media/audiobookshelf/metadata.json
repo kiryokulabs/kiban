@@ -1,0 +1,17 @@
+{
+  "id": "audiobookshelf",
+  "name": "Audiobookshelf",
+  "description": "Self-hosted audiobook and podcast server with native apps for iOS and Android.",
+  "category": "media",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "audiobookshelf",
+      "port": 80
+    }
+  ]
+}

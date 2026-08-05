@@ -1,0 +1,88 @@
+services:
+  appwrite-mariadb:
+    image: mariadb:10.11
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${KIBAN_APPWRITE_DB_ROOT_PASS:-rootsecretpassword}
+      MYSQL_DATABASE: appwrite
+      MYSQL_USER: appwrite
+      MYSQL_PASSWORD: ${KIBAN_APPWRITE_DB_PASS:-appwritepassword}
+    volumes:
+      - appwrite_mariadb_data:/var/lib/mysql
+    command: --innodb-flush-method=fsync --innodb-use-native-aio=0
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+  appwrite-redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - appwrite_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  appwrite:
+    image: appwrite/appwrite:1.9.6
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      appwrite-mariadb:
+        condition: service_healthy
+      appwrite-redis:
+        condition: service_healthy
+    volumes:
+      - appwrite_uploads:/storage/uploads
+      - appwrite_cache:/storage/cache
+      - appwrite_config:/storage/config
+      - appwrite_certificates:/storage/certificates
+      - appwrite_functions:/storage/functions
+      - appwrite_builds:/storage/builds
+      - appwrite_sites:/storage/sites
+      - appwrite_imports:/storage/imports
+    environment:
+      _APP_ENV: production
+      _APP_DOMAIN: ${KIBAN_APPWRITE_DOMAIN:-localhost}
+      _APP_OPENSSL_KEY_V1: ${KIBAN_APPWRITE_OPENSSL_KEY:-your-secret-key}
+      _APP_REDIS_HOST: appwrite-redis
+      _APP_REDIS_PORT: "6379"
+      _APP_DB_HOST: appwrite-mariadb
+      _APP_DB_PORT: "3306"
+      _APP_DB_SCHEMA: appwrite
+      _APP_DB_USER: appwrite
+      _APP_DB_PASS: ${KIBAN_APPWRITE_DB_PASS:-appwritepassword}
+      _APP_EXECUTOR_SECRET: ${KIBAN_APPWRITE_EXECUTOR_SECRET:-executor-secret-key}
+      KIBAN_APPWRITE_PORT: ${KIBAN_APPWRITE_PORT:-80}
+      KIBAN_APPWRITE_DOMAIN: ${KIBAN_APPWRITE_DOMAIN:-localhost}
+      KIBAN_APPWRITE_OPENSSL_KEY: ${KIBAN_APPWRITE_OPENSSL_KEY:-your-secret-key}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS -o /dev/null http://localhost/v1/health/version"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+  appwrite-console:
+    image: appwrite/console:7.5.7
+    restart: unless-stopped
+    environment:
+      _APPWRITE_CONSOLE: "1"
+    depends_on:
+      appwrite:
+        condition: service_healthy
+volumes:
+  appwrite_mariadb_data:
+  appwrite_redis_data:
+  appwrite_uploads:
+  appwrite_cache:
+  appwrite_config:
+  appwrite_certificates:
+  appwrite_functions:
+  appwrite_builds:
+  appwrite_sites:
+  appwrite_imports:

@@ -1,0 +1,41 @@
+services:
+  tooljet-db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: tooljet_db
+      POSTGRES_USER: tooljet
+      POSTGRES_PASSWORD: ${KIBAN_TOOLJET_DB_PASSWORD:-tooljet}
+    volumes:
+      - tooljet_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tooljet"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  tooljet:
+    image: tooljet/tooljet:ce-latest
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_TOOLJET_PORT:-3000}:3000"
+    depends_on:
+      tooljet-db:
+        condition: service_healthy
+    environment:
+      TOOLJET_DB_HOST: tooljet-db
+      TOOLJET_DB_PORT: "5432"
+      TOOLJET_DB_USER: tooljet
+      TOOLJET_DB_PASSWORD: ${KIBAN_TOOLJET_DB_PASSWORD:-tooljet}
+      TOOLJET_DB: tooljet_db
+      TOOLJET_HOST: 0.0.0.0
+      PORT: "3000"
+      KIBAN_TOOLJET_PORT: ${KIBAN_TOOLJET_PORT:-3000}
+      KIBAN_TOOLJET_DB_PASSWORD: ${KIBAN_TOOLJET_DB_PASSWORD:-tooljet}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+volumes:
+  tooljet_db_data:

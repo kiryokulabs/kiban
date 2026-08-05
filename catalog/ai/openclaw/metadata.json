@@ -1,0 +1,17 @@
+{
+  "id": "openclaw",
+  "name": "OpenClaw",
+  "description": "Open-source AI assistant platform.",
+  "category": "ai",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "openclaw",
+      "port": 3000
+    }
+  ]
+}

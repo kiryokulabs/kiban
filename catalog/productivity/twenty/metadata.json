@@ -1,0 +1,17 @@
+{
+  "id": "twenty",
+  "name": "Twenty CRM",
+  "description": "Open-source CRM — the modern alternative to Salesforce with a beautiful UI and powerful automation.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "twenty",
+      "port": 3000
+    }
+  ]
+}

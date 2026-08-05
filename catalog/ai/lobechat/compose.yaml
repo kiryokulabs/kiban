@@ -1,0 +1,14 @@
+services:
+  lobechat:
+    image: lobehub/lobe-chat:latest
+    restart: unless-stopped
+    environment:
+      APP_URL: http://localhost:${KIBAN_LOBECHAT_PORT:-3210}
+    ports:
+      - "${KIBAN_LOBECHAT_PORT:-3210}:3210"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3210"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s

@@ -1,0 +1,19 @@
+services:
+  searxng:
+    image: searxng/searxng:latest
+    restart: unless-stopped
+    environment:
+      BASE_URL: http://localhost:${KIBAN_SEARXNG_PORT:-8080}
+      INSTANCE_NAME: Kiban SearXNG
+    ports:
+      - "${KIBAN_SEARXNG_PORT:-8080}:8080"
+    volumes:
+      - searxng_data:/etc/searxng
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+volumes:
+  searxng_data:

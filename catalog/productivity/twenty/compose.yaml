@@ -1,0 +1,72 @@
+services:
+  twenty-db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: default
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${KIBAN_TWENTY_DB_PASSWORD:-postgres}
+    volumes:
+      - twenty_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  twenty-redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - twenty_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  twenty:
+    image: twentycrm/twenty:latest
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_TWENTY_PORT:-3000}:3000"
+    depends_on:
+      twenty-db:
+        condition: service_healthy
+      twenty-redis:
+        condition: service_healthy
+    volumes:
+      - twenty_server_data:/app/packages/twenty-server/.local-storage
+    environment:
+      PG_DATABASE_URL: postgres://postgres:${KIBAN_TWENTY_DB_PASSWORD:-postgres}@twenty-db:5432/default
+      REDIS_URL: redis://twenty-redis:6379
+      SERVER_URL: http://localhost:${KIBAN_TWENTY_PORT:-3000}
+      ENCRYPTION_KEY: ${KIBAN_TWENTY_ENCRYPTION_KEY:-change-me-to-a-random-string}
+      FALLBACK_ENCRYPTION_KEY: ${KIBAN_TWENTY_ENCRYPTION_KEY:-change-me-to-a-random-string}
+      KIBAN_TWENTY_PORT: ${KIBAN_TWENTY_PORT:-3000}
+      KIBAN_TWENTY_DB_PASSWORD: ${KIBAN_TWENTY_DB_PASSWORD:-postgres}
+      KIBAN_TWENTY_ENCRYPTION_KEY: ${KIBAN_TWENTY_ENCRYPTION_KEY:-change-me-to-a-random-string}
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:3000/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+  twenty-worker:
+    image: twentycrm/twenty:latest
+    restart: unless-stopped
+    command: ["yarn", "worker:prod"]
+    depends_on:
+      twenty-db:
+        condition: service_healthy
+      twenty-redis:
+        condition: service_healthy
+    environment:
+      PG_DATABASE_URL: postgres://postgres:${KIBAN_TWENTY_DB_PASSWORD:-postgres}@twenty-db:5432/default
+      REDIS_URL: redis://twenty-redis:6379
+      SERVER_URL: http://localhost:${KIBAN_TWENTY_PORT:-3000}
+      DISABLE_DB_MIGRATIONS: "true"
+      ENCRYPTION_KEY: ${KIBAN_TWENTY_ENCRYPTION_KEY:-change-me-to-a-random-string}
+      FALLBACK_ENCRYPTION_KEY: ${KIBAN_TWENTY_ENCRYPTION_KEY:-change-me-to-a-random-string}
+volumes:
+  twenty_db_data:
+  twenty_redis_data:
+  twenty_server_data:

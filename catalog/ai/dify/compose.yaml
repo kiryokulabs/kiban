@@ -1,0 +1,91 @@
+services:
+  dify-api:
+    image: langgenius/dify-api:latest
+    restart: unless-stopped
+    environment:
+      SECRET_KEY: ${KIBAN_DIFY_SECRET_KEY:-sk-change-me-to-a-random-string-of-32-chars}
+      DB_USERNAME: ${KIBAN_DIFY_DB_USER:-postgres}
+      DB_PASSWORD: ${KIBAN_DIFY_DB_PASSWORD:-dify}
+      DB_DATABASE: ${KIBAN_DIFY_DB_NAME:-dify}
+      REDIS_HOST: dify-redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${KIBAN_DIFY_REDIS_PASSWORD:-dify}
+      STORAGE_TYPE: local
+      VECTOR_STORE: highd
+      SSRF_PROXY_HTTP_PORT: "8194"
+      KIBAN_DIFY_SECRET_KEY: ${KIBAN_DIFY_SECRET_KEY:-sk-change-me-to-a-random-string-of-32-chars}
+      KIBAN_DIFY_DB_USER: ${KIBAN_DIFY_DB_USER:-postgres}
+      KIBAN_DIFY_DB_PASSWORD: ${KIBAN_DIFY_DB_PASSWORD:-dify}
+      KIBAN_DIFY_DB_NAME: ${KIBAN_DIFY_DB_NAME:-dify}
+      KIBAN_DIFY_REDIS_PASSWORD: ${KIBAN_DIFY_REDIS_PASSWORD:-dify}
+    ports:
+      - "5001:5001"
+    depends_on:
+      dify-db:
+        condition: service_healthy
+      dify-redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+  dify-web:
+    image: langgenius/dify-web:latest
+    restart: unless-stopped
+    environment:
+      CONSOLE_API_URL: http://dify-api:5001
+      APP_API_URL: http://dify-api:5001
+    ports:
+      - "${KIBAN_DIFY_PORT:-80}:3000"
+    depends_on:
+      dify-api:
+        condition: service_healthy
+  dify-worker:
+    image: langgenius/dify-api:latest
+    restart: unless-stopped
+    command: celery -A app.celery worker -Q dataset,generation,app,sync,mail,ops,trace,tool
+    environment:
+      SECRET_KEY: ${KIBAN_DIFY_SECRET_KEY:-sk-change-me-to-a-random-string-of-32-chars}
+      DB_USERNAME: ${KIBAN_DIFY_DB_USER:-postgres}
+      DB_PASSWORD: ${KIBAN_DIFY_DB_PASSWORD:-dify}
+      DB_DATABASE: ${KIBAN_DIFY_DB_NAME:-dify}
+      REDIS_HOST: dify-redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${KIBAN_DIFY_REDIS_PASSWORD:-dify}
+      STORAGE_TYPE: local
+      VECTOR_STORE: highd
+    depends_on:
+      dify-db:
+        condition: service_healthy
+      dify-redis:
+        condition: service_healthy
+  dify-db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${KIBAN_DIFY_DB_NAME:-dify}
+      POSTGRES_USER: ${KIBAN_DIFY_DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${KIBAN_DIFY_DB_PASSWORD:-dify}
+    volumes:
+      - dify_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${KIBAN_DIFY_DB_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  dify-redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --requirepass ${KIBAN_DIFY_REDIS_PASSWORD:-dify}
+    volumes:
+      - dify_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${KIBAN_DIFY_REDIS_PASSWORD:-dify}", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+volumes:
+  dify_db_data:
+  dify_redis_data:

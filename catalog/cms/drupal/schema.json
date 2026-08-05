@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_DRUPAL_DB_NAME": {
+      "type": "string",
+      "default": "${KIBAN_DRUPAL_DB_NAME:-drupal}"
+    },
+    "KIBAN_DRUPAL_DB_USER": {
+      "type": "string",
+      "default": "${KIBAN_DRUPAL_DB_USER:-drupal}"
+    },
+    "KIBAN_DRUPAL_DB_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_DRUPAL_DB_PASSWORD:-drupal}"
+    }
+  }
+}

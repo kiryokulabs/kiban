@@ -1,0 +1,17 @@
+{
+  "id": "immich",
+  "name": "Immich",
+  "description": "Self-hosted photo and video backup solution with AI-powered search and facial recognition.",
+  "category": "media",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "immich-server",
+      "port": 2283
+    }
+  ]
+}

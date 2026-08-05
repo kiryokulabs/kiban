@@ -1,0 +1,17 @@
+{
+  "id": "graylog",
+  "name": "Graylog",
+  "description": "Open-source log management platform with powerful search, analytics, and alerting capabilities.",
+  "category": "observability",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "graylog",
+      "port": 9000
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "id": "vault",
+  "name": "HashiCorp Vault",
+  "description": "Manage secrets and protect sensitive data with identity-based access, encryption as a service, and data protection.",
+  "category": "security",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "vault",
+      "port": 8200
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+services:
+  openclaw:
+    image: ghcr.io/openclaw/openclaw:latest
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_OPENCLAW_PORT:-3000}:3000"
+    volumes:
+      - openclaw_data:/app/data
+volumes:
+  openclaw_data:

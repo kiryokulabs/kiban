@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_GHOST_DB_NAME": {
+      "type": "string",
+      "default": "${KIBAN_GHOST_DB_NAME:-ghost}"
+    },
+    "KIBAN_GHOST_DB_USER": {
+      "type": "string",
+      "default": "${KIBAN_GHOST_DB_USER:-ghost}"
+    },
+    "KIBAN_GHOST_DB_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_GHOST_DB_PASSWORD:-ghost}"
+    },
+    "KIBAN_GHOST_DB_ROOT_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_GHOST_DB_ROOT_PASSWORD:-root}"
+    }
+  }
+}

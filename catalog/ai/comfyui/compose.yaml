@@ -1,0 +1,24 @@
+services:
+  comfyui:
+    image: ghcr.io/ai-dock/comfyui:latest
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_COMFYUI_PORT:-8188}:8188"
+    volumes:
+      - comfyui_models:/app/ComfyUI/models
+      - comfyui_input:/app/ComfyUI/input
+      - comfyui_output:/app/ComfyUI/output
+      - comfyui_custom_nodes:/app/ComfyUI/custom_nodes
+    environment:
+      KIBAN_COMFYUI_PORT: ${KIBAN_COMFYUI_PORT:-8188}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8188/system_stats"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+volumes:
+  comfyui_models:
+  comfyui_input:
+  comfyui_output:
+  comfyui_custom_nodes:

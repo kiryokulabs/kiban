@@ -1,0 +1,17 @@
+{
+  "id": "cyberchef",
+  "name": "CyberChef",
+  "description": "The Cyber Swiss Army Knife for data analysis and encoding.",
+  "category": "security",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "cyberchef",
+      "port": 8000
+    }
+  ]
+}

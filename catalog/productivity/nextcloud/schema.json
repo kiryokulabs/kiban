@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_NEXTCLOUD_DB_NAME": {
+      "type": "string",
+      "default": "${KIBAN_NEXTCLOUD_DB_NAME:-nextcloud}"
+    },
+    "KIBAN_NEXTCLOUD_DB_USER": {
+      "type": "string",
+      "default": "${KIBAN_NEXTCLOUD_DB_USER:-nextcloud}"
+    },
+    "KIBAN_NEXTCLOUD_DB_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_NEXTCLOUD_DB_PASSWORD:-nextcloud}"
+    },
+    "KIBAN_NEXTCLOUD_DB_ROOT_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_NEXTCLOUD_DB_ROOT_PASSWORD:-root}"
+    },
+    "KIBAN_NEXTCLOUD_ADMIN_USER": {
+      "type": "string",
+      "default": "${KIBAN_NEXTCLOUD_ADMIN_USER:-admin}"
+    },
+    "KIBAN_NEXTCLOUD_ADMIN_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_NEXTCLOUD_ADMIN_PASSWORD:-admin}"
+    }
+  }
+}

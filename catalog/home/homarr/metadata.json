@@ -1,0 +1,17 @@
+{
+  "id": "homarr",
+  "name": "Homarr",
+  "description": "A simple yet powerful dashboard for your server with Docker integration and extensive widget support.",
+  "category": "home",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "homarr",
+      "port": 7575
+    }
+  ]
+}

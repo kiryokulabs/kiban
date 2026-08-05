@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_APPWRITE_PORT": {
+      "type": "string",
+      "default": "${KIBAN_APPWRITE_PORT:-80}"
+    },
+    "KIBAN_APPWRITE_DOMAIN": {
+      "type": "string",
+      "default": "${KIBAN_APPWRITE_DOMAIN:-localhost}"
+    },
+    "KIBAN_APPWRITE_OPENSSL_KEY": {
+      "type": "string",
+      "default": "${KIBAN_APPWRITE_OPENSSL_KEY:-your-secret-key}"
+    }
+  }
+}

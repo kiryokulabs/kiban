@@ -1,0 +1,17 @@
+{
+  "id": "stirling-pdf",
+  "name": "Stirling PDF",
+  "description": "Self-hosted PDF manipulation tool — merge, split, convert, OCR, and more.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "stirling-pdf",
+      "port": 8080
+    }
+  ]
+}

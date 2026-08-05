@@ -1,0 +1,17 @@
+{
+  "id": "openobserve",
+  "name": "OpenObserve",
+  "description": "Ultra-lightweight observability platform for logs, metrics, traces, and analytics.",
+  "category": "observability",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "openobserve",
+      "port": 5080
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+services:
+  docmost:
+    image: docmost/docmost:latest
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://postgres:${KIBAN_DOCMOST_DB_PASSWORD:-docmost}@docmost-db:5432/docmost
+      APP_SECRET: ${KIBAN_DOCMOST_APP_SECRET:-changeme}
+      KIBAN_DOCMOST_DB_PASSWORD: ${KIBAN_DOCMOST_DB_PASSWORD:-docmost}
+      KIBAN_DOCMOST_APP_SECRET: ${KIBAN_DOCMOST_APP_SECRET:-changeme}
+    ports:
+      - "${KIBAN_DOCMOST_PORT:-3000}:3000"
+    depends_on:
+      docmost-db:
+        condition: service_healthy
+  docmost-db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: docmost
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${KIBAN_DOCMOST_DB_PASSWORD:-docmost}
+    volumes:
+      - docmost_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+volumes:
+  docmost_db_data:

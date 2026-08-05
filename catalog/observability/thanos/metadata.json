@@ -1,0 +1,17 @@
+{
+  "id": "thanos",
+  "name": "Thanos",
+  "description": "Highly available Prometheus setup with long-term storage and global query view.",
+  "category": "observability",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "thanos-query",
+      "port": 10902
+    }
+  ]
+}

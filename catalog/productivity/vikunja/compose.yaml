@@ -1,0 +1,21 @@
+services:
+  vikunja:
+    image: vikunja/vikunja:latest
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_VIKUNJA_PORT:-3456}:3456"
+    volumes:
+      - vikunja_files:/app/vikunja/files
+      - vikunja_db:/db
+    environment:
+      VIKUNJA_SERVICE_PUBLICURL: "http://localhost:${KIBAN_VIKUNJA_PORT:-3456}"
+      KIBAN_VIKUNJA_PORT: ${KIBAN_VIKUNJA_PORT:-3456}
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3456/api/v1/info"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+volumes:
+  vikunja_files:
+  vikunja_db:

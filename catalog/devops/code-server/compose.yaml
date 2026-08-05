@@ -1,0 +1,13 @@
+services:
+  code-server:
+    image: codercom/code-server:latest
+    restart: unless-stopped
+    environment:
+      PASSWORD: ${KIBAN_CODE_SERVER_PASSWORD:-kiban}
+      KIBAN_CODE_SERVER_PASSWORD: ${KIBAN_CODE_SERVER_PASSWORD:-kiban}
+    ports:
+      - "${KIBAN_CODE_SERVER_PORT:-8443}:8080"
+    volumes:
+      - code-server_data:/home/coder/project
+volumes:
+  code-server_data:

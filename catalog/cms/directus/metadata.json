@@ -1,0 +1,17 @@
+{
+  "id": "directus",
+  "name": "Directus",
+  "description": "Open-source headless CMS and API for managing any SQL database with a beautiful admin panel.",
+  "category": "cms",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "directus",
+      "port": 8055
+    }
+  ]
+}

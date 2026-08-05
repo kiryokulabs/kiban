@@ -1,0 +1,17 @@
+{
+  "id": "ravendb",
+  "name": "RavenDB",
+  "description": "ACID NoSQL document database with built-in indexing, full-text search, and distributed data processing.",
+  "category": "databases",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Management Studio",
+      "kind": "web",
+      "service": "ravendb",
+      "port": 8080
+    }
+  ]
+}

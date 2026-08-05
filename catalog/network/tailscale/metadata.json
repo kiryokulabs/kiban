@@ -1,0 +1,10 @@
+{
+  "id": "tailscale",
+  "name": "Tailscale",
+  "description": "Zero-config VPN built on WireGuard for secure device connections.",
+  "category": "network",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": []
+}

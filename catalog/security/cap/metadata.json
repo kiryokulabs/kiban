@@ -1,0 +1,17 @@
+{
+  "id": "cap",
+  "name": "Cap",
+  "description": "Self-hosted CAPTCHA service for bot protection.",
+  "category": "security",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "cap",
+      "port": 8080
+    }
+  ]
+}

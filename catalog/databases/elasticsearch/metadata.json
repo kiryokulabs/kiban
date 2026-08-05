@@ -1,0 +1,17 @@
+{
+  "id": "elasticsearch",
+  "name": "Elasticsearch",
+  "description": "Distributed search and analytics engine.",
+  "category": "databases",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "API",
+      "kind": "web",
+      "service": "elasticsearch",
+      "port": 9200
+    }
+  ]
+}

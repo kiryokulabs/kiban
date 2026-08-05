@@ -1,0 +1,31 @@
+services:
+  hasura:
+    image: hasura/graphql-engine:latest
+    restart: unless-stopped
+    environment:
+      HASURA_GRAPHQL_DATABASE_URL: postgres://postgres:${KIBAN_HASURA_DB_PASSWORD:-hasura}@hasura-db:5432/hasura
+      HASURA_GRAPHQL_ADMIN_SECRET: ${KIBAN_HASURA_ADMIN_SECRET:-hasura}
+      HASURA_GRAPHQL_ENABLE_CONSOLE: "true"
+      KIBAN_HASURA_ADMIN_SECRET: ${KIBAN_HASURA_ADMIN_SECRET:-hasura}
+      KIBAN_HASURA_DB_PASSWORD: ${KIBAN_HASURA_DB_PASSWORD:-hasura}
+    ports:
+      - "${KIBAN_HASURA_PORT:-8080}:8080"
+    depends_on:
+      hasura-db:
+        condition: service_healthy
+  hasura-db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: hasura
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${KIBAN_HASURA_DB_PASSWORD:-hasura}
+    volumes:
+      - hasura_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+volumes:
+  hasura_db_data:

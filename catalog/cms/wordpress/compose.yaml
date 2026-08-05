@@ -1,0 +1,38 @@
+services:
+  wordpress:
+    image: wordpress:latest
+    restart: unless-stopped
+    environment:
+      WORDPRESS_DB_HOST: wordpress-db
+      WORDPRESS_DB_NAME: ${KIBAN_WORDPRESS_DB_NAME:-wordpress}
+      WORDPRESS_DB_USER: ${KIBAN_WORDPRESS_DB_USER:-wordpress}
+      WORDPRESS_DB_PASSWORD: ${KIBAN_WORDPRESS_DB_PASSWORD:-wordpress}
+      KIBAN_WORDPRESS_DB_NAME: ${KIBAN_WORDPRESS_DB_NAME:-wordpress}
+      KIBAN_WORDPRESS_DB_USER: ${KIBAN_WORDPRESS_DB_USER:-wordpress}
+      KIBAN_WORDPRESS_DB_PASSWORD: ${KIBAN_WORDPRESS_DB_PASSWORD:-wordpress}
+      KIBAN_WORDPRESS_DB_ROOT_PASSWORD: ${KIBAN_WORDPRESS_DB_ROOT_PASSWORD:-root}
+    ports:
+      - "${KIBAN_WORDPRESS_PORT:-8080}:80"
+    depends_on:
+      wordpress-db:
+        condition: service_healthy
+    volumes:
+      - wordpress_data:/var/www/html
+  wordpress-db:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${KIBAN_WORDPRESS_DB_NAME:-wordpress}
+      MYSQL_USER: ${KIBAN_WORDPRESS_DB_USER:-wordpress}
+      MYSQL_PASSWORD: ${KIBAN_WORDPRESS_DB_PASSWORD:-wordpress}
+      MYSQL_ROOT_PASSWORD: ${KIBAN_WORDPRESS_DB_ROOT_PASSWORD:-root}
+    volumes:
+      - wordpress_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "healthcheck.sh --connect --innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+volumes:
+  wordpress_data:
+  wordpress_db_data:

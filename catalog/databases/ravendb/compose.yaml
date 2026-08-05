@@ -1,0 +1,20 @@
+services:
+  ravendb:
+    image: ravendb/ravendb:latest
+    restart: unless-stopped
+    environment:
+      RAVEN_Setup_Mode: None
+      RAVEN_Security_UnsecuredAccessAllowed: PublicNetwork
+      RAVEN_Logs_Mode: Operations
+    ports:
+      - "${KIBAN_RAVENDB_PORT:-8080}:8080"
+    volumes:
+      - ravendb_data:/var/lib/ravendb
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+volumes:
+  ravendb_data:

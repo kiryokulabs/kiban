@@ -1,0 +1,10 @@
+{
+  "id": "cloudflared",
+  "name": "cloudflared",
+  "description": "Cloudflare Tunnel client for exposing local services securely.",
+  "category": "network",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": []
+}

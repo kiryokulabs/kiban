@@ -1,0 +1,16 @@
+services:
+  databasus:
+    image: databasus/databasus:latest
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_DATABASUS_PORT:-4005}:4005"
+    volumes:
+      - databasus_data:/databasus-data
+    healthcheck:
+      test: ["CMD", "databasus", "healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+volumes:
+  databasus_data:

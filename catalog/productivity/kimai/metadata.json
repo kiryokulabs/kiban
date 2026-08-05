@@ -1,0 +1,17 @@
+{
+  "id": "kimai",
+  "name": "Kimai",
+  "description": "Open-source time-tracking application.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "kimai",
+      "port": 80
+    }
+  ]
+}

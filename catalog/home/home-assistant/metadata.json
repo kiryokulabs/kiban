@@ -1,0 +1,17 @@
+{
+  "id": "home-assistant",
+  "name": "Home Assistant",
+  "description": "Open-source home automation platform.",
+  "category": "home",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "homeassistant",
+      "port": 8123
+    }
+  ]
+}

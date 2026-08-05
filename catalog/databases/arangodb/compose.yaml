@@ -1,0 +1,21 @@
+services:
+  arangodb:
+    image: arangodb:3.12
+    restart: unless-stopped
+    environment:
+      ARANGO_ROOT_PASSWORD: ${KIBAN_ARANGO_PASSWORD:-kiban}
+      KIBAN_ARANGO_PASSWORD: ${KIBAN_ARANGO_PASSWORD:-kiban}
+    ports:
+      - "${KIBAN_ARANGODB_PORT:-8529}:8529"
+    volumes:
+      - arangodb_data:/var/lib/arangodb3
+      - arangodb_apps:/var/lib/arangodb3-apps
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8529/_api/version"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+volumes:
+  arangodb_data:
+  arangodb_apps:

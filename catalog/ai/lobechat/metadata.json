@@ -1,0 +1,17 @@
+{
+  "id": "lobechat",
+  "name": "LobeChat",
+  "description": "Modern open-source ChatGPT/LLM interface with multi-model support, plugins, and vision capabilities.",
+  "category": "ai",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "lobechat",
+      "port": 3210
+    }
+  ]
+}

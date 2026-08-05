@@ -1,0 +1,23 @@
+{
+  "id": "questdb",
+  "name": "QuestDB",
+  "description": "Fast time-series database for SQL analytics with high-throughput ingestion.",
+  "category": "databases",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web Console",
+      "kind": "web",
+      "service": "questdb",
+      "port": 9000
+    },
+    {
+      "name": "PostgreSQL Wire",
+      "kind": "database",
+      "service": "questdb",
+      "port": 8812
+    }
+  ]
+}

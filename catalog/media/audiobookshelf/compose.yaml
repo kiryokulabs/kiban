@@ -1,0 +1,22 @@
+services:
+  audiobookshelf:
+    image: advplyr/audiobookshelf:latest
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_AUDIOBOOKSHELF_PORT:-13378}:80"
+    volumes:
+      - audiobookshelf_data:/audiobooks
+      - audiobookshelf_podcasts:/podcasts
+      - audiobookshelf_config:/config
+      - audiobookshelf_metadata:/metadata
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+volumes:
+  audiobookshelf_data:
+  audiobookshelf_podcasts:
+  audiobookshelf_config:
+  audiobookshelf_metadata:

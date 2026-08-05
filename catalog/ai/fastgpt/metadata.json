@@ -1,0 +1,17 @@
+{
+  "id": "fastgpt",
+  "name": "FastGPT",
+  "description": "Open-source AI knowledge base platform with visual workflow, RAG, and multi-model support.",
+  "category": "ai",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "fastgpt",
+      "port": 3000
+    }
+  ]
+}

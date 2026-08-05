@@ -1,0 +1,10 @@
+services:
+  homeassistant:
+    image: homeassistant/home-assistant:stable
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_HOMEASSISTANT_PORT:-8123}:8123"
+    volumes:
+      - homeassistant_data:/config
+volumes:
+  homeassistant_data:

@@ -1,0 +1,17 @@
+{
+  "id": "couchdb",
+  "name": "CouchDB",
+  "description": "Apache CouchDB — a distributed document database with a reliable HTTP API and multi-master replication.",
+  "category": "databases",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "couchdb",
+      "port": 5984
+    }
+  ]
+}

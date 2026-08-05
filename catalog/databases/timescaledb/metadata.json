@@ -1,0 +1,17 @@
+{
+  "id": "timescaledb",
+  "name": "TimescaleDB",
+  "description": "Time-series SQL database built as a PostgreSQL extension for high-performance analytics.",
+  "category": "databases",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "PostgreSQL",
+      "kind": "database",
+      "service": "timescaledb",
+      "port": 5432
+    }
+  ]
+}

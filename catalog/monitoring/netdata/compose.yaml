@@ -1,0 +1,14 @@
+services:
+  netdata:
+    image: netdata/netdata:latest
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_NETDATA_PORT:-19999}:19999"
+    volumes:
+      - netdata_config:/etc/netdata
+      - netdata_lib:/var/lib/netdata
+      - netdata_cache:/var/cache/netdata
+volumes:
+  netdata_config:
+  netdata_lib:
+  netdata_cache:

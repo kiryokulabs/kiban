@@ -1,0 +1,10 @@
+services:
+  cap:
+    image: tiago2/cap:latest
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_CAP_PORT:-8080}:8080"
+    volumes:
+      - cap_data:/app/data
+volumes:
+  cap_data:

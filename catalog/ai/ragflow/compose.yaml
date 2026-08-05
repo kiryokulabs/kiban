@@ -1,0 +1,77 @@
+services:
+  ragflow-mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    command: --default-authentication-plugin=caching_sha2_password
+    environment:
+      MYSQL_ROOT_PASSWORD: ${KIBAN_RAGFLOW_DB_PASSWORD:-infiniflow}
+      MYSQL_DATABASE: rag_flow
+    volumes:
+      - ragflow_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${KIBAN_RAGFLOW_DB_PASSWORD:-infiniflow}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  ragflow-redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - ragflow_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  ragflow-elasticsearch:
+    image: elasticsearch:8.11.3
+    restart: unless-stopped
+    environment:
+      discovery.type: single-node
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+      xpack.security.enabled: "false"
+    volumes:
+      - ragflow_es_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+  ragflow:
+    image: infiniflow/ragflow:latest
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_RAGFLOW_PORT:-9380}:9380"
+    depends_on:
+      ragflow-mysql:
+        condition: service_healthy
+      ragflow-redis:
+        condition: service_healthy
+      ragflow-elasticsearch:
+        condition: service_healthy
+    volumes:
+      - ragflow_data:/ragflow/data
+    environment:
+      MYSQL_HOST: ragflow-mysql
+      MYSQL_PORT: "3306"
+      MYSQL_USER: root
+      MYSQL_PASSWORD: ${KIBAN_RAGFLOW_DB_PASSWORD:-infiniflow}
+      MYSQL_DBNAME: rag_flow
+      REDIS_HOST: ragflow-redis
+      REDIS_PORT: "6379"
+      ES_HOST: ragflow-elasticsearch:9200
+      KIBAN_RAGFLOW_PORT: ${KIBAN_RAGFLOW_PORT:-9380}
+      KIBAN_RAGFLOW_DB_PASSWORD: ${KIBAN_RAGFLOW_DB_PASSWORD:-infiniflow}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9380/api/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+volumes:
+  ragflow_mysql_data:
+  ragflow_redis_data:
+  ragflow_es_data:
+  ragflow_data:

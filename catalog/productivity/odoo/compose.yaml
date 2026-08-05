@@ -1,0 +1,34 @@
+services:
+  odoo:
+    image: odoo:latest
+    restart: unless-stopped
+    environment:
+      HOST: odoo-db
+      USER: ${KIBAN_ODOO_DB_USER:-odoo}
+      PASSWORD: ${KIBAN_ODOO_DB_PASSWORD:-odoo}
+      KIBAN_ODOO_DB_USER: ${KIBAN_ODOO_DB_USER:-odoo}
+      KIBAN_ODOO_DB_PASSWORD: ${KIBAN_ODOO_DB_PASSWORD:-odoo}
+    ports:
+      - "${KIBAN_ODOO_PORT:-8069}:8069"
+    depends_on:
+      odoo-db:
+        condition: service_healthy
+    volumes:
+      - odoo_data:/var/lib/odoo
+  odoo-db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: ${KIBAN_ODOO_DB_USER:-odoo}
+      POSTGRES_PASSWORD: ${KIBAN_ODOO_DB_PASSWORD:-odoo}
+    volumes:
+      - odoo_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U odoo"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+volumes:
+  odoo_data:
+  odoo_db_data:

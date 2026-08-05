@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_OWNCLOUD_DB_NAME": {
+      "type": "string",
+      "default": "${KIBAN_OWNCLOUD_DB_NAME:-owncloud}"
+    },
+    "KIBAN_OWNCLOUD_DB_USER": {
+      "type": "string",
+      "default": "${KIBAN_OWNCLOUD_DB_USER:-owncloud}"
+    },
+    "KIBAN_OWNCLOUD_DB_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_OWNCLOUD_DB_PASSWORD:-owncloud}"
+    },
+    "KIBAN_OWNCLOUD_DB_ROOT_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_OWNCLOUD_DB_ROOT_PASSWORD:-root}"
+    },
+    "KIBAN_OWNCLOUD_ADMIN_USER": {
+      "type": "string",
+      "default": "${KIBAN_OWNCLOUD_ADMIN_USER:-admin}"
+    },
+    "KIBAN_OWNCLOUD_ADMIN_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_OWNCLOUD_ADMIN_PASSWORD:-admin}"
+    }
+  }
+}

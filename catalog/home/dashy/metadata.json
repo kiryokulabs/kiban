@@ -1,0 +1,17 @@
+{
+  "id": "dashy",
+  "name": "Dashy",
+  "description": "A highly customizable dashboard for your homelab with status monitoring, widgets, and theme engine.",
+  "category": "home",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "dashy",
+      "port": 8080
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "id": "openhands",
+  "name": "OpenHands",
+  "description": "AI-powered software engineering agent that can code, debug, and manage entire projects autonomously.",
+  "category": "ai",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "openhands",
+      "port": 3000
+    }
+  ]
+}

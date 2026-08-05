@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_INFISICAL_PORT": {
+      "type": "string",
+      "default": "${KIBAN_INFISICAL_PORT:-8080}"
+    },
+    "KIBAN_INFISICAL_DB_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_INFISICAL_DB_PASSWORD:-infisical}"
+    },
+    "KIBAN_INFISICAL_ENCRYPTION_KEY": {
+      "type": "string",
+      "default": "${KIBAN_INFISICAL_ENCRYPTION_KEY:-change-me-encryption-key}"
+    },
+    "KIBAN_INFISICAL_AUTH_SECRET": {
+      "type": "string",
+      "default": "${KIBAN_INFISICAL_AUTH_SECRET:-change-me-auth-secret}"
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_GRAYLOG_PORT": {
+      "type": "string",
+      "default": "${KIBAN_GRAYLOG_PORT:-9000}"
+    },
+    "KIBAN_GRAYLOG_PASSWORD_SECRET": {
+      "type": "string",
+      "default": "${KIBAN_GRAYLOG_PASSWORD_SECRET:-change-me-password-secret}"
+    },
+    "KIBAN_GRAYLOG_ROOT_PASSWORD_SHA2": {
+      "type": "string",
+      "default": "${KIBAN_GRAYLOG_ROOT_PASSWORD_SHA2:-}"
+    }
+  }
+}

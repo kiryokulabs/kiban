@@ -1,0 +1,17 @@
+{
+  "id": "drupal",
+  "name": "Drupal",
+  "description": "Open-source content management framework.",
+  "category": "cms",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "drupal",
+      "port": 80
+    }
+  ]
+}

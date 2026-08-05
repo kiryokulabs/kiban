@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_OPENHANDS_PORT": {
+      "type": "string",
+      "default": "${KIBAN_OPENHANDS_PORT:-3000}"
+    },
+    "KIBAN_OPENHANDS_LLM_MODEL": {
+      "type": "string",
+      "default": "${KIBAN_OPENHANDS_LLM_MODEL:-claude-3-5-sonnet-20241022}"
+    },
+    "KIBAN_OPENHANDS_LLM_API_KEY": {
+      "type": "string",
+      "default": "${KIBAN_OPENHANDS_LLM_API_KEY:-}"
+    }
+  }
+}

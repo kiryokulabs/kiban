@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_TIMESCALE_DB": {
+      "type": "string",
+      "default": "${KIBAN_TIMESCALE_DB:-kiban}"
+    },
+    "KIBAN_TIMESCALE_USER": {
+      "type": "string",
+      "default": "${KIBAN_TIMESCALE_USER:-postgres}"
+    },
+    "KIBAN_TIMESCALE_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_TIMESCALE_PASSWORD:-kiban}"
+    }
+  }
+}

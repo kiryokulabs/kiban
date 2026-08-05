@@ -1,0 +1,17 @@
+{
+  "id": "anythingllm",
+  "name": "AnythingLLM",
+  "description": "All-in-one AI desktop and Docker app for RAG, AI agents, and more.",
+  "category": "ai",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "anythingllm",
+      "port": 3001
+    }
+  ]
+}

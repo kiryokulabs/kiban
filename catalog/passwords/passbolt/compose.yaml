@@ -1,0 +1,39 @@
+services:
+  passbolt:
+    image: passbolt/passbolt:latest
+    restart: unless-stopped
+    environment:
+      DATASOURCES_DEFAULT_HOST: passbolt-db
+      DATASOURCES_DEFAULT_DATABASE: ${KIBAN_PASSBOLT_DB_NAME:-passbolt}
+      DATASOURCES_DEFAULT_USERNAME: ${KIBAN_PASSBOLT_DB_USER:-passbolt}
+      DATASOURCES_DEFAULT_PASSWORD: ${KIBAN_PASSBOLT_DB_PASSWORD:-passbolt}
+      APP_FULL_BASE_URL: http://localhost:${KIBAN_PASSBOLT_PORT:-8080}
+      KIBAN_PASSBOLT_DB_NAME: ${KIBAN_PASSBOLT_DB_NAME:-passbolt}
+      KIBAN_PASSBOLT_DB_USER: ${KIBAN_PASSBOLT_DB_USER:-passbolt}
+      KIBAN_PASSBOLT_DB_PASSWORD: ${KIBAN_PASSBOLT_DB_PASSWORD:-passbolt}
+      KIBAN_PASSBOLT_DB_ROOT_PASSWORD: ${KIBAN_PASSBOLT_DB_ROOT_PASSWORD:-root}
+    ports:
+      - "${KIBAN_PASSBOLT_PORT:-8080}:80"
+    depends_on:
+      passbolt-db:
+        condition: service_healthy
+    volumes:
+      - passbolt_data:/var/www/passbolt
+  passbolt-db:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${KIBAN_PASSBOLT_DB_NAME:-passbolt}
+      MYSQL_USER: ${KIBAN_PASSBOLT_DB_USER:-passbolt}
+      MYSQL_PASSWORD: ${KIBAN_PASSBOLT_DB_PASSWORD:-passbolt}
+      MYSQL_ROOT_PASSWORD: ${KIBAN_PASSBOLT_DB_ROOT_PASSWORD:-root}
+    volumes:
+      - passbolt_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "healthcheck.sh --connect --innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+volumes:
+  passbolt_data:
+  passbolt_db_data:

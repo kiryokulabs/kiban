@@ -1,0 +1,17 @@
+{
+  "id": "flagsmith",
+  "name": "Flagsmith",
+  "description": "Open-source feature flag and remote config service for progressive rollouts, A/B testing, and experiments.",
+  "category": "security",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "flagsmith",
+      "port": 8000
+    }
+  ]
+}

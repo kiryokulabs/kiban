@@ -1,0 +1,38 @@
+services:
+  kimai:
+    image: kimai/kimai2:apache
+    restart: unless-stopped
+    environment:
+      APP_ENV: prod
+      APP_SECRET: ${KIBAN_KIMAI_SECRET:-changeme}
+      DATABASE_URL: mysql://kimai:${KIBAN_KIMAI_DB_PASSWORD:-kimai}@kimai-db:3306/kimai?charset=utf8mb4&serverVersion=8.0
+      MAILER_DSN: ""
+      KIBAN_KIMAI_DB_PASSWORD: ${KIBAN_KIMAI_DB_PASSWORD:-kimai}
+      KIBAN_KIMAI_DB_ROOT_PASSWORD: ${KIBAN_KIMAI_DB_ROOT_PASSWORD:-root}
+      KIBAN_KIMAI_SECRET: ${KIBAN_KIMAI_SECRET:-changeme}
+    ports:
+      - "${KIBAN_KIMAI_PORT:-8080}:80"
+    depends_on:
+      kimai-db:
+        condition: service_healthy
+    volumes:
+      - kimai_data:/opt/kimai/var
+  kimai-db:
+    image: mariadb:11
+    restart: unless-stopped
+    command: --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW
+    environment:
+      MYSQL_DATABASE: kimai
+      MYSQL_USER: kimai
+      MYSQL_PASSWORD: ${KIBAN_KIMAI_DB_PASSWORD:-kimai}
+      MYSQL_ROOT_PASSWORD: ${KIBAN_KIMAI_DB_ROOT_PASSWORD:-root}
+    volumes:
+      - kimai_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "healthcheck.sh --connect --innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+volumes:
+  kimai_data:
+  kimai_db_data:

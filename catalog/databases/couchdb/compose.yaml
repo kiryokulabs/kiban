@@ -1,0 +1,23 @@
+services:
+  couchdb:
+    image: couchdb:3
+    restart: unless-stopped
+    environment:
+      COUCHDB_USER: ${KIBAN_COUCHDB_USER:-admin}
+      COUCHDB_PASSWORD: ${KIBAN_COUCHDB_PASSWORD:-kiban}
+      KIBAN_COUCHDB_USER: ${KIBAN_COUCHDB_USER:-admin}
+      KIBAN_COUCHDB_PASSWORD: ${KIBAN_COUCHDB_PASSWORD:-kiban}
+    ports:
+      - "${KIBAN_COUCHDB_PORT:-5984}:5984"
+    volumes:
+      - couchdb_data:/opt/couchdb/data
+      - couchdb_etc:/opt/couchdb/etc
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5984/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+volumes:
+  couchdb_data:
+  couchdb_etc:

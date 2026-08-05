@@ -1,0 +1,17 @@
+{
+  "id": "nginx-proxy-manager",
+  "name": "Nginx Proxy Manager",
+  "description": "Self-hosted reverse proxy with Let's Encrypt SSL, Docker, and a beautiful admin UI.",
+  "category": "networking",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Admin UI",
+      "kind": "web",
+      "service": "nginx-proxy-manager",
+      "port": 81
+    }
+  ]
+}

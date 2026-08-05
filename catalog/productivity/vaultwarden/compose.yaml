@@ -1,0 +1,15 @@
+services:
+  vaultwarden:
+    image: vaultwarden/server:latest
+    restart: unless-stopped
+    environment:
+      ADMIN_TOKEN: ${KIBAN_VAULTWARDEN_ADMIN_TOKEN:-}
+      KIBAN_VAULTWARDEN_ADMIN_TOKEN: ${KIBAN_VAULTWARDEN_ADMIN_TOKEN:-}
+      WEBSOCKET_ENABLED: "true"
+      SIGNUPS_ALLOWED: "true"
+    ports:
+      - "${KIBAN_VAULTWARDEN_PORT:-8080}:80"
+    volumes:
+      - vaultwarden_data:/data
+volumes:
+  vaultwarden_data:

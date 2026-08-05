@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_DIRECTUS_PORT": {
+      "type": "string",
+      "default": "${KIBAN_DIRECTUS_PORT:-8055}"
+    },
+    "KIBAN_DIRECTUS_SECRET": {
+      "type": "string",
+      "default": "${KIBAN_DIRECTUS_SECRET:-change-me-to-a-random-string}"
+    },
+    "KIBAN_DIRECTUS_ADMIN_EMAIL": {
+      "type": "string",
+      "default": "${KIBAN_DIRECTUS_ADMIN_EMAIL:-admin@example.com}"
+    },
+    "KIBAN_DIRECTUS_ADMIN_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_DIRECTUS_ADMIN_PASSWORD:-d1r3ctu5}"
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_FASTGPT_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_FASTGPT_PASSWORD:-kiban}"
+    },
+    "KIBAN_FASTGPT_PG_USER": {
+      "type": "string",
+      "default": "${KIBAN_FASTGPT_PG_USER:-postgres}"
+    },
+    "KIBAN_FASTGPT_PG_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_FASTGPT_PG_PASSWORD:-fastgpt}"
+    }
+  }
+}

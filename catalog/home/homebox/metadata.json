@@ -1,0 +1,17 @@
+{
+  "id": "homebox",
+  "name": "Homebox",
+  "description": "Inventory and asset management system for home users.",
+  "category": "home",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "homebox",
+      "port": 80
+    }
+  ]
+}

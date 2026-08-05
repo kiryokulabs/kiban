@@ -1,0 +1,17 @@
+{
+  "id": "ghost",
+  "name": "Ghost",
+  "description": "Professional publishing platform for newsletters and blogs.",
+  "category": "cms",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "ghost",
+      "port": 2368
+    }
+  ]
+}

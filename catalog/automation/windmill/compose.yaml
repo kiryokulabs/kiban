@@ -1,0 +1,29 @@
+services:
+  windmill:
+    image: ghcr.io/windmill-labs/windmill:latest
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://postgres:windmill@windmill-db:5432/windmill
+      BASE_URL: http://localhost:${KIBAN_WINDMILL_PORT:-8000}
+      KIBAN_WINDMILL_DB_PASSWORD: ${KIBAN_WINDMILL_DB_PASSWORD:-windmill}
+    ports:
+      - "${KIBAN_WINDMILL_PORT:-8000}:8000"
+    depends_on:
+      windmill-db:
+        condition: service_healthy
+  windmill-db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: windmill
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${KIBAN_WINDMILL_DB_PASSWORD:-windmill}
+    volumes:
+      - windmill_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+volumes:
+  windmill_db_data:

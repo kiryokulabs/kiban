@@ -1,0 +1,17 @@
+{
+  "id": "erpnext",
+  "name": "ERPNext",
+  "description": "Free and open-source enterprise resource planning (ERP) system with CRM, accounting, inventory, and HR.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "erpnext",
+      "port": 8080
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "id": "jaeger",
+  "name": "Jaeger",
+  "description": "Open-source distributed tracing system for monitoring and troubleshooting microservices.",
+  "category": "observability",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "jaeger",
+      "port": 16686
+    },
+    {
+      "name": "OTLP gRPC",
+      "kind": "network",
+      "service": "jaeger",
+      "port": 4317
+    },
+    {
+      "name": "OTLP HTTP",
+      "kind": "network",
+      "service": "jaeger",
+      "port": 4318
+    }
+  ]
+}

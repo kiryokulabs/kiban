@@ -1,0 +1,23 @@
+{
+  "id": "temporal",
+  "name": "Temporal",
+  "description": "Durable execution platform for reliable microservices.",
+  "category": "automation",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "temporal",
+      "port": 8080
+    },
+    {
+      "name": "gRPC",
+      "kind": "temporal",
+      "service": "temporal",
+      "port": 7233
+    }
+  ]
+}

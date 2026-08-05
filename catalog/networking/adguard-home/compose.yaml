@@ -1,0 +1,20 @@
+services:
+  adguard:
+    image: adguard/adguardhome:latest
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_ADGUARD_PORT:-3000}:3000"
+      - "53:53/tcp"
+      - "53:53/udp"
+    volumes:
+      - adguard_work:/opt/adguardhome/work
+      - adguard_conf:/opt/adguardhome/conf
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+volumes:
+  adguard_work:
+  adguard_conf:

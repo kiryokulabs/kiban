@@ -1,0 +1,17 @@
+{
+  "id": "firefox",
+  "name": "Firefox",
+  "description": "Self-hosted Firefox browser accessible via web.",
+  "category": "browsers",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "firefox",
+      "port": 5800
+    }
+  ]
+}

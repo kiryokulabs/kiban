@@ -1,0 +1,17 @@
+{
+  "id": "monica",
+  "name": "Monica",
+  "description": "Personal relationship management tool — keep track of friends, family, and professional contacts.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "monica",
+      "port": 80
+    }
+  ]
+}

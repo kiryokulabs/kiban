@@ -1,0 +1,17 @@
+{
+  "id": "odoo",
+  "name": "Odoo",
+  "description": "Open-source business suite with CRM, e-commerce, accounting, and more.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "odoo",
+      "port": 8069
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+services:
+  infisical-db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: infisical
+      POSTGRES_USER: infisical
+      POSTGRES_PASSWORD: ${KIBAN_INFISICAL_DB_PASSWORD:-infisical}
+    volumes:
+      - infisical_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U infisical"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  infisical-redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - infisical_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  infisical:
+    image: infisical/infisical:latest
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_INFISICAL_PORT:-8080}:8080"
+    depends_on:
+      infisical-db:
+        condition: service_healthy
+      infisical-redis:
+        condition: service_healthy
+    environment:
+      DB_CONNECTION_URI: postgres://infisical:${KIBAN_INFISICAL_DB_PASSWORD:-infisical}@infisical-db:5432/infisical
+      REDIS_URL: redis://infisical-redis:6379
+      ENCRYPTION_KEY: ${KIBAN_INFISICAL_ENCRYPTION_KEY:-change-me-encryption-key}
+      AUTH_SECRET: ${KIBAN_INFISICAL_AUTH_SECRET:-change-me-auth-secret}
+      SITE_URL: http://localhost:${KIBAN_INFISICAL_PORT:-8080}
+      KIBAN_INFISICAL_PORT: ${KIBAN_INFISICAL_PORT:-8080}
+      KIBAN_INFISICAL_DB_PASSWORD: ${KIBAN_INFISICAL_DB_PASSWORD:-infisical}
+      KIBAN_INFISICAL_ENCRYPTION_KEY: ${KIBAN_INFISICAL_ENCRYPTION_KEY:-change-me-encryption-key}
+      KIBAN_INFISICAL_AUTH_SECRET: ${KIBAN_INFISICAL_AUTH_SECRET:-change-me-auth-secret}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+volumes:
+  infisical_db_data:
+  infisical_redis_data:

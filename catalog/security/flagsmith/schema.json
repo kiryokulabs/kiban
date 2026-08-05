@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_FLAGSMITH_PORT": {
+      "type": "string",
+      "default": "${KIBAN_FLAGSMITH_PORT:-8000}"
+    },
+    "KIBAN_FLAGSMITH_DB_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_FLAGSMITH_DB_PASSWORD:-flagsmith}"
+    },
+    "KIBAN_FLAGSMITH_SECRET_KEY": {
+      "type": "string",
+      "default": "${KIBAN_FLAGSMITH_SECRET_KEY:-change-me-in-production}"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+services:
+  memos:
+    image: ghcr.io/usememos/memos:stable
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_MEMOS_PORT:-5230}:5230"
+    volumes:
+      - memos_data:/var/opt/memos
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5230/api/v1/status"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+volumes:
+  memos_data:

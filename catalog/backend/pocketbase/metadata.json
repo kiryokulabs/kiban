@@ -1,0 +1,17 @@
+{
+  "id": "pocketbase",
+  "name": "PocketBase",
+  "description": "Open-source backend with real-time database, auth, and file storage.",
+  "category": "backend",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "pocketbase",
+      "port": 8090
+    }
+  ]
+}

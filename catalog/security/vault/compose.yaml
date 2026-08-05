@@ -1,0 +1,20 @@
+services:
+  vault:
+    image: hashicorp/vault:latest
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_VAULT_PORT:-8200}:8200"
+    volumes:
+      - vault_data:/vault/file
+    environment:
+      VAULT_ADDR: http://127.0.0.1:8200
+      KIBAN_VAULT_PORT: ${KIBAN_VAULT_PORT:-8200}
+    command: server -dev -dev-listen-address=0.0.0.0:8200
+    healthcheck:
+      test: ["CMD", "vault", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+volumes:
+  vault_data:

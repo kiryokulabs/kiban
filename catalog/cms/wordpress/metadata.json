@@ -1,0 +1,17 @@
+{
+  "id": "wordpress",
+  "name": "WordPress",
+  "description": "The most popular CMS and website builder in the world.",
+  "category": "cms",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "wordpress",
+      "port": 80
+    }
+  ]
+}

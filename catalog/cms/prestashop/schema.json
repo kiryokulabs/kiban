@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_PRESTASHOP_DB_NAME": {
+      "type": "string",
+      "default": "${KIBAN_PRESTASHOP_DB_NAME:-prestashop}"
+    },
+    "KIBAN_PRESTASHOP_DB_USER": {
+      "type": "string",
+      "default": "${KIBAN_PRESTASHOP_DB_USER:-prestashop}"
+    },
+    "KIBAN_PRESTASHOP_DB_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_PRESTASHOP_DB_PASSWORD:-prestashop}"
+    },
+    "KIBAN_PRESTASHOP_DB_ROOT_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_PRESTASHOP_DB_ROOT_PASSWORD:-root}"
+    }
+  }
+}
