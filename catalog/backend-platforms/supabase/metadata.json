@@ -1,6 +1,6 @@
 {
   "id": "supabase",
-  "name": "Supabase Self-Hosted",
+  "name": "Supabase",
   "description": "Supabase self-hosted foundation using official Supabase images.",
   "category": "backend-platforms",
   "author": "Kiban",

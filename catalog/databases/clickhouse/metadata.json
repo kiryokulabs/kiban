@@ -1,21 +1,27 @@
 {
   "id": "clickhouse",
   "name": "ClickHouse",
-  "description": "Official ClickHouse column-oriented database.",
+  "description": "Column-oriented OLAP database for real-time analytics.",
   "category": "databases",
   "author": "Kiban",
   "minimumVersion": "0.1.0",
   "icon": "icon.svg",
   "accessPoints": [
     {
+      "name": "HTTP Interface",
+      "kind": "web",
+      "service": "clickhouse",
+      "port": 8123
+    },
+    {
       "name": "Database",
       "kind": "clickhouse",
       "service": "clickhouse",
-      "port": 8123,
+      "port": 9000,
       "connection": {
-        "username": "CLICKHOUSE_USER",
-        "password": "CLICKHOUSE_PASSWORD",
-        "database": "CLICKHOUSE_DB"
+        "username": "KIBAN_CLICKHOUSE_USER",
+        "password": "KIBAN_CLICKHOUSE_PASSWORD",
+        "database": "KIBAN_CLICKHOUSE_DB"
       }
     }
   ]

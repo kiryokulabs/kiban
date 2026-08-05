@@ -3,15 +3,15 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "CLICKHOUSE_DB": {
+    "KIBAN_CLICKHOUSE_DB": {
       "type": "string",
       "default": "${KIBAN_CLICKHOUSE_DB:-kiban}"
     },
-    "CLICKHOUSE_USER": {
+    "KIBAN_CLICKHOUSE_USER": {
       "type": "string",
       "default": "${KIBAN_CLICKHOUSE_USER:-kiban}"
     },
-    "CLICKHOUSE_PASSWORD": {
+    "KIBAN_CLICKHOUSE_PASSWORD": {
       "type": "string",
       "default": "${KIBAN_CLICKHOUSE_PASSWORD:-kiban}"
     }

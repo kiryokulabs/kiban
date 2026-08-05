@@ -1,7 +1,7 @@
 {
   "id": "langflow",
   "name": "Langflow",
-  "description": "Official Langflow visual AI application builder.",
+  "description": "Visual framework for building multi-agent and RAG applications.",
   "category": "ai",
   "author": "Kiban",
   "minimumVersion": "0.1.0",

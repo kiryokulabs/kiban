@@ -1,7 +1,10 @@
 services:
   valkey:
-    image: valkey/valkey:8
+    image: valkey/valkey:latest
     restart: unless-stopped
+    command: valkey-server --requirepass ${KIBAN_VALKEY_PASSWORD:-kiban}
+    environment:
+      KIBAN_VALKEY_PASSWORD: ${KIBAN_VALKEY_PASSWORD:-kiban}
     ports:
       - "${KIBAN_VALKEY_PORT:-6379}:6379"
     volumes:

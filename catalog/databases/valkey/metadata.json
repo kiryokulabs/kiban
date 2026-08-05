@@ -1,7 +1,7 @@
 {
   "id": "valkey",
   "name": "Valkey",
-  "description": "Official Valkey in-memory data store.",
+  "description": "Open-source Redis fork. High-performance key-value store.",
   "category": "databases",
   "author": "Kiban",
   "minimumVersion": "0.1.0",
@@ -11,7 +11,10 @@
       "name": "Database",
       "kind": "redis",
       "service": "valkey",
-      "port": 6379
+      "port": 6379,
+      "connection": {
+        "password": "KIBAN_VALKEY_PASSWORD"
+      }
     }
   ]
 }
