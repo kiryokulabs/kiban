@@ -4,9 +4,17 @@ import type { CreateEnvironmentDto, CreateProjectDto, EnvironmentDto, ProjectDet
 import { PROJECT_MANAGER } from '../interfaces/project.constants';
 import { mapEnvironmentToDto, mapProjectDetailsToDto, mapProjectSummaryToDto } from '../mappers/project.mapper';
 
+interface InstalledServicesForProjectDeletion {
+  list(projectId: string, environmentId: string): Promise<readonly { readonly id: string }[]>;
+  delete(id: string): Promise<void>;
+}
+
 @Injectable()
 export class ProjectService {
-  public constructor(@Inject(PROJECT_MANAGER) private readonly projects: ProjectManager) {}
+  public constructor(
+    @Inject(PROJECT_MANAGER) private readonly projects: ProjectManager,
+    private readonly installedServices?: InstalledServicesForProjectDeletion
+  ) {}
 
   /** Lists project summaries. */
   public async list(): Promise<readonly ProjectSummaryDto[]> {
@@ -43,9 +51,18 @@ export class ProjectService {
     }
   }
 
-  /** Deletes a project. */
+  /** Deletes a project and every installed service that belongs to its environments. */
   public async delete(id: string): Promise<void> {
     try {
+      if (this.installedServices) {
+        const details = await this.projects.getProject(id);
+        for (const environment of details.environments) {
+          const services = await this.installedServices.list(id, environment.id);
+          for (const service of services) {
+            await this.installedServices.delete(service.id);
+          }
+        }
+      }
       await this.projects.deleteProject(id);
     } catch (error: unknown) {
       this.mapProjectError(error);

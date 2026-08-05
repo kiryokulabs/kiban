@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ProjectManager } from '@kiban/core';
 import { DatabaseModule } from '../../database/database.module';
+import { ServiceModule } from '../service/service.module';
+import { ServiceService } from '../service/services/service.service';
 import { ProjectController } from './controllers/project.controller';
 import { PROJECT_MANAGER } from './interfaces/project.constants';
 import { SqliteEnvironmentRepository } from './repositories/sqlite-environment.repository';
@@ -9,10 +11,10 @@ import { SqliteProjectUnitOfWork } from './repositories/sqlite-project-unit-of-w
 import { ProjectService } from './services/project.service';
 
 @Module({
-  imports: [DatabaseModule],
+  imports: [DatabaseModule, ServiceModule],
   controllers: [ProjectController],
   providers: [
-    ProjectService,
+    { provide: ProjectService, useFactory: (projects: ProjectManager, services: ServiceService): ProjectService => new ProjectService(projects, services), inject: [PROJECT_MANAGER, ServiceService] },
     SqliteProjectRepository,
     SqliteEnvironmentRepository,
     SqliteProjectUnitOfWork,

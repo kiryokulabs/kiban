@@ -10,7 +10,7 @@ const details = {
   ]
 };
 
-const createService = (manager: Partial<ProjectManager>) => new ProjectService(manager as ProjectManager);
+const createService = (manager: Partial<ProjectManager>, installedServices?: { list: (projectId: string, environmentId: string) => Promise<readonly { readonly id: string }[]>; delete: (id: string) => Promise<void> }) => new ProjectService(manager as ProjectManager, installedServices);
 
 describe('API ProjectService', () => {
   it('creates a project and maps environments to DTOs', async () => {
@@ -64,6 +64,31 @@ describe('API ProjectService', () => {
     const deleteProject = vi.fn(async () => undefined);
     const service = createService({ deleteProject });
     await service.delete('project-1');
+    expect(deleteProject).toHaveBeenCalledWith('project-1');
+  });
+
+
+
+  it('deletes installed services from every environment before deleting a project', async () => {
+    const getProject = vi.fn(async () => ({
+      ...details,
+      environments: [
+        details.environments[0]!,
+        { id: 'environment-2', projectId: 'project-1', name: 'Production', slug: 'production', type: 'system' as const, description: null, createdAt: details.project.createdAt, updatedAt: details.project.updatedAt }
+      ]
+    }));
+    const deleteProject = vi.fn(async () => undefined);
+    const list = vi.fn(async (_projectId: string, environmentId: string) => environmentId === 'environment-1' ? [{ id: 'service-1' }, { id: 'service-2' }] : [{ id: 'service-3' }]);
+    const deleteService = vi.fn(async () => undefined);
+    const service = createService({ getProject, deleteProject }, { list, delete: deleteService });
+
+    await service.delete('project-1');
+
+    expect(list).toHaveBeenCalledWith('project-1', 'environment-1');
+    expect(list).toHaveBeenCalledWith('project-1', 'environment-2');
+    expect(deleteService).toHaveBeenNthCalledWith(1, 'service-1');
+    expect(deleteService).toHaveBeenNthCalledWith(2, 'service-2');
+    expect(deleteService).toHaveBeenNthCalledWith(3, 'service-3');
     expect(deleteProject).toHaveBeenCalledWith('project-1');
   });
 
