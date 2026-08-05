@@ -1,18 +1,20 @@
-import { SlicePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CatalogPagePresenter } from '../catalog/catalog-page.presenter';
 import type { CatalogCategory, CatalogItem } from '../catalog/catalog.models';
 import { CatalogService } from '../catalog/catalog.service';
+import { resolveSchemaDefaultValue } from '../catalog/schema-defaults';
 import type { InstalledService } from '../installed-services/installed-services.models';
 import { InstalledServicesService } from '../installed-services/installed-services.service';
+import { ServiceDetailsPresenter } from '../service-details/service-details.presenter';
 import { EnvironmentCardPresenter } from '../projects/environment-card.presenter';
 import type { EnvironmentItem, ProjectDetails } from '../projects/projects.models';
 import { ProjectsService } from '../projects/projects.service';
 import { ConfirmModalComponent } from '../shared/confirm-modal.component';
 import { ModalComponent } from '../shared/modal.component';
 import { IconsComponent } from '../shared/icons.component';
+import { SvgIconComponent } from '../shared/svg-icon.component';
 
 type InstallStep = 1 | 2 | 3;
 interface SchemaField { readonly key: string; readonly label: string; readonly required: boolean; readonly defaultValue: string; }
@@ -20,7 +22,7 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
 @Component({
   selector: 'kiban-project-details-page',
   standalone: true,
-  imports: [FormsModule, RouterLink, SlicePipe, ConfirmModalComponent, ModalComponent, IconsComponent],
+  imports: [FormsModule, RouterLink, ConfirmModalComponent, ModalComponent, IconsComponent, SvgIconComponent],
   template: `
     <div class="space-y-6">
       <!-- Back & header -->
@@ -106,28 +108,29 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
                         <div class="flex items-start justify-between gap-2">
                           <div class="min-w-0 flex-1">
                             <div class="flex items-center gap-2">
+
                               <p class="text-sm font-medium kb-text truncate">{{ service.name }}</p>
                               <span class="badge text-[10px] px-1.5 py-0.5 leading-none" [class.badge-success]="service.status === 'running'" [class.badge-warning]="service.status === 'installing'" [class.badge-danger]="service.status === 'failed' || service.status === 'stopped' || service.status === 'removing'">
                                 {{ service.status }}
                               </span>
                             </div>
-                            @if (accessUrls(service).length > 0) {
-                              <div class="mt-1.5 flex flex-wrap gap-1.5">
-                                @for (url of accessUrls(service); track url) {
-                                  <a class="inline-flex items-center gap-1 rounded-full border kb-border px-2 py-0.5 text-[11px] c-muted hover:c-text transition-colors" [href]="url" target="_blank">
+                            @if (detailsPresenter.hasWebAccess(detailsPresenter.accessPointsFor(service))) {
+                              <div class="mt-4 flex flex-wrap gap-1.5">
+                                @for (url of detailsPresenter.webUrls(detailsPresenter.accessPointsFor(service)); track url) {
+                                  <a class="inline-flex items-center gap-1 text-[11px] c-muted hover:c-text transition-colors" [href]="url" target="_blank">
                                     {{ url }}
                                     <kiban-icon name="external-link" [size]="10" />
                                   </a>
                                 }
                               </div>
                             }
-                            <p class="mt-1 text-[11px] c-subtle">{{ service.createdAt | slice:0:10 }}</p>
+                            <!--<p class="mt-1 text-[11px] c-subtle">{{ service.createdAt | slice:0:10 }}</p> -->
                           </div>
                           <button class="btn-danger btn gap-1 text-[11px] px-2 py-1" type="button" (click)="requestDeleteInstalledService(service)">
                             <kiban-icon name="trash" [size]="12" />
                           </button>
                         </div>
-                        <div class="mt-2 flex flex-wrap gap-1.5">
+                        <div class="mt-2 flex flex-wrap items-center gap-1.5">
                           <button class="btn-ghost btn gap-1 text-[11px] px-2 py-1" type="button" (click)="startInstalledService(service)" [disabled]="service.status === 'running'">
                             <kiban-icon name="play" [size]="12" />
                             Start
@@ -140,6 +143,10 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
                             <kiban-icon name="restart" [size]="12" />
                             Restart
                           </button>
+                          <a class="btn-ghost btn gap-1 text-[11px] px-2 py-1 ml-auto" [routerLink]="['/services', service.id]">
+                            <kiban-icon name="info" [size]="12" />
+                            Manage
+                          </a>
                         </div>
                       </div>
                     }
@@ -218,7 +225,7 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
               <div class="mt-3 max-h-72 space-y-1 overflow-auto">
                 @for (item of selectableServices(); track item.id) {
                   <button type="button" class="flex w-full items-start gap-3 rounded-lg border kb-border p-3 text-left transition hover:border-brand/50 hover:bg-hover" (click)="selectService(item)">
-                    <div class="grid h-8 w-8 shrink-0 place-items-center rounded-lg border kb-border bg-surface" [innerHTML]="item.icon"></div>
+                    <div class="grid h-8 w-8 shrink-0 place-items-center rounded-lg border kb-border bg-surface py-1"><kiban-svg-icon [svg]="item.icon" /></div>
                     <div class="min-w-0 flex-1">
                       <span class="text-sm font-medium kb-text">{{ item.name }}</span>
                       <span class="mt-0.5 block text-xs c-muted leading-relaxed line-clamp-2">{{ item.description }}</span>
@@ -255,18 +262,6 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
                 <div class="flex items-center justify-between border-b kb-border pb-2">
                   <span class="text-xs c-muted">Name</span>
                   <span class="text-xs font-medium kb-text">{{ selectedService()?.name }}</span>
-                </div>
-                <div class="flex items-center justify-between border-b kb-border pb-2">
-                  <span class="text-xs c-muted">Image</span>
-                  <span class="text-xs font-medium kb-text">{{ imageLabel(selectedService()!) }}</span>
-                </div>
-                <div class="flex items-center justify-between border-b kb-border pb-2">
-                  <span class="text-xs c-muted">Ports</span>
-                  <span class="text-xs kb-text">{{ manifestList(selectedService()!, 'ports') }}</span>
-                </div>
-                <div class="flex items-center justify-between border-b kb-border pb-2">
-                  <span class="text-xs c-muted">Volumes</span>
-                  <span class="text-xs kb-text">{{ manifestList(selectedService()!, 'volumes') }}</span>
                 </div>
                 <div class="flex items-center justify-between">
                   <span class="text-xs c-muted">Env variables</span>
@@ -309,6 +304,117 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
           </kiban-modal>
         }
 
+        <!-- Service details modal -->
+        @if (serviceForDetails(); as service) {
+          <kiban-modal title="{{ service.name }}" (close)="closeDetails()">
+            <div class="grid gap-4 sm:grid-cols-2">
+              <!-- Service info -->
+              <div class="col-span-full space-y-1.5 pb-3 border-b kb-border mb-2">
+                <div class="flex items-center gap-2 text-sm">
+                  <span class="c-muted">Status</span>
+                  <span class="badge text-[10px] px-1.5 py-0.5 leading-none"
+                    [class.badge-success]="service.status === 'running'"
+                    [class.badge-warning]="service.status === 'installing'"
+                    [class.badge-danger]="service.status === 'failed' || service.status === 'stopped' || service.status === 'removing'">{{ service.status }}</span>
+                </div>
+                <div class="flex items-center gap-2 text-sm">
+                  <span class="c-muted">Runtime</span>
+                  <span class="kb-text">{{ detailsPresenter.serviceLabel(service.runtime) }}</span>
+                </div>
+              </div>
+
+              <!-- Access points -->
+              @for (ap of detailsPresenter.accessPointsFor(service); track ap.kind + '-' + ap.port; let i = $index) {
+                <div class="col-span-full">
+                  <h3 class="text-xs font-medium c-muted mb-2">{{ ap.name }}</h3>
+                  <div class="grid gap-2 sm:grid-cols-2">
+                    <!-- Host -->
+                    <div class="flex items-center justify-between gap-2 rounded-lg border kb-border px-3 py-2">
+                      <div class="min-w-0">
+                        <span class="block text-[10px] c-subtle">Host</span>
+                        <span class="block text-xs font-medium kb-text truncate">{{ ap.host }}</span>
+                      </div>
+                      <button type="button" class="btn-icon shrink-0" (click)="copyToClipboard(ap.host)" title="Copy host">
+                        <kiban-icon name="copy" [size]="12" />
+                      </button>
+                    </div>
+
+                    <!-- Port -->
+                    <div class="flex items-center justify-between gap-2 rounded-lg border kb-border px-3 py-2">
+                      <div class="min-w-0">
+                        <span class="block text-[10px] c-subtle">Port</span>
+                        <span class="block text-xs font-medium kb-text truncate">{{ ap.hostPort ?? ap.port }}</span>
+                      </div>
+                      <button type="button" class="btn-icon shrink-0" (click)="copyToClipboard('' + (ap.hostPort ?? ap.port))" title="Copy port">
+                        <kiban-icon name="copy" [size]="12" />
+                      </button>
+                    </div>
+
+                    <!-- Username -->
+                    @if (ap.username) {
+                      <div class="flex items-center justify-between gap-2 rounded-lg border kb-border px-3 py-2">
+                        <div class="min-w-0">
+                          <span class="block text-[10px] c-subtle">Username</span>
+                          <span class="block text-xs font-medium kb-text truncate">{{ ap.username }}</span>
+                        </div>
+                        <button type="button" class="btn-icon shrink-0" (click)="copyToClipboard(ap.username!)" title="Copy username">
+                          <kiban-icon name="copy" [size]="12" />
+                        </button>
+                      </div>
+                    }
+
+                    <!-- Password -->
+                    @if (ap.password) {
+                      <div class="flex items-center justify-between gap-2 rounded-lg border kb-border px-3 py-2">
+                        <div class="min-w-0">
+                          <span class="block text-[10px] c-subtle">Password</span>
+                          <span class="block text-xs font-medium kb-text truncate font-mono">{{ visiblePasswords().has(i) ? ap.password : '••••••••' }}</span>
+                        </div>
+                        <div class="flex items-center gap-1 shrink-0">
+                          <button type="button" class="btn-icon" (click)="togglePassword(i)" [title]="visiblePasswords().has(i) ? 'Hide password' : 'Show password'">
+                            <kiban-icon [name]="visiblePasswords().has(i) ? 'eye-off' : 'eye'" [size]="12" />
+                          </button>
+                          <button type="button" class="btn-icon" (click)="copyToClipboard(ap.password!)" title="Copy password">
+                            <kiban-icon name="copy" [size]="12" />
+                          </button>
+                        </div>
+                      </div>
+                    }
+
+                    <!-- Database -->
+                    @if (ap.database) {
+                      <div class="flex items-center justify-between gap-2 rounded-lg border kb-border px-3 py-2">
+                        <div class="min-w-0">
+                          <span class="block text-[10px] c-subtle">Database</span>
+                          <span class="block text-xs font-medium kb-text truncate">{{ ap.database }}</span>
+                        </div>
+                        <button type="button" class="btn-icon shrink-0" (click)="copyToClipboard(ap.database!)" title="Copy database">
+                          <kiban-icon name="copy" [size]="12" />
+                        </button>
+                      </div>
+                    }
+                  </div>
+                </div>
+
+                <!-- Connection string -->
+                @if (ap.connectionString) {
+                  <div class="col-span-full mt-1">
+                    <div class="flex items-center justify-between gap-2 rounded-lg border kb-border px-3 py-2">
+                      <div class="min-w-0 flex-1">
+                        <span class="block text-[10px] c-subtle">Connection String</span>
+                        <span class="block text-xs font-medium kb-text truncate font-mono">{{ visiblePasswords().has(i) ? ap.connectionString : detailsPresenter.obfuscatedConnectionString(ap) }}</span>
+                      </div>
+                      <button type="button" class="btn-icon shrink-0" (click)="copyToClipboard(ap.connectionString!)" title="Copy connection string">
+                        <kiban-icon name="copy" [size]="12" />
+                      </button>
+                    </div>
+                  </div>
+                }
+              }
+            </div>
+          </kiban-modal>
+        }
+
         <!-- Delete confirmations -->
         @if (installedServicePendingDelete()) {
           <kiban-confirm-modal title="Delete service" [message]="deleteInstalledServiceMessage()" confirmLabel="Delete service" [destructive]="true" (cancel)="cancelDeleteInstalledService()" (confirm)="confirmDeleteInstalledService()" />
@@ -326,7 +432,7 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
 })
 export class ProjectDetailsPageComponent {
   private readonly route = inject(ActivatedRoute); private readonly projectsService = inject(ProjectsService); private readonly installedServices = inject(InstalledServicesService); private readonly catalogService = inject(CatalogService); private readonly environmentPresenter = new EnvironmentCardPresenter(); private readonly catalogPresenter = new CatalogPagePresenter();
-  protected readonly project = signal<ProjectDetails | null>(null); protected readonly message = signal<string | null>(null); protected readonly environmentPendingDelete = signal<EnvironmentItem | null>(null); protected readonly installedServicePendingDelete = signal<InstalledService | null>(null); protected readonly environmentModalOpen = signal(false); protected readonly servicesByEnvironment = signal<Readonly<Record<string, readonly InstalledService[]>>>({}); protected readonly catalogCategories = signal<readonly CatalogCategory[]>([]); protected readonly catalogItems = signal<readonly CatalogItem[]>([]); protected readonly installEnvironment = signal<EnvironmentItem | null>(null); protected readonly selectedService = signal<CatalogItem | null>(null); protected readonly installStep = signal<InstallStep>(1); protected readonly installingService = signal(false); protected readonly selectedCatalogCategory = signal('all');
+  protected readonly detailsPresenter = new ServiceDetailsPresenter(); protected readonly project = signal<ProjectDetails | null>(null); protected readonly message = signal<string | null>(null); protected readonly environmentPendingDelete = signal<EnvironmentItem | null>(null); protected readonly installedServicePendingDelete = signal<InstalledService | null>(null); protected readonly environmentModalOpen = signal(false); protected readonly servicesByEnvironment = signal<Readonly<Record<string, readonly InstalledService[]>>>({}); protected readonly catalogCategories = signal<readonly CatalogCategory[]>([]); protected readonly catalogItems = signal<readonly CatalogItem[]>([]); protected readonly installEnvironment = signal<EnvironmentItem | null>(null); protected readonly selectedService = signal<CatalogItem | null>(null); protected readonly installStep = signal<InstallStep>(1); protected readonly installingService = signal(false); protected readonly selectedCatalogCategory = signal('all'); protected readonly serviceForDetails = signal<InstalledService | null>(null); protected readonly visiblePasswords = signal<ReadonlySet<number>>(new Set());
   protected environmentName = ''; protected environmentDescriptionText = ''; protected serviceSearch = ''; protected configurationValues: Record<string, string> = {}; private readonly projectId: string | null;
   public constructor() { this.projectId = this.route.snapshot.paramMap.get('id'); this.loadCatalog(); this.loadProject(); }
   protected loadProject(): void { if (this.projectId) this.projectsService.getProject(this.projectId).subscribe({ next: (project) => { this.project.set(project); for (const environment of project.environments) this.loadInstalledServices(environment.id); }, error: () => this.message.set('Could not load project.') }); }
@@ -338,7 +444,7 @@ export class ProjectDetailsPageComponent {
   protected selectableServices(): readonly CatalogItem[] { const searched = this.catalogItems().filter((item) => `${item.name} ${item.description}`.toLowerCase().includes(this.serviceSearch.toLowerCase())); return this.catalogPresenter.visibleItems(searched, this.selectedCatalogCategory()); }
   protected selectService(item: CatalogItem): void { this.selectedService.set(item); this.configurationValues = Object.fromEntries(this.schemaFieldsFor(item).map((field) => [field.key, field.defaultValue])); this.installStep.set(2); }
   protected schemaFields(): readonly SchemaField[] { const item = this.selectedService(); return item ? this.schemaFieldsFor(item) : []; }
-  private schemaFieldsFor(item: CatalogItem): readonly SchemaField[] { const properties = item.schema['properties']; const required = Array.isArray(item.schema['required']) ? item.schema['required'] : []; if (!properties || typeof properties !== 'object' || Array.isArray(properties)) return []; return Object.entries(properties).map(([key, value]) => { const record = value && typeof value === 'object' && !Array.isArray(value) ? value as Readonly<Record<string, unknown>> : {}; const title = typeof record['title'] === 'string' ? record['title'] : key; const defaultValue = typeof record['default'] === 'string' ? record['default'] : ''; return { key, label: title, required: required.includes(key), defaultValue }; }); }
+  private schemaFieldsFor(item: CatalogItem): readonly SchemaField[] { const properties = item.schema['properties']; const required = Array.isArray(item.schema['required']) ? item.schema['required'] : []; if (!properties || typeof properties !== 'object' || Array.isArray(properties)) return []; return Object.entries(properties).map(([key, value]) => { const record = value && typeof value === 'object' && !Array.isArray(value) ? value as Readonly<Record<string, unknown>> : {}; const title = typeof record['title'] === 'string' ? record['title'] : key; const defaultValue = resolveSchemaDefaultValue(record['default']); return { key, label: title, required: required.includes(key), defaultValue }; }); }
   protected goToReview(): void { this.installStep.set(3); }
   protected installSelectedService(): void { const env = this.installEnvironment(); const service = this.selectedService(); if (!this.projectId || !env || !service || this.installingService()) return; this.installingService.set(true); this.message.set('Installing service. This can take a few minutes while Kiban pulls the image and creates runtime resources.'); this.installedServices.install(this.projectId, env.id, { serviceId: service.id, configuration: this.configurationValues }).subscribe({ next: () => { this.installingService.set(false); this.closeInstallDialog(); this.message.set(null); this.loadInstalledServices(env.id); }, error: () => { this.installingService.set(false); this.message.set('Could not install service. Check configuration and duplicates.'); } }); }
   protected startInstalledService(service: InstalledService): void { this.installedServices.start(service.id).subscribe({ next: () => this.loadInstalledServices(service.environmentId), error: () => this.message.set('Could not start service.') }); }
@@ -348,10 +454,11 @@ export class ProjectDetailsPageComponent {
   protected cancelDeleteInstalledService(): void { this.installedServicePendingDelete.set(null); }
   protected deleteInstalledServiceMessage(): string { const service = this.installedServicePendingDelete(); return service ? `Delete service "${service.name}"? This will stop and remove its running runtime resources.` : ''; }
   protected confirmDeleteInstalledService(): void { const service = this.installedServicePendingDelete(); if (!service) return; this.installedServices.delete(service.id).subscribe({ next: () => { this.installedServicePendingDelete.set(null); this.loadInstalledServices(service.environmentId); }, error: () => this.message.set('Could not delete service.') }); }
-  protected accessUrls(service: InstalledService): readonly string[] { const assignedPorts = service.runtime?.['assignedPorts']; if (!Array.isArray(assignedPorts)) return []; return assignedPorts.flatMap((entry) => { if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return []; const port = (entry as Readonly<Record<string, unknown>>)['hostPort']; return typeof port === 'string' && port ? [`http://localhost:${port}`] : []; }); }
+  protected openDetails(service: InstalledService): void { this.serviceForDetails.set(service); this.visiblePasswords.set(new Set()); }
+  protected closeDetails(): void { this.serviceForDetails.set(null); }
+  protected copyToClipboard(value: string): void { if (typeof navigator !== 'undefined' && navigator.clipboard) navigator.clipboard.writeText(value).catch(() => {}); }
+  protected togglePassword(index: number): void { const current = this.visiblePasswords(); const next = new Set(current); if (next.has(index)) { next.delete(index); } else { next.add(index); } this.visiblePasswords.set(next); }
   protected configurationKeys(): readonly string[] { return Object.keys(this.configurationValues).filter((key) => this.configurationValues[key]); }
-  protected imageLabel(item: CatalogItem): string { const docker = item.metadata['docker']; if (!docker || typeof docker !== 'object' || Array.isArray(docker)) return item.id; const image = (docker as Readonly<Record<string, unknown>>)['image']; const tag = (docker as Readonly<Record<string, unknown>>)['tag']; return `${typeof image === 'string' ? image : item.id}${typeof tag === 'string' ? `:${tag}` : ''}`; }
-  protected manifestList(item: CatalogItem, key: 'ports' | 'volumes'): string { const value = item.metadata[key]; return Array.isArray(value) && value.length > 0 ? `${value.length} defined` : 'None'; }
   protected openEnvironmentModal(): void { this.environmentName = ''; this.environmentDescriptionText = ''; this.environmentModalOpen.set(true); }
   protected closeEnvironmentModal(): void { this.environmentModalOpen.set(false); }
   protected environmentCardDescription(environment: EnvironmentItem): string { return this.environmentPresenter.description(environment); }
