@@ -16,6 +16,9 @@
     "@kiban/plugin-sdk": "workspace:*",
     "@kiban/shared": "workspace:*"
   },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
