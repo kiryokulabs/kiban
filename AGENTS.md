@@ -436,17 +436,25 @@ unless explicitly requested.
 
 # Docker
 
-Never execute shell commands.
+Docker and Docker Compose are implementation details.
 
-Never run:
+Never run Docker or Docker Compose commands outside the infrastructure runtime provider.
+
+Application, Domain, Presentation and UI code must never execute:
 
 ```bash
 docker ...
+docker compose ...
 ```
 
-from production code.
+The current runtime provider may execute Docker Compose internally because Compose is Kiban's runtime backend for catalog services.
 
-Always use Docker Engine API.
+When production code executes Docker Compose, it must:
+
+- live only inside the infrastructure runtime provider,
+- use safe argument arrays,
+- never build interpolated shell strings,
+- keep Docker/Compose concepts hidden from users and business logic.
 
 Docker CLI is allowed only for development scripts.
 

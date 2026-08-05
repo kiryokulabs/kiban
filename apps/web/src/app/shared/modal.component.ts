@@ -11,7 +11,9 @@ import { IconsComponent } from './icons.component';
   template: `
     <div class="fixed inset-0 z-modal-backdrop grid place-items-center bg-black/60 p-4 md:p-6" role="presentation">
       <section
-        class="w-full max-w-md rounded-xl border kb-border surface-elevated shadow-xl animate-[fadeIn_150ms_ease-out]"
+        class="w-full rounded-xl border kb-border surface-elevated shadow-xl animate-[fadeIn_150ms_ease-out]"
+        [class.max-w-md]="!wide"
+        [class.max-w-3xl]="wide"
         role="dialog"
         aria-modal="true"
         [attr.aria-label]="title"
@@ -32,6 +34,9 @@ import { IconsComponent } from './icons.component';
 export class ModalComponent {
   /** Modal title exposed to users and assistive technologies. */
   @Input() public title = '';
+
+  /** Allows feature dialogs with denser selection UIs to use a wider shell. */
+  @Input() public wide = false;
 
   /** Emitted when the user asks to dismiss the modal. */
   @Output() public readonly close = new EventEmitter<void>();

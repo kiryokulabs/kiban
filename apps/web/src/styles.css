@@ -18,8 +18,8 @@
   --color-active: #272d36;
   --color-inverse: #09090b;
   --color-inverse-text: #fafafa;
-  --color-brand: #3b82f6;
-  --color-brand-hover: #2563eb;
+  --color-brand: #ad1a1a;
+  --color-brand-hover: #ad1a1a;
   --color-danger: #ef4444;
   --color-success: #22c55e;
   --color-warning: #f59e0b;
@@ -293,6 +293,15 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-line-strong);
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 /* Selection */

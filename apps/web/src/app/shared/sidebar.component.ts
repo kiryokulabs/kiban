@@ -76,9 +76,9 @@ export interface NavItem {
           [title]="collapsed() ? themeLabel() : themeLabel()"
         >
           @if (isDark()) {
-            <kiban-icon name="moon" [size]="16" class="shrink-0" />
-          } @else {
             <kiban-icon name="sun" [size]="16" class="shrink-0" />
+          } @else {
+            <kiban-icon name="moon" [size]="16" class="shrink-0" />
           }
           @if (!collapsed()) {
             <span class="truncate">{{ themeLabel() }}</span>
