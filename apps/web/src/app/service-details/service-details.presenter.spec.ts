@@ -257,18 +257,18 @@ describe('ServiceDetailsPresenter management page helpers', () => {
     expect(presenter.logs(details)).toBe('log line');
   });
 
-  it('returns copyable local terminal commands for every runtime container', () => {
+  it('returns copyable local terminal commands using container IDs', () => {
     expect(presenter.terminalCommands(details)).toEqual([
-      { containerName: 'db', command: 'docker exec -it db sh' }
+      { containerName: 'db', command: 'docker exec -it c1 sh' }
     ]);
   });
 
-  it('quotes container names in terminal commands when needed', () => {
-    const withSpacedContainer = {
+  it('uses container IDs even when container names are complex', () => {
+    const withComplexName = {
       ...details,
-      containers: [{ id: 'c1', name: 'service worker', status: 'running', health: 'healthy', image: 'example/app:1', restartCount: 0 }]
+      containers: [{ id: 'a1b2c3d4e5f6', name: 'kiban-9ee18496-supabase-supabase-1', status: 'running', health: 'healthy', image: 'example/app:1', restartCount: 0 }]
     };
 
-    expect(presenter.terminalCommands(withSpacedContainer)[0]?.command).toBe("docker exec -it 'service worker' sh");
+    expect(presenter.terminalCommands(withComplexName)[0]?.command).toBe('docker exec -it a1b2c3d4e5f6 sh');
   });
 });

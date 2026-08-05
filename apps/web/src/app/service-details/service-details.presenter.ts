@@ -140,7 +140,7 @@ export class ServiceDetailsPresenter {
   public terminalCommands(details: InstalledServiceDetails): readonly TerminalCommand[] {
     return details.containers.map((container) => ({
       containerName: container.name,
-      command: `docker exec -it ${this.shellQuote(container.name)} sh`
+      command: `docker exec -it ${container.id} sh`
     }));
   }
 
@@ -167,7 +167,4 @@ export class ServiceDetailsPresenter {
     return result;
   }
 
-  private shellQuote(value: string): string {
-    return /^[A-Za-z0-9_.-]+$/.test(value) ? value : `'${value.replace(/'/g, `'"'"'`)}'`;
-  }
 }
