@@ -1,5 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post } from '@nestjs/common';
 import type { InstalledServiceDto } from '../dto/service.dto';
+import type { InstalledServiceDetailsDto } from '../dto/service-details.dto';
 import type { ServiceLogsDto, ServiceRuntimeDto } from '../dto/runtime.dto';
 import { ServiceService } from '../services/service.service';
 
@@ -26,6 +27,18 @@ export class ServiceController {
   /** Gets one installed service. */
   @Get('services/:id')
   public get(@Param('id') id: string): Promise<InstalledServiceDto> { return this.service.get(id); }
+
+  /** Gets full management details for one installed service. */
+  @Get('services/:id/details')
+  public details(@Param('id') id: string): Promise<InstalledServiceDetailsDto> { return this.service.details(id); }
+
+  /** Saves and applies installed service configuration. */
+  @Patch('services/:id/configuration')
+  public updateConfiguration(@Param('id') id: string, @Body() body: unknown): Promise<InstalledServiceDto> { return this.service.updateConfiguration(id, body); }
+
+  /** Recreates one installed service. */
+  @Patch('services/:id/recreate')
+  public recreate(@Param('id') id: string): Promise<InstalledServiceDto> { return this.service.recreate(id); }
 
   /** Gets runtime metadata for one installed service. */
   @Get('services/:id/runtime')

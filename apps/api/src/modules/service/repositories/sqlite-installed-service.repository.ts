@@ -48,6 +48,15 @@ export class SqliteInstalledServiceRepository implements InstalledServiceReposit
     return this.findById(id);
   }
 
+
+  /** Updates service configuration, status and runtime metadata. */
+  public async updateConfiguration(id: string, configuration: Readonly<Record<string, unknown>>, status: InstalledServiceStatus, runtime?: Readonly<Record<string, unknown>> | null): Promise<InstalledService | null> {
+    const existing = await this.findById(id);
+    if (!existing) return null;
+    await this.database.run('UPDATE installed_services SET configuration_json = ?, status = ?, runtime_json = ?, updated_at = ? WHERE id = ?', [JSON.stringify(configuration), status, runtime === undefined ? existing.runtime ? JSON.stringify(existing.runtime) : null : runtime ? JSON.stringify(runtime) : null, new Date(), id]);
+    return this.findById(id);
+  }
+
   /** Deletes an installed service record. */
   public async delete(id: string): Promise<boolean> {
     const existing = await this.findById(id);
