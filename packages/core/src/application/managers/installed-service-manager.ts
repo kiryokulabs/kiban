@@ -1,4 +1,4 @@
-import type { CatalogItem } from '../../domain/catalog/catalog-item.js';
+import type { ServiceDefinition } from '../../domain/catalog/service-definition.js';
 import type { Environment } from '../../domain/projects/project.js';
 import { ProjectNotFoundError, ProjectValidationError } from '../../domain/projects/project-errors.js';
 import type { InstallServiceInput, InstalledService, InstalledServiceStatus } from '../../domain/services/installed-service.js';
@@ -29,14 +29,21 @@ export class InstalledServiceManager {
     const environment = await this.validateEnvironment(projectId, environmentId);
     const serviceDefinition = await this.validateServiceDefinition(input.serviceId);
     this.validateConfiguration(serviceDefinition, input.configuration);
-    const duplicate = await this.installedServices.findByEnvironmentIdAndName(environment.id, serviceDefinition.name);
+    const duplicate = await this.installedServices.findByEnvironmentIdAndName(environment.id, serviceDefinition.metadata.name);
     if (duplicate) {
       throw new ProjectValidationError('A service with this name is already installed in this environment.');
     }
     const plan = this.createInstallationPlan(environment, serviceDefinition, input.configuration);
     const result = await this.runtime.install(plan);
     const status = result.status === 'running' ? 'running' : 'failed';
-    return this.installedServices.create({ environmentId: environment.id, serviceId: serviceDefinition.id, name: serviceDefinition.name, status, configuration: input.configuration, runtime: result.runtime ?? null });
+    return this.installedServices.create({
+      environmentId: environment.id,
+      serviceId: serviceDefinition.id,
+      name: serviceDefinition.metadata.name,
+      status,
+      configuration: input.configuration,
+      runtime: result.runtime ?? null
+    });
   }
 
   /** Lists every installed service. */
@@ -59,7 +66,7 @@ export class InstalledServiceManager {
     return service;
   }
 
-  /** Removes only the installed service record. Runtime resources are out of scope for this milestone. */
+  /** Uninstalls runtime resources then deletes the installed service record. */
   public async delete(id: string): Promise<void> {
     const service = await this.get(id);
     await this.runtime.uninstall(service);
@@ -67,6 +74,32 @@ export class InstalledServiceManager {
     if (!deleted) {
       throw new ProjectNotFoundError();
     }
+  }
+
+
+  /** Updates configuration and recreates runtime resources with a fresh installation plan. */
+  public async updateConfiguration(id: string, configuration: Readonly<Record<string, unknown>>): Promise<InstalledService> {
+    const service = await this.get(id);
+    const environment = await this.environments.findById(service.environmentId);
+    if (!environment) {
+      throw new ProjectNotFoundError();
+    }
+    const serviceDefinition = await this.validateServiceDefinition(service.serviceId);
+    this.validateConfiguration(serviceDefinition, configuration);
+    await this.runtime.uninstall(service);
+    const result = await this.runtime.install(this.createInstallationPlan(environment, serviceDefinition, configuration));
+    const status = result.status === 'running' ? 'running' : 'failed';
+    const updated = await this.installedServices.updateConfiguration(id, configuration, status, result.runtime ?? null);
+    if (!updated) {
+      throw new ProjectNotFoundError();
+    }
+    return updated;
+  }
+
+  /** Recreates runtime resources using the current configuration. */
+  public async recreate(id: string): Promise<InstalledService> {
+    const service = await this.get(id);
+    return this.updateConfiguration(service.id, service.configuration);
   }
 
   /** Starts a stopped service through the runtime provider. */
@@ -100,7 +133,7 @@ export class InstalledServiceManager {
     return environment;
   }
 
-  private async validateServiceDefinition(serviceId: string): Promise<CatalogItem> {
+  private async validateServiceDefinition(serviceId: string): Promise<ServiceDefinition> {
     const service = (await this.catalog.listItems()).find((item) => item.id === serviceId);
     if (!service) {
       throw new ProjectValidationError('Unknown service definition.');
@@ -108,7 +141,7 @@ export class InstalledServiceManager {
     return service;
   }
 
-  private validateConfiguration(service: CatalogItem, configuration: Readonly<Record<string, unknown>>): void {
+  private validateConfiguration(service: ServiceDefinition, configuration: Readonly<Record<string, unknown>>): void {
     if (!configuration || typeof configuration !== 'object' || Array.isArray(configuration)) {
       throw new ProjectValidationError('Missing configuration.');
     }
@@ -130,15 +163,12 @@ export class InstalledServiceManager {
     }
   }
 
-  private createInstallationPlan(environment: Environment, serviceDefinition: CatalogItem, configuration: Readonly<Record<string, unknown>>): InstallationPlan {
-    return {
-      serviceDefinition,
-      environment,
-      variables: configuration,
-      volumes: serviceDefinition.metadata.volumes ?? [],
-      networks: [],
-      ports: serviceDefinition.metadata.ports ?? []
-    };
+  private createInstallationPlan(
+    environment: Environment,
+    serviceDefinition: ServiceDefinition,
+    configuration: Readonly<Record<string, unknown>>
+  ): InstallationPlan {
+    return { serviceDefinition, environment, variables: configuration };
   }
 
   private assertTransition(from: InstalledServiceStatus, to: InstalledServiceStatus): void {
@@ -147,7 +177,11 @@ export class InstalledServiceManager {
     }
   }
 
-  private async updateStatus(id: string, status: InstalledServiceStatus, runtime: Readonly<Record<string, unknown>> | null | undefined): Promise<InstalledService> {
+  private async updateStatus(
+    id: string,
+    status: InstalledServiceStatus,
+    runtime: Readonly<Record<string, unknown>> | null | undefined
+  ): Promise<InstalledService> {
     const service = await this.installedServices.updateStatus(id, status, runtime);
     if (!service) {
       throw new ProjectNotFoundError();

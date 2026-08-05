@@ -1,12 +1,17 @@
 
-import type { CatalogCategory, CatalogItem, CatalogRepository } from '@kiban/core';
+import type { CatalogCategory, CatalogItem } from '@kiban/core';
 import type { PluginManifest } from '@kiban/plugin-sdk';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 
 const REQUIRED_FILES = ['metadata.json', 'compose.yaml', 'schema.json', 'icon.svg'] as const;
 
-export class FilesystemCatalogRepository implements CatalogRepository {
+/**
+ * @deprecated Superseded by CatalogLoaderRepository. Retained for reference only.
+ * No longer registered in the NestJS module and no longer implements CatalogRepository
+ * (which now returns ServiceDefinition[] instead of CatalogItem[]).
+ */
+export class FilesystemCatalogRepository {
   private readonly root: string;
 
   private constructor(root: string) {

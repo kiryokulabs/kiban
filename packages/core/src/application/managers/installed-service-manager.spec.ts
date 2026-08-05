@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { CatalogCategory, CatalogItem } from '../../domain/catalog/catalog-item.js';
+import type { CatalogCategory } from '../../domain/catalog/catalog-item.js';
+import type { ServiceDefinition } from '../../domain/catalog/service-definition.js';
 import type { Environment } from '../../domain/projects/project.js';
 import { ProjectNotFoundError, ProjectValidationError } from '../../domain/projects/project-errors.js';
 import type { InstalledService } from '../../domain/services/installed-service.js';
@@ -10,24 +11,60 @@ import { InstalledServiceManager } from './installed-service-manager.js';
 
 const now = new Date('2026-07-30T10:00:00.000Z');
 const category: CatalogCategory = { id: 'databases', name: 'Databases' };
-const serviceDefinition: CatalogItem = {
+
+const serviceDefinition: ServiceDefinition = {
   id: 'postgresql',
-  name: 'PostgreSQL',
-  description: 'Database',
-  version: '1.0.0',
-  author: 'Kiban',
-  category,
-  metadata: { id: 'postgresql', name: 'PostgreSQL', description: 'Database', version: '1.0.0', author: 'Kiban', category: 'databases', minimumVersion: '0.1.0', docker: { image: 'postgres', tag: '17' }, ports: [{ name: 'default', port: 5432, protocol: 'tcp' }], volumes: [{ name: 'data', mountPath: '/data', persistent: true }] },
-  compose: 'services: {}',
-  schema: { type: 'object', required: ['POSTGRES_PASSWORD'], properties: { POSTGRES_PASSWORD: { type: 'string' } }, additionalProperties: false },
+  metadata: {
+    id: 'postgresql',
+    name: 'PostgreSQL',
+    description: 'Database',
+    category: 'databases',
+    author: 'Kiban',
+    minimumVersion: '0.1.0',
+    accessPoints: [
+      {
+        name: 'Database',
+        kind: 'postgres',
+        service: 'postgresql',
+        port: 5432,
+        connection: { username: 'POSTGRES_USER', password: 'POSTGRES_PASSWORD', database: 'POSTGRES_DB' }
+      }
+    ]
+  },
+  composeYaml: 'services:\n  postgresql:\n    image: postgres:17\n',
+  runtime: {
+    services: [
+      {
+        name: 'postgresql',
+        image: 'postgres',
+        tag: '17',
+        ports: [{ port: 5432, protocol: 'tcp' as const }],
+        environment: [
+          { key: 'POSTGRES_DB', value: 'kiban', required: false },
+          { key: 'POSTGRES_USER', value: 'kiban', required: false },
+          { key: 'POSTGRES_PASSWORD', required: true }
+        ],
+        volumes: [{ name: 'postgresql_data', target: '/var/lib/postgresql/data' }],
+        restart: 'unless-stopped' as const,
+        dependsOn: [],
+        labels: {}
+      }
+    ]
+  },
+  schema: {
+    type: 'object',
+    required: ['POSTGRES_PASSWORD'],
+    properties: { POSTGRES_PASSWORD: { type: 'string' } },
+    additionalProperties: false
+  },
   icon: '<svg></svg>',
   sourcePath: '/catalog/databases/postgresql'
 };
 
 class MemoryCatalogRepository implements CatalogRepository {
-  public constructor(private readonly items: readonly CatalogItem[] = [serviceDefinition]) {}
+  public constructor(private readonly items: readonly ServiceDefinition[] = [serviceDefinition]) {}
   public async listCategories(): Promise<readonly CatalogCategory[]> { return [category]; }
-  public async listItems(): Promise<readonly CatalogItem[]> { return this.items; }
+  public async listItems(): Promise<readonly ServiceDefinition[]> { return this.items; }
 }
 
 class MemoryEnvironmentRepository implements EnvironmentRepository {
@@ -38,7 +75,6 @@ class MemoryEnvironmentRepository implements EnvironmentRepository {
   public async deleteById(): Promise<void> {}
   public async deleteByProjectId(): Promise<void> {}
 }
-
 
 class MemoryInstalledServiceRepository implements InstalledServiceRepository {
   public readonly services = new Map<string, InstalledService>();
@@ -54,13 +90,21 @@ class MemoryInstalledServiceRepository implements InstalledServiceRepository {
   public async listByEnvironmentId(environmentId: string): Promise<readonly InstalledService[]> { return [...this.services.values()].filter((service) => service.environmentId === environmentId); }
   public async findByEnvironmentIdAndName(environmentId: string, name: string): Promise<InstalledService | null> { return [...this.services.values()].find((service) => service.environmentId === environmentId && service.name === name) ?? null; }
   public async updateStatus(id: string, status: InstalledService['status'], runtime?: Readonly<Record<string, unknown>> | null): Promise<InstalledService | null> { const service = this.services.get(id); if (!service) return null; const updated = { ...service, status, runtime: runtime === undefined ? service.runtime : runtime, updatedAt: now }; this.services.set(id, updated); return updated; }
+  public async updateConfiguration(id: string, configuration: Readonly<Record<string, unknown>>, status: InstalledService['status'], runtime?: Readonly<Record<string, unknown>> | null): Promise<InstalledService | null> { const service = this.services.get(id); if (!service) return null; const updated = { ...service, configuration, status, runtime: runtime === undefined ? service.runtime : runtime, updatedAt: now }; this.services.set(id, updated); return updated; }
   public async delete(id: string): Promise<boolean> { return this.services.delete(id); }
 }
 
 const createManager = (catalog: CatalogRepository = new MemoryCatalogRepository()) => {
   const installed = new MemoryInstalledServiceRepository();
   const environments = new MemoryEnvironmentRepository();
-  const runtime: RuntimeProvider = { install: vi.fn(async () => ({ status: 'running' as const, runtime: { provider: 'test' } })), uninstall: vi.fn(async () => ({ status: 'stopped' as const, runtime: { provider: 'test' } })), start: vi.fn(async () => ({ status: 'running' as const, runtime: { provider: 'test' } })), stop: vi.fn(async () => ({ status: 'stopped' as const, runtime: { provider: 'test' } })), restart: vi.fn(async () => ({ status: 'running' as const, runtime: { provider: 'test' } })), health: vi.fn(async () => ({ status: 'healthy' as const })) };
+  const runtime: RuntimeProvider = {
+    install: vi.fn(async () => ({ status: 'running' as const, runtime: { provider: 'test' } })),
+    uninstall: vi.fn(async () => ({ status: 'stopped' as const, runtime: { provider: 'test' } })),
+    start: vi.fn(async () => ({ status: 'running' as const, runtime: { provider: 'test' } })),
+    stop: vi.fn(async () => ({ status: 'stopped' as const, runtime: { provider: 'test' } })),
+    restart: vi.fn(async () => ({ status: 'running' as const, runtime: { provider: 'test' } })),
+    health: vi.fn(async () => ({ status: 'healthy' as const }))
+  };
   const manager = new InstalledServiceManager(installed, environments, catalog, runtime);
   return { manager, installed, environments, runtime };
 };
@@ -126,6 +170,25 @@ describe('InstalledServiceManager', () => {
     const service = await manager.install('project-1', 'env-1', { serviceId: 'postgresql', configuration: { POSTGRES_PASSWORD: 'secret' } });
     await expect(manager.restart(service.id)).resolves.toMatchObject({ status: 'running' as const, runtime: { provider: 'test' } });
     expect(runtime.restart).toHaveBeenCalledOnce();
+  });
+
+
+
+  it('saves configuration by recreating runtime resources', async () => {
+    const { manager, runtime } = createManager();
+    const service = await manager.install('project-1', 'env-1', { serviceId: 'postgresql', configuration: { POSTGRES_PASSWORD: 'old' } });
+    await expect(manager.updateConfiguration(service.id, { POSTGRES_PASSWORD: 'new' })).resolves.toMatchObject({ configuration: { POSTGRES_PASSWORD: 'new' }, status: 'running' });
+    expect(runtime.uninstall).toHaveBeenCalledWith(expect.objectContaining({ id: service.id }));
+    expect(runtime.install).toHaveBeenCalledTimes(2);
+    expect(runtime.install).toHaveBeenLastCalledWith(expect.objectContaining({ variables: { POSTGRES_PASSWORD: 'new' } }));
+  });
+
+  it('recreates a service using the existing configuration', async () => {
+    const { manager, runtime } = createManager();
+    const service = await manager.install('project-1', 'env-1', { serviceId: 'postgresql', configuration: { POSTGRES_PASSWORD: 'secret' } });
+    await expect(manager.recreate(service.id)).resolves.toMatchObject({ configuration: { POSTGRES_PASSWORD: 'secret' }, status: 'running' });
+    expect(runtime.uninstall).toHaveBeenCalledWith(expect.objectContaining({ id: service.id }));
+    expect(runtime.install).toHaveBeenCalledTimes(2);
   });
 
   it('rejects invalid status transitions', async () => {

@@ -1,18 +1,33 @@
-import type { CatalogItem } from '../../domain/catalog/catalog-item.js';
+import type { ServiceDefinition } from '../../domain/catalog/service-definition.js';
 import type { Environment } from '../../domain/projects/project.js';
 import type { InstalledService, InstalledServiceStatus } from '../../domain/services/installed-service.js';
 
 export interface InstallationPlan {
-  readonly serviceDefinition: CatalogItem;
+  readonly serviceDefinition: ServiceDefinition;
   readonly environment: Environment;
   readonly variables: Readonly<Record<string, unknown>>;
-  readonly volumes: readonly unknown[];
-  readonly networks: readonly unknown[];
-  readonly ports: readonly unknown[];
+  readonly publicEndpoints?: readonly RuntimePublicEndpoint[];
 }
 
-export interface RuntimeResult { readonly status: InstalledServiceStatus; readonly runtime?: Readonly<Record<string, unknown>> | null; readonly message?: string; }
-export interface RuntimeHealth { readonly status: 'healthy' | 'unhealthy' | 'unknown'; readonly message?: string; }
+export interface RuntimePublicEndpoint {
+  readonly name: string;
+  readonly service: string;
+  readonly port: number;
+  readonly host: string;
+  readonly url: string;
+  readonly protocol: 'http' | 'https';
+}
+
+export interface RuntimeResult {
+  readonly status: InstalledServiceStatus;
+  readonly runtime?: Readonly<Record<string, unknown>> | null;
+  readonly message?: string;
+}
+
+export interface RuntimeHealth {
+  readonly status: 'healthy' | 'unhealthy' | 'unknown';
+  readonly message?: string;
+}
 
 export interface RuntimeProvider {
   install(plan: InstallationPlan): Promise<RuntimeResult>;
@@ -31,5 +46,6 @@ export interface InstalledServiceRepository {
   listByEnvironmentId(environmentId: string): Promise<readonly InstalledService[]>;
   findByEnvironmentIdAndName(environmentId: string, name: string): Promise<InstalledService | null>;
   updateStatus(id: string, status: InstalledServiceStatus, runtime?: Readonly<Record<string, unknown>> | null): Promise<InstalledService | null>;
+  updateConfiguration(id: string, configuration: Readonly<Record<string, unknown>>, status: InstalledServiceStatus, runtime?: Readonly<Record<string, unknown>> | null): Promise<InstalledService | null>;
   delete(id: string): Promise<boolean>;
 }
