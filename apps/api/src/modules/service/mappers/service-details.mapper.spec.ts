@@ -47,7 +47,7 @@ const service = (overrides?: Partial<InstalledService>): InstalledService => ({
 describe('mapInstalledServiceDetails', () => {
   it('renders overview from installed service and service definition', () => {
     const details = mapInstalledServiceDetails(service(), definition, 'logs', location);
-    expect(details.overview).toMatchObject({ name: 'Generic Database', category: 'databases', status: 'running', health: 'healthy', installedVersion: '1', runtime: 'docker' });
+    expect(details.overview).toMatchObject({ name: 'Generic Database', description: 'A generic service', icon: '<svg />', category: 'databases', status: 'running', health: 'healthy', installedVersion: '1', runtime: 'docker' });
   });
 
 

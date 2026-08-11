@@ -1,6 +1,6 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InstalledServiceManager, ProjectNotFoundError, ProjectValidationError } from '@kiban/core';
-import type { AccessPoint, RuntimeProvider } from '@kiban/core';
+import type { RuntimeProvider, ServiceDefinition } from '@kiban/core';
 import { CatalogService } from '../../catalog/services/catalog.service';
 import { SqliteEnvironmentRepository } from '../../project/repositories/sqlite-environment.repository';
 import { SqliteProjectRepository } from '../../project/repositories/sqlite-project.repository';
@@ -13,7 +13,7 @@ import { mapInstalledServiceDetails } from '../mappers/service-details.mapper';
 
 @Injectable()
 export class ServiceService {
-  private catalogMap: Map<string, readonly AccessPoint[]> | null = null;
+  private catalogMap: Map<string, ServiceDefinition> | null = null;
 
   public constructor(
     @Inject(INSTALLED_SERVICE_MANAGER) private readonly services: InstalledServiceManager,
@@ -112,10 +112,10 @@ export class ServiceService {
     try { return await this.enrichOne(await this.services.restart(id)); } catch (error: unknown) { this.mapError(error); }
   }
 
-  private async loadCatalogMap(): Promise<Map<string, readonly AccessPoint[]>> {
+  private async loadCatalogMap(): Promise<Map<string, ServiceDefinition>> {
     if (this.catalogMap) return this.catalogMap;
     const items = await this.catalog.listServiceDefinitions();
-    this.catalogMap = new Map(items.map((item) => [item.id, item.metadata.accessPoints]));
+    this.catalogMap = new Map(items.map((item) => [item.id, item]));
     return this.catalogMap;
   }
 
@@ -125,7 +125,7 @@ export class ServiceService {
   }
 
   private async enrichAll(services: readonly import('@kiban/core').InstalledService[]): Promise<readonly InstalledServiceDto[]> {
-    let catalogMap: Map<string, readonly AccessPoint[]> | undefined;
+    let catalogMap: Map<string, ServiceDefinition> | undefined;
     try { catalogMap = await this.loadCatalogMap(); } catch { /* catalog unavailable, return without access points */ }
     const locationMap = await this.loadLocationMap(services);
     return services.map((service) => {
@@ -133,12 +133,14 @@ export class ServiceService {
       const location = locationMap.get(service.environmentId);
       const base = location ? { ...dto, location } : dto;
       if (catalogMap) {
-        const serviceAccessPoints = catalogMap.get(service.serviceId);
-        if (serviceAccessPoints) {
-          const accessPoints = computeAccessPoints(serviceAccessPoints, service.configuration, service.runtime);
+        const definition = catalogMap.get(service.serviceId);
+        if (definition) {
+          const enriched = { ...base, icon: definition.icon, description: definition.metadata.description };
+          const accessPoints = computeAccessPoints(definition.metadata.accessPoints, service.configuration, service.runtime);
           if (accessPoints) {
-            return { ...base, accessPoints } as InstalledServiceDto;
+            return { ...enriched, accessPoints } as InstalledServiceDto;
           }
+          return enriched as InstalledServiceDto;
         }
       }
       return base;

@@ -28,6 +28,8 @@ export interface InstalledServiceDto {
   readonly environmentId: string;
   readonly serviceId: string;
   readonly name: string;
+  readonly description?: string;
+  readonly icon?: string;
   readonly status: InstalledServiceStatus;
   readonly configuration: Readonly<Record<string, unknown>>;
   readonly runtime: Readonly<Record<string, unknown>> | null;

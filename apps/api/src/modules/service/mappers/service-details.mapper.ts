@@ -23,6 +23,7 @@ export function mapInstalledServiceDetails(service: InstalledService, definition
     location,
     overview: {
       name: service.name,
+      description: definition.metadata.description,
       icon: definition.icon,
       category: definition.metadata.category,
       status: service.status,

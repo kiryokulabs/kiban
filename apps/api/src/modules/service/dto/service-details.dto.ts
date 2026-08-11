@@ -7,6 +7,7 @@ export interface ServiceLocationDto {
 
 export interface ServiceOverviewDto {
   readonly name: string;
+  readonly description: string;
   readonly icon: string;
   readonly category: string;
   readonly status: string;

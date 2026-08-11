@@ -18,6 +18,8 @@ export interface InstalledService {
   readonly environmentId: string;
   readonly serviceId: string;
   readonly name: string;
+  readonly description?: string | undefined;
+  readonly icon?: string | undefined;
   readonly status: InstalledServiceStatus;
   readonly configuration: Readonly<Record<string, unknown>>;
   readonly runtime: Readonly<Record<string, unknown>> | null;
@@ -36,6 +38,7 @@ export interface ServiceLocation {
 
 export interface ServiceOverview {
   readonly name: string;
+  readonly description: string;
   readonly icon: string;
   readonly category: string;
   readonly status: string;
