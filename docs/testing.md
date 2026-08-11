@@ -44,6 +44,9 @@ pnpm --filter @kiban/web test
 - Password-change service behavior.
 - Users service admin authorization behavior.
 - Operator creation and deletion error mapping.
+- **Terminal: DockerComposeTerminalProvider container validation**
+- **Terminal: TerminalSessionService session lifecycle and timeouts**
+- **Terminal: TerminalGateway WebSocket event handling**
 
 ### Web
 
@@ -54,6 +57,8 @@ pnpm --filter @kiban/web test
 - Local auth state clearing after password change/logout.
 - Users HTTP client calls for list/create/delete operators.
 - Theme service default mode, cookie restore and cookie persistence.
+- **Terminal: TerminalPresenter container options and state labels**
+- **Terminal: TerminalService Socket.IO transport and state machine**
 
 ## Continuous Integration
 

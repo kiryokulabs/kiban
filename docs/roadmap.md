@@ -36,6 +36,7 @@ Infrastructure Foundation
 - Service lifecycle
 - Default Traefik reverse proxy
 - Automatic local URLs for HTTP services
+- **Interactive Terminal for Installed Services**
 
 Supported services:
 
@@ -124,6 +125,9 @@ Features
 - Automatic host port assignment when preferred catalog ports are unavailable
 - Shared Traefik network for proxied HTTP services
 - Generated Traefik labels without modifying catalog compose templates
+- **Terminal: Docker Engine API integration (replaces CLI exec)**
+- **Terminal: Session management with timeouts**
+- **Terminal: WebSocket gateway with Socket.IO**
 
 ---
 

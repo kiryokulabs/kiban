@@ -1,5 +1,8 @@
 # Kiban Documentation
 
+- [Architecture](./architecture.md)
 - [Authentication](./authentication.md)
-- [Testing](./testing.md)
 - [Projects & Environments](./projects.md)
+- [Testing](./testing.md)
+- [Terminal](./terminal.md)
+- [Roadmap](./roadmap.md)

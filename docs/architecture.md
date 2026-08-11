@@ -40,14 +40,38 @@ The project is designed around the following principles:
         Application Layer
                │
                ▼
-      Domain / Business Logic
+       Domain / Business Logic
                │
                ▼
- Infrastructure Layer
+  Infrastructure Layer
                │
                ▼
 Docker (future Podman, Kubernetes...)
 ```
+
+---
+
+# Terminal Architecture
+
+The interactive terminal is documented in detail in [`docs/terminal.md`](./terminal.md).
+
+Architecture summary:
+
+```
+Angular TerminalComponent
+        ↓
+Socket.IO /terminal namespace
+        ↓
+NestJS TerminalGateway
+        ↓
+TerminalSessionService
+        ↓
+TerminalProvider interface
+        ↓
+Docker Engine API implementation
+```
+
+The terminal remains a debugging escape hatch. Docker details stay inside the infrastructure provider; UI and application code interact only with installed services and validated runtime container metadata.
 
 ---
 

@@ -90,6 +90,20 @@ Each environment card currently shows status `Empty` and placeholders for future
 - Backups
 - Logs
 
+### Installed Service Details
+
+The Installed Service Details page includes:
+
+- Overview (status, health, location, installed date)
+- Runtime errors (if any)
+- Access points (web URLs, database connections)
+- Configuration (schema-driven form)
+- Actions (start, stop, restart, recreate, delete)
+- **Terminal** (interactive shell in service containers)
+- Logs (with auto-refresh)
+- Runtime units (containers with status/health badges)
+- Persistent data (volumes)
+
 ## Destructive actions
 
 Project deletion asks for browser confirmation before calling the API because deleting a project also deletes all environments.

@@ -21,4 +21,9 @@ Runtime data is expected under `~/.kiban/` with `config/`, `database/`, `plugins
 
 ## Documentation
 
+- [Architecture](./docs/architecture.md)
 - [Authentication](./docs/authentication.md)
+- [Projects & Environments](./docs/projects.md)
+- [Testing](./docs/testing.md)
+- [Terminal](./docs/terminal.md)
+- [Roadmap](./docs/roadmap.md)
