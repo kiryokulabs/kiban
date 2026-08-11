@@ -1,4 +1,4 @@
-import type { InstalledService, AccessPoint, InstalledServiceDetails, RuntimeContainer, RuntimeVolume, RuntimeNetwork, RuntimeError } from '../installed-services/installed-services.models';
+import type { InstalledService, AccessPoint, InstalledServiceDetails, RuntimeContainer, RuntimeVolume, RuntimeNetwork, RuntimeError, ServiceActivityItem, ServiceHealthDetails } from '../installed-services/installed-services.models';
 
 
 export interface SchemaField {
@@ -62,6 +62,12 @@ export class ServiceDetailsPresenter {
     return accessPoints.filter((ap) => ap.kind !== 'web');
   }
 
+  /** Returns only web access points. */
+  public webAccessPoints(accessPoints: readonly AccessPoint[] | undefined): readonly AccessPoint[] {
+    if (!accessPoints) return [];
+    return accessPoints.filter((ap) => ap.kind === 'web');
+  }
+
   /** Returns the network address for an access point (host:port). */
   public networkAccessPoint(ap: AccessPoint): string {
     return `${ap.host}:${ap.hostPort ?? ap.port}`;
@@ -123,6 +129,27 @@ export class ServiceDetailsPresenter {
     if (ap.database) result.push({ label: 'Database', value: ap.database, secret: false });
     if (ap.connectionString) result.push({ label: 'Connection String', value: ap.connectionString, secret: Boolean(ap.password) });
     return result;
+  }
+
+  /** Returns copyable credentials without connection string, grouped separately in UI. */
+  public credentialFieldsFor(ap: AccessPoint): readonly CopyField[] {
+    return this.copyFieldsFor(ap).filter((field) => field.label !== 'Connection String');
+  }
+
+  /** Returns the connection string copy field, if available. */
+  public connectionStringFieldFor(ap: AccessPoint): CopyField | null {
+    return this.copyFieldsFor(ap).find((field) => field.label === 'Connection String') ?? null;
+  }
+
+  /** Returns health details from backend DTO. */
+  public healthDetails(details: InstalledServiceDetails): ServiceHealthDetails { return details.healthDetails; }
+
+  /** Returns activity timeline from backend DTO. */
+  public activity(details: InstalledServiceDetails): readonly ServiceActivityItem[] { return details.activity; }
+
+  /** Returns log container filter options. */
+  public logContainerOptions(details: InstalledServiceDetails): readonly string[] {
+    return ['All containers', ...details.containers.map((container) => container.name)];
   }
 
   /** Returns runtime containers from the backend DTO. */

@@ -50,6 +50,28 @@ describe('mapInstalledServiceDetails', () => {
     expect(details.overview).toMatchObject({ name: 'Generic Database', description: 'A generic service', icon: '<svg />', category: 'databases', status: 'running', health: 'healthy', installedVersion: '1', runtime: 'docker' });
   });
 
+  it('renders health details and activity from generic runtime metadata', () => {
+    const details = mapInstalledServiceDetails(service({
+      runtime: {
+        provider: 'docker',
+        status: 'running',
+        health: 'unhealthy',
+        healthSource: 'reverse-proxy',
+        healthCheckedAt: '2026-08-11T10:00:00.000Z',
+        healthMessage: 'Web endpoint returned 404.',
+        createdAt: '2026-07-30T10:00:00.000Z',
+        containers: [{ name: 'db', id: 'container-1', status: 'running', health: 'unhealthy', image: 'example/database:1', restartCount: 2 }]
+      }
+    }), definition, 'logs', location);
+
+    expect(details.healthDetails).toEqual({ status: 'unhealthy', source: 'reverse-proxy', checkedAt: '2026-08-11T10:00:00.000Z', message: 'Web endpoint returned 404.' });
+    expect(details.activity).toEqual([
+      { label: 'Installed', value: '2026-07-30T10:00:00.000Z' },
+      { label: 'Last updated', value: '2026-07-30T10:00:00.000Z' },
+      { label: 'Health checked', value: '2026-08-11T10:00:00.000Z' }
+    ]);
+  });
+
 
 
   it('includes the project and environment where the service is installed', () => {

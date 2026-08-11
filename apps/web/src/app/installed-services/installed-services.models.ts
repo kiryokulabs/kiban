@@ -48,6 +48,15 @@ export interface ServiceOverview {
   readonly installedAt: string;
 }
 
+export interface ServiceHealthDetails {
+  readonly status: string;
+  readonly source: string;
+  readonly checkedAt: string;
+  readonly message: string;
+}
+
+export interface ServiceActivityItem { readonly label: string; readonly value: string; }
+
 export interface ServiceConfiguration {
   readonly schema: Readonly<Record<string, unknown>>;
   readonly values: Readonly<Record<string, unknown>>;
@@ -65,6 +74,8 @@ export interface InstalledServiceDetails {
   readonly installedService: InstalledService;
   readonly location: ServiceLocation;
   readonly overview: ServiceOverview;
+  readonly healthDetails: ServiceHealthDetails;
+  readonly activity: readonly ServiceActivityItem[];
   readonly accessPoints: readonly AccessPoint[];
   readonly configuration: ServiceConfiguration;
   readonly containers: readonly RuntimeContainer[];

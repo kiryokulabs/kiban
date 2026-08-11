@@ -8,6 +8,7 @@ class FakeTerminalCommandRunner implements TerminalCommandRunner {
   public startCalls: { readonly execId: string; readonly detach: boolean; readonly tty: boolean }[] = [];
   public resizeCalls: { readonly execId: string; readonly cols: number; readonly rows: number }[] = [];
   public fakeSocket: net.Socket | null = null;
+  public startError: Error | null = null;
 
   public async createExec(containerId: string, cmd: readonly string[]): Promise<string> {
     this.execCalls.push({ containerId, cmd: [...cmd] });
@@ -16,6 +17,7 @@ class FakeTerminalCommandRunner implements TerminalCommandRunner {
 
   public async startExec(_execId: string, options: { readonly detach: boolean; readonly tty: boolean }): Promise<net.Socket> {
     this.startCalls.push({ execId: 'exec-fake-id', detach: options.detach, tty: options.tty });
+    if (this.startError) throw this.startError;
     if (this.fakeSocket) return this.fakeSocket;
     // Return a minimal fake socket-like object
     const listeners: Record<string, ((...args: readonly unknown[]) => void)[]> = {};
@@ -83,6 +85,16 @@ describe('DockerComposeTerminalProvider', () => {
 
     await expect(provider.open(stopped, 'container-1')).rejects.toThrow('Container is not running.');
     expect(runner.execCalls).toEqual([]);
+  });
+
+  it('propagates Docker exec start errors before opening a terminal session', async () => {
+    const runner = new FakeTerminalCommandRunner();
+    runner.startError = new Error('Container is not running.');
+    const provider = new DockerComposeTerminalProvider(runner);
+
+    await expect(provider.open(service(), 'container-1')).rejects.toThrow('Container is not running.');
+    expect(runner.execCalls).toEqual([{ containerId: 'container-1', cmd: ['sh', '-l'] }]);
+    expect(runner.resizeCalls).toEqual([]);
   });
 
   it('rejects services without Docker Compose runtime metadata', async () => {

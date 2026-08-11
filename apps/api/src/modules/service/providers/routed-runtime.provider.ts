@@ -40,6 +40,8 @@ export class RoutedRuntimeProvider implements RuntimeProvider {
   public restart(service: InstalledService): Promise<RuntimeResult> { return this.delegate.restart(service); }
   /** Delegates runtime health checks. */
   public health(service: InstalledService): Promise<RuntimeHealth> { return this.delegate.health(service); }
+  /** Delegates runtime metadata refresh. */
+  public refresh(service: InstalledService): Promise<RuntimeResult> { return this.delegate.refresh ? this.delegate.refresh(service) : Promise.resolve({ status: service.status, runtime: service.runtime }); }
   /** Delegates runtime log reads. */
   public getLogs(service: InstalledService): Promise<string> { return this.delegate.getLogs ? this.delegate.getLogs(service) : Promise.resolve(''); }
 }

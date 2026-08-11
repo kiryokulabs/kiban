@@ -1,5 +1,5 @@
 import type { InstalledService, ServiceDefinition } from '@kiban/core';
-import type { InstalledServiceDetailsDto, RuntimeContainerDto, RuntimeErrorDto, RuntimePortDto, RuntimeVolumeDto, ServiceLocationDto } from '../dto/service-details.dto';
+import type { InstalledServiceDetailsDto, RuntimeContainerDto, RuntimeErrorDto, RuntimePortDto, RuntimeVolumeDto, ServiceActivityItemDto, ServiceHealthDetailsDto, ServiceLocationDto } from '../dto/service-details.dto';
 import { computeAccessPoints, mapInstalledServiceToDto } from './service.mapper';
 
 const stringValue = (value: unknown, fallback: string): string => (typeof value === 'string' && value.length > 0 ? value : fallback);
@@ -32,6 +32,8 @@ export function mapInstalledServiceDetails(service: InstalledService, definition
       runtime: runtimeProvider(runtime),
       installedAt: service.createdAt.toISOString()
     },
+    healthDetails: runtimeHealthDetails(runtime),
+    activity: runtimeActivity(service, runtime),
     accessPoints,
     configuration: { schema: definition.schema, values: service.configuration },
     containers,
@@ -40,6 +42,33 @@ export function mapInstalledServiceDetails(service: InstalledService, definition
     errors: runtimeErrors(runtime),
     logs: { value: logs, containers: containers.map((container) => container.name) }
   };
+}
+
+function runtimeHealthDetails(runtime: Readonly<Record<string, unknown>> | null): ServiceHealthDetailsDto {
+  const status = runtimeHealth(runtime);
+  return {
+    status,
+    source: runtime ? stringValue(runtime['healthSource'], 'runtime') : 'runtime',
+    checkedAt: runtime ? stringValue(runtime['healthCheckedAt'], '') : '',
+    message: runtime ? stringValue(runtime['healthMessage'], healthMessage(status)) : healthMessage(status)
+  };
+}
+
+function healthMessage(status: string): string {
+  if (status === 'healthy') return 'Service is reachable.';
+  if (status === 'unhealthy') return 'Service is not healthy.';
+  return 'Service health is unknown.';
+}
+
+function runtimeActivity(service: InstalledService, runtime: Readonly<Record<string, unknown>> | null): readonly ServiceActivityItemDto[] {
+  const installed = service.createdAt.toISOString();
+  const updated = service.updatedAt.toISOString();
+  const checked = runtime ? stringValue(runtime['healthCheckedAt'], '') : '';
+  return [
+    { label: 'Installed', value: installed },
+    { label: 'Last updated', value: updated },
+    ...(checked ? [{ label: 'Health checked', value: checked }] : [])
+  ];
 }
 
 function runtimeProvider(runtime: Readonly<Record<string, unknown>> | null): string {

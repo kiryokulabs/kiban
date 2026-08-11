@@ -22,6 +22,19 @@ describe('TerminalComponent behavior', () => {
     expect(presenter.selectContainer(containers, null)).toBe('c1');
   });
 
+  it('does not select stopped containers for terminal connection', () => {
+    expect(presenter.selectContainer([{ ...containers[0]!, status: 'exited' }], null)).toBeNull();
+  });
+
+  it('switches to a running container after the selected container stops', () => {
+    const updated: readonly RuntimeContainer[] = [
+      { ...containers[0]!, status: 'exited' },
+      containers[1]!
+    ];
+
+    expect(presenter.selectContainer(updated, 'c1')).toBe('c2');
+  });
+
   it('preserves existing selection across re-renders', () => {
     expect(presenter.selectContainer(containers, 'c2')).toBe('c2');
   });

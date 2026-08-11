@@ -211,6 +211,8 @@ describe('ServiceDetailsPresenter management page helpers', () => {
   const details = {
     location: { project: { id: 'project-1', name: 'CrossMetrics' }, environment: { id: 'env-1', name: 'Development', type: 'system' } },
     overview: { name: 'Service', description: 'A generic service', icon: '<svg />', category: 'databases', status: 'running', health: 'healthy', installedVersion: '1', runtime: 'docker', installedAt: '2026-01-01T00:00:00.000Z' },
+    healthDetails: { status: 'healthy', source: 'runtime', checkedAt: '2026-01-01T00:00:00.000Z', message: 'Service is reachable.' },
+    activity: [{ label: 'Installed', value: '2026-01-01T00:00:00.000Z' }],
     accessPoints: [{ name: 'Database', kind: 'database', port: 5432, hostPort: 45432, host: 'localhost', username: 'kiban', password: 'secret', database: 'app', connectionString: 'database://kiban:secret@localhost:45432/app' }],
     configuration: { schema: { type: 'object', properties: { APP_PASSWORD: { type: 'string', title: 'Password' } }, required: ['APP_PASSWORD'] }, values: { APP_PASSWORD: 'secret' } },
     containers: [{ id: 'c1', name: 'db', status: 'running', health: 'healthy', image: 'example/db:1', restartCount: 1 }],
@@ -231,6 +233,15 @@ describe('ServiceDetailsPresenter management page helpers', () => {
     expect(presenter.schemaFields(details).map((field) => field.key)).toEqual(['APP_PASSWORD']);
   });
 
+  it('returns no schema fields when the service has no configurable properties', () => {
+    const withoutConfiguration = {
+      ...details,
+      configuration: { schema: { type: 'object', properties: {} }, values: {} }
+    };
+
+    expect(presenter.schemaFields(withoutConfiguration)).toEqual([]);
+  });
+
   it('identifies required dynamic configuration fields', () => {
     expect(presenter.schemaFields(details)[0]?.required).toBe(true);
   });
@@ -249,12 +260,31 @@ describe('ServiceDetailsPresenter management page helpers', () => {
     expect(fields.map((field) => field.label)).toContain('Password');
   });
 
+  it('groups web, credentials and connection string access information separately', () => {
+    expect(presenter.webAccessPoints([details.accessPoints[0]!, { name: 'Web', kind: 'web', port: 80, host: 'app.local', url: 'http://app.local' }]).map((ap) => ap.name)).toEqual(['Web']);
+    expect(presenter.credentialFieldsFor(details.accessPoints[0]!).map((field) => field.label)).toEqual(['Host', 'Port', 'Username', 'Password', 'Database']);
+    expect(presenter.connectionStringFieldFor(details.accessPoints[0]!)).toEqual({ label: 'Connection String', value: 'database://kiban:secret@localhost:45432/app', secret: true });
+  });
+
+  it('returns activity and health details from the backend DTO', () => {
+    expect(presenter.activity(details).map((item) => item.label)).toEqual(['Installed']);
+    expect(presenter.healthDetails(details).source).toBe('runtime');
+  });
+
+  it('returns log container options from runtime containers', () => {
+    expect(presenter.logContainerOptions(details)).toEqual(['All containers', 'db']);
+  });
+
   it('returns multi-container, volume, network, error and log sections from DTO only', () => {
     expect(presenter.containers(details)).toHaveLength(1);
     expect(presenter.volumes(details)).toHaveLength(1);
     expect(presenter.networks(details)).toHaveLength(1);
     expect(presenter.errors(details)).toHaveLength(1);
     expect(presenter.logs(details)).toBe('log line');
+  });
+
+  it('returns an empty volume section when the service has no persistent data', () => {
+    expect(presenter.volumes({ ...details, volumes: [] })).toEqual([]);
   });
 
   it('returns copyable local terminal commands using container IDs', () => {

@@ -3,6 +3,8 @@ import { homedir } from 'node:os';
 import { join, resolve, sep } from 'node:path';
 import { spawn } from 'node:child_process';
 import { createServer } from 'node:net';
+import http from 'node:http';
+import https from 'node:https';
 import { Logger } from '@nestjs/common';
 import { parse, stringify } from 'yaml';
 import type { InstallationPlan, InstalledService, RuntimeHealth, RuntimeProvider, RuntimePublicEndpoint, RuntimeResult } from '@kiban/core';
@@ -14,6 +16,10 @@ export interface ComposeCommandRunner {
 
 export interface HostPortAllocator {
   reserve(preferredPort: number, reservedPorts: ReadonlySet<number>): Promise<number>;
+}
+
+export interface WebHealthChecker {
+  isReachable(url: string): Promise<boolean>;
 }
 
 class SpawnComposeCommandRunner implements ComposeCommandRunner {
@@ -50,6 +56,25 @@ class NodeHostPortAllocator implements HostPortAllocator {
         server.close(() => resolve(true));
       });
       server.listen(port, '0.0.0.0');
+    });
+  }
+}
+
+class NodeWebHealthChecker implements WebHealthChecker {
+  public isReachable(url: string): Promise<boolean> {
+    return new Promise((resolveHealth) => {
+      const parsed = new URL(url);
+      const client = parsed.protocol === 'https:' ? https : http;
+      const request = client.get(parsed, (response) => {
+        response.resume();
+        const status = response.statusCode ?? 0;
+        resolveHealth((status >= 200 && status < 400) || status === 401 || status === 403);
+      });
+      request.setTimeout(3000, () => {
+        request.destroy();
+        resolveHealth(false);
+      });
+      request.on('error', () => resolveHealth(false));
     });
   }
 }
@@ -94,17 +119,18 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
   private constructor(
     private readonly runner: ComposeCommandRunner,
     private readonly runtimeRoot: string,
-    private readonly portAllocator: HostPortAllocator
+    private readonly portAllocator: HostPortAllocator,
+    private readonly webHealthChecker: WebHealthChecker
   ) {}
 
   /** Creates the production Docker Compose runtime provider. */
   public static create(): DockerComposeRuntimeProvider {
-    return new DockerComposeRuntimeProvider(new SpawnComposeCommandRunner(), join(homedir(), '.kiban', 'runtime', 'services'), new NodeHostPortAllocator());
+    return new DockerComposeRuntimeProvider(new SpawnComposeCommandRunner(), join(homedir(), '.kiban', 'runtime', 'services'), new NodeHostPortAllocator(), new NodeWebHealthChecker());
   }
 
   /** Creates a provider with a fake runner and runtime root for tests. */
-  public static withRunner(runner: ComposeCommandRunner, runtimeRoot: string, portAllocator: HostPortAllocator = new NodeHostPortAllocator()): DockerComposeRuntimeProvider {
-    return new DockerComposeRuntimeProvider(runner, runtimeRoot, portAllocator);
+  public static withRunner(runner: ComposeCommandRunner, runtimeRoot: string, portAllocator: HostPortAllocator = new NodeHostPortAllocator(), webHealthChecker: WebHealthChecker = new NodeWebHealthChecker()): DockerComposeRuntimeProvider {
+    return new DockerComposeRuntimeProvider(runner, runtimeRoot, portAllocator, webHealthChecker);
   }
 
   /** Returns Docker Compose diagnostics for API/UI runtime status. */
@@ -144,8 +170,8 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
     await writeFile(envFile, this.envFile(variables), 'utf8');
     variables = await this.composeUpWithPortCollisionRetry(workspace, projectName, generatedComposeYaml, variables, envFile);
     const containers = await this.ps(workspace, projectName);
-    const health = containers.every((container) => container.status === 'running' && container.health !== 'unhealthy') ? 'healthy' : 'unhealthy';
-    return { status: health === 'healthy' ? 'running' : 'failed', runtime: { provider: 'docker-compose', projectName, workingDirectory: workspace, composeFile, envFile, networkName, sharedNetworkName: SHARED_REVERSE_PROXY_NETWORK, publicEndpoints: plan.publicEndpoints ?? [], containers, health, status: 'running', createdAt: new Date().toISOString() } };
+    const health = await this.runtimeHealth(containers, plan.publicEndpoints ?? []);
+    return { status: health.status === 'unhealthy' ? 'failed' : 'running', runtime: { provider: 'docker-compose', projectName, workingDirectory: workspace, composeFile, envFile, networkName, sharedNetworkName: SHARED_REVERSE_PROXY_NETWORK, publicEndpoints: plan.publicEndpoints ?? [], containers, health: health.status, healthSource: health.source, healthCheckedAt: health.checkedAt, healthMessage: health.message, status: 'running', createdAt: new Date().toISOString() } };
   }
 
   /** Removes the Compose project and persistent volumes for an installed service. */
@@ -164,7 +190,7 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
   /** Stops the Compose project. */
   public async stop(service: InstalledService): Promise<RuntimeResult> {
     await this.composeFromService(service, ['stop']);
-    return { status: 'stopped', runtime: service.runtime };
+    return { status: 'stopped', runtime: await this.refreshRuntime(service) };
   }
 
   /** Restarts the Compose project. */
@@ -178,6 +204,13 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
     const runtime = await this.refreshRuntime(service);
     const health = runtime['health'];
     return { status: health === 'healthy' ? 'healthy' : health === 'unhealthy' ? 'unhealthy' : 'unknown' };
+  }
+
+  /** Refreshes runtime metadata without changing service lifecycle state. */
+  public async refresh(service: InstalledService): Promise<RuntimeResult> {
+    const runtime = await this.refreshRuntime(service);
+    const status = runtime['status'] === 'running' ? (runtime['health'] === 'unhealthy' ? 'failed' : 'running') : 'stopped';
+    return { status, runtime };
   }
 
   /** Returns Docker Compose logs for the installed service. */
@@ -470,8 +503,45 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
     const cwd = this.runtimeString(service, 'workingDirectory');
     const projectName = this.runtimeString(service, 'projectName');
     const containers = await this.ps(cwd, projectName);
-    const health = containers.every((container) => container.status === 'running' && container.health !== 'unhealthy') ? 'healthy' : 'unhealthy';
-    return { ...(service.runtime ?? {}), containers, health, status: containers.some((container) => container.status === 'running') ? 'running' : 'stopped' };
+    const health = await this.runtimeHealth(containers, this.runtimePublicEndpoints(service.runtime));
+    return { ...(service.runtime ?? {}), containers, health: health.status, healthSource: health.source, healthCheckedAt: health.checkedAt, healthMessage: health.message, status: containers.some((container) => container.status === 'running') ? 'running' : 'stopped' };
+  }
+
+  private async runtimeHealth(containers: readonly ComposeContainerInfo[], publicEndpoints: readonly RuntimePublicEndpoint[]): Promise<{ readonly status: 'healthy' | 'unhealthy' | 'unknown'; readonly source: string; readonly checkedAt: string; readonly message: string }> {
+    const containerHealth = this.containerHealth(containers);
+    const checkedAt = new Date().toISOString();
+    if (containerHealth === 'unhealthy') return { status: 'unhealthy', source: 'container', checkedAt, message: 'One or more runtime units are not running or reported unhealthy.' };
+    if (publicEndpoints.length > 0) {
+      const reachable = await Promise.all(publicEndpoints.map((endpoint) => this.webHealthChecker.isReachable(endpoint.url)));
+      if (reachable.some((value) => !value)) return { status: 'unhealthy', source: 'reverse-proxy', checkedAt, message: 'One or more web access URLs are not reachable.' };
+    }
+    if (containerHealth === 'unknown') return { status: 'unknown', source: 'runtime', checkedAt, message: 'Runtime units are running but no healthcheck information is available.' };
+    return { status: 'healthy', source: publicEndpoints.length > 0 ? 'reverse-proxy' : 'container', checkedAt, message: publicEndpoints.length > 0 ? 'Runtime units are healthy and web access URLs are reachable.' : 'Runtime units reported healthy.' };
+  }
+
+  private containerHealth(containers: readonly ComposeContainerInfo[]): 'healthy' | 'unhealthy' | 'unknown' {
+    if (containers.length === 0) return 'unknown';
+    if (containers.some((container) => container.status !== 'running' || container.health === 'unhealthy')) return 'unhealthy';
+    if (containers.every((container) => container.health === 'healthy')) return 'healthy';
+    return 'unknown';
+  }
+
+  private runtimePublicEndpoints(runtime: Readonly<Record<string, unknown>> | null): readonly RuntimePublicEndpoint[] {
+    const publicEndpoints = runtime?.['publicEndpoints'];
+    if (!Array.isArray(publicEndpoints)) return [];
+    return publicEndpoints.flatMap((endpoint) => {
+      const record = this.recordValue(endpoint);
+      if (!record) return [];
+      const name = record['name'];
+      const service = record['service'];
+      const port = record['port'];
+      const host = record['host'];
+      const url = record['url'];
+      const protocol = record['protocol'];
+      if (typeof name !== 'string' || typeof service !== 'string' || typeof port !== 'number' || typeof host !== 'string' || typeof url !== 'string') return [];
+      if (protocol !== 'http' && protocol !== 'https') return [];
+      return [{ name, service, port, host, url, protocol }];
+    });
   }
 
   private runtimeString(service: InstalledService, key: string): string {
@@ -481,7 +551,7 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
   }
 
   private async ps(cwd: string, projectName: string): Promise<readonly ComposeContainerInfo[]> {
-    const { stdout } = await this.compose(cwd, projectName, ['ps', '--format', 'json']);
+    const { stdout } = await this.compose(cwd, projectName, ['ps', '-a', '--format', 'json']);
     return this.parsePs(stdout);
   }
 

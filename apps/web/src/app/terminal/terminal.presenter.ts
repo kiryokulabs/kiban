@@ -58,7 +58,7 @@ export class TerminalPresenter {
 
   /** Maps containers to selectable options with friendly names. */
   public containerOptions(containers: readonly RuntimeContainer[]): readonly ContainerOption[] {
-    return containers.map((c) => ({
+    return containers.filter((container) => this.isConnectable(container)).map((c) => ({
       id: c.id,
       label: this.friendlyName(c)
     }));
@@ -66,11 +66,17 @@ export class TerminalPresenter {
 
   /** Returns the best container ID to select given the current selection. */
   public selectContainer(containers: readonly RuntimeContainer[], currentSelection: string | null): string | null {
-    if (containers.length === 0) return null;
-    if (currentSelection !== null && containers.some((c) => c.id === currentSelection)) {
+    const connectable = containers.filter((container) => this.isConnectable(container));
+    if (connectable.length === 0) return null;
+    if (currentSelection !== null && connectable.some((c) => c.id === currentSelection)) {
       return currentSelection;
     }
-    return containers[0]?.id ?? null;
+    return connectable[0]?.id ?? null;
+  }
+
+  /** Returns whether a runtime container can accept an interactive terminal session. */
+  public isConnectable(container: RuntimeContainer): boolean {
+    return container.status === 'running';
   }
 
   /** Returns a human-readable label for the connection state. */

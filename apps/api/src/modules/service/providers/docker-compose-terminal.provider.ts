@@ -76,7 +76,14 @@ class DockerSocketCommandRunner implements TerminalCommandRunner {
         const headerEnd = headerBuffer.indexOf('\r\n\r\n');
         if (headerEnd !== -1) {
           socket.removeListener('data', onFirstData);
+          const statusLine = headerBuffer.slice(0, headerBuffer.indexOf('\r\n'));
+          const statusCode = this.parseStatusCode(statusLine);
           const remaining = headerBuffer.slice(headerEnd + 4);
+          if (!statusCode || statusCode >= 400) {
+            socket.destroy();
+            reject(new Error(this.extractDockerError(remaining) ?? `Docker terminal request failed${statusCode ? ` with HTTP ${statusCode}` : ''}.`));
+            return;
+          }
           if (remaining.length > 0) socket.unshift(Buffer.from(remaining));
           resolve(socket);
         }
@@ -84,6 +91,24 @@ class DockerSocketCommandRunner implements TerminalCommandRunner {
       socket.on('data', onFirstData);
       socket.on('error', reject);
     });
+  }
+
+  private parseStatusCode(statusLine: string): number | null {
+    const parts = statusLine.split(' ');
+    const parsed = Number(parts[1]);
+    return Number.isInteger(parsed) ? parsed : null;
+  }
+
+  private extractDockerError(body: string): string | null {
+    const trimmed = body.trim();
+    if (!trimmed) return null;
+    try {
+      const parsed = JSON.parse(trimmed) as Readonly<Record<string, unknown>>;
+      const message = parsed['message'];
+      return typeof message === 'string' && message.trim() ? message : null;
+    } catch {
+      return trimmed;
+    }
   }
 }
 

@@ -36,6 +36,7 @@ export interface RuntimeProvider {
   stop(service: InstalledService): Promise<RuntimeResult>;
   restart(service: InstalledService): Promise<RuntimeResult>;
   health(service: InstalledService): Promise<RuntimeHealth>;
+  refresh?(service: InstalledService): Promise<RuntimeResult>;
   getLogs?(service: InstalledService): Promise<string>;
 }
 

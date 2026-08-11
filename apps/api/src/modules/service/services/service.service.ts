@@ -61,10 +61,12 @@ export class ServiceService {
   public async details(id: string): Promise<InstalledServiceDetailsDto> {
     try {
       const installed = await this.services.get(id);
+      const refreshed = this.runtime.refresh ? await this.runtime.refresh(installed) : null;
+      const current = refreshed?.runtime ? { ...installed, status: refreshed.status, runtime: refreshed.runtime } : installed;
       const definition = await this.findServiceDefinition(installed.serviceId);
-      const logs = this.runtime.getLogs ? await this.runtime.getLogs(installed) : '';
+      const logs = this.runtime.getLogs ? await this.runtime.getLogs(current) : '';
       const location = await this.findLocation(installed.environmentId);
-      return mapInstalledServiceDetails(installed, definition, logs, location);
+      return mapInstalledServiceDetails(current, definition, logs, location);
     } catch (error: unknown) { this.mapError(error); }
   }
 

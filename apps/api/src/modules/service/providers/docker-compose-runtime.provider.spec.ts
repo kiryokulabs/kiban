@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { describe, expect, it } from 'vitest';
 import type { Environment, InstallationPlan, InstalledService, ServiceDefinition } from '@kiban/core';
-import { DockerComposeRuntimeProvider, type ComposeCommandRunner, type HostPortAllocator } from './docker-compose-runtime.provider';
+import { DockerComposeRuntimeProvider, type ComposeCommandRunner, type HostPortAllocator, type WebHealthChecker } from './docker-compose-runtime.provider';
 
 const definition: ServiceDefinition = {
   id: 'mongo-express',
@@ -74,11 +74,39 @@ class JsonLinesPsRunner extends FakeRunner {
   }
 }
 
+class StoppedAfterStopRunner extends FakeRunner {
+  private stopped = false;
+
+  public override async run(command: string, args: readonly string[], options: { readonly cwd: string }): Promise<{ readonly stdout: string; readonly stderr: string }> {
+    this.calls.push({ command, args, cwd: options.cwd });
+    if (args.includes('stop')) {
+      this.stopped = true;
+      return { stdout: '', stderr: '' };
+    }
+    if (args.includes('ps')) {
+      return {
+        stdout: JSON.stringify([{ ID: 'container-1', Name: 'kiban-env-1-mongo-express-1', Service: 'mongo-express', State: this.stopped ? 'exited' : 'running', Health: this.stopped ? '' : 'healthy', Publishers: [] }]),
+        stderr: ''
+      };
+    }
+    return super.run(command, args, options);
+  }
+}
+
 class FakePortAllocator implements HostPortAllocator {
   public constructor(private readonly replacements: Readonly<Record<number, number>> = {}) {}
 
   public async reserve(preferredPort: number): Promise<number> {
     return this.replacements[preferredPort] ?? preferredPort;
+  }
+}
+
+class FakeWebHealthChecker implements WebHealthChecker {
+  public readonly checkedUrls: string[] = [];
+  public constructor(private readonly result: boolean) {}
+  public async isReachable(url: string): Promise<boolean> {
+    this.checkedUrls.push(url);
+    return this.result;
   }
 }
 
@@ -88,7 +116,7 @@ describe('DockerComposeRuntimeProvider', () => {
   it('bootstraps the shared Kiban reverse proxy before installing services', async () => {
     const root = join(await mkdtemp(join(tmpdir(), 'kiban-compose-runtime-')), 'services');
     const runner = new FakeRunner();
-    const provider = DockerComposeRuntimeProvider.withRunner(runner, root, new FakePortAllocator());
+    const provider = DockerComposeRuntimeProvider.withRunner(runner, root, new FakePortAllocator(), new FakeWebHealthChecker(true));
 
     await provider.install(plan);
 
@@ -117,7 +145,7 @@ describe('DockerComposeRuntimeProvider', () => {
   it('routes HTTP services through Traefik instead of publishing host ports', async () => {
     const root = await mkdtemp(join(tmpdir(), 'kiban-compose-runtime-'));
     const runner = new FakeRunner();
-    const provider = DockerComposeRuntimeProvider.withRunner(runner, root, new FakePortAllocator());
+    const provider = DockerComposeRuntimeProvider.withRunner(runner, root, new FakePortAllocator(), new FakeWebHealthChecker(true));
 
     const result = await provider.install(routedPlan);
 
@@ -280,6 +308,49 @@ describe('DockerComposeRuntimeProvider', () => {
     expect(runner.calls.some((call) => call.args.includes('restart'))).toBe(true);
     expect(runner.calls.some((call) => call.args.includes('down') && call.args.includes('-v'))).toBe(true);
     expect(runner.calls.some((call) => call.args.includes('logs') && call.args.includes('--no-color'))).toBe(true);
+  });
+
+  it('refreshes container runtime metadata after stopping a service', async () => {
+    const runner = new StoppedAfterStopRunner();
+    const provider = DockerComposeRuntimeProvider.withRunner(runner, await mkdtemp(join(tmpdir(), 'kiban-compose-runtime-')), new FakePortAllocator());
+    const runtime = (await provider.install(plan)).runtime!;
+
+    const result = await provider.stop(installed(runtime));
+
+    expect(result.status).toBe('stopped');
+    expect(result.runtime?.['status']).toBe('stopped');
+    expect(result.runtime?.['health']).toBe('unhealthy');
+    expect(result.runtime?.['containers']).toEqual([
+      { id: 'container-1', name: 'mongo-express', status: 'exited', health: 'unknown', image: '', restartCount: 0, assignedPorts: [] }
+    ]);
+    expect(runner.calls.some((call) => call.args.join(' ') === 'compose --project-name kiban-env-1-mongo-express --env-file .env -f compose.yaml ps -a --format json')).toBe(true);
+  });
+
+  it('reports unknown health when containers are running without Docker healthcheck information', async () => {
+    class UnknownHealthRunner extends FakeRunner {
+      public override async run(command: string, args: readonly string[], options: { readonly cwd: string }): Promise<{ readonly stdout: string; readonly stderr: string }> {
+        this.calls.push({ command, args, cwd: options.cwd });
+        if (args.includes('ps')) return { stdout: JSON.stringify([{ ID: 'container-1', Name: 'kiban-env-1-app-1', Service: 'app', State: 'running', Health: '', Publishers: [] }]), stderr: '' };
+        return super.run(command, args, options);
+      }
+    }
+    const provider = DockerComposeRuntimeProvider.withRunner(new UnknownHealthRunner(), await mkdtemp(join(tmpdir(), 'kiban-compose-runtime-')), new FakePortAllocator());
+
+    const result = await provider.install(plan);
+
+    expect(result.status).toBe('running');
+    expect(result.runtime?.['health']).toBe('unknown');
+  });
+
+  it('marks web services unhealthy when their public endpoint is not reachable through the reverse proxy', async () => {
+    const healthChecker = new FakeWebHealthChecker(false);
+    const provider = DockerComposeRuntimeProvider.withRunner(new FakeRunner(), await mkdtemp(join(tmpdir(), 'kiban-compose-runtime-')), new FakePortAllocator(), healthChecker);
+
+    const result = await provider.install(routedPlan);
+
+    expect(healthChecker.checkedUrls).toEqual(['http://mongo-express.development.crossmetrics.localhost']);
+    expect(result.status).toBe('failed');
+    expect(result.runtime?.['health']).toBe('unhealthy');
   });
 
   it('removes the service runtime workspace after uninstalling the compose project', async () => {

@@ -17,6 +17,18 @@ export interface ServiceOverviewDto {
   readonly installedAt: string;
 }
 
+export interface ServiceHealthDetailsDto {
+  readonly status: string;
+  readonly source: string;
+  readonly checkedAt: string;
+  readonly message: string;
+}
+
+export interface ServiceActivityItemDto {
+  readonly label: string;
+  readonly value: string;
+}
+
 export interface ServiceConfigurationDto {
   readonly schema: Readonly<Record<string, unknown>>;
   readonly values: Readonly<Record<string, unknown>>;
@@ -65,6 +77,8 @@ export interface InstalledServiceDetailsDto {
   readonly installedService: InstalledServiceDto;
   readonly location: ServiceLocationDto;
   readonly overview: ServiceOverviewDto;
+  readonly healthDetails: ServiceHealthDetailsDto;
+  readonly activity: readonly ServiceActivityItemDto[];
   readonly accessPoints: readonly AccessPointDto[];
   readonly configuration: ServiceConfigurationDto;
   readonly containers: readonly RuntimeContainerDto[];
