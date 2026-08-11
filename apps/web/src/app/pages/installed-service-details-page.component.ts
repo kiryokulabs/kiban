@@ -2,16 +2,20 @@ import { SlicePipe } from '@angular/common';
 import { Component, OnDestroy, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import type { InstalledServiceDetails, AccessPoint, RuntimeError } from '../installed-services/installed-services.models';
+import { Subscription } from 'rxjs';
+import type { InstalledServiceDetails, AccessPoint } from '../installed-services/installed-services.models';
 import { InstalledServicesService } from '../installed-services/installed-services.service';
 import { ServiceDetailsPresenter } from '../service-details/service-details.presenter';
+import { TerminalComponent } from '../terminal/terminal.component';
+import type { ConnectionState } from '../terminal/terminal.presenter';
+import { TerminalService } from '../terminal/terminal.service';
 import { ConfirmModalComponent } from '../shared/confirm-modal.component';
 import { IconsComponent } from '../shared/icons.component';
 
 @Component({
   selector: 'kiban-installed-service-details-page',
   standalone: true,
-  imports: [FormsModule, RouterLink, SlicePipe, IconsComponent, ConfirmModalComponent],
+  imports: [FormsModule, RouterLink, SlicePipe, IconsComponent, ConfirmModalComponent, TerminalComponent],
   template: `
     <div class="space-y-6">
       <div class="flex flex-wrap items-start justify-between gap-3">
@@ -37,8 +41,8 @@ import { IconsComponent } from '../shared/icons.component';
             <p class="mt-1 text-sm font-medium kb-text">{{ presenter.locationLabel(d) }}</p>
             <p class="mt-1 text-xs c-muted">Project: {{ d.location.project.name }} · Environment: {{ d.location.environment.name }}</p>
           </div>
-          <div class="card p-4"><p class="flex items-center gap-1.5 text-xs c-muted"><kiban-icon name="info" [size]="12" /> Status</p><p class="mt-1 text-sm font-medium kb-text">{{ d.overview.status }}</p></div>
-          <div class="card p-4"><p class="flex items-center gap-1.5 text-xs c-muted"><kiban-icon name="check" [size]="12" /> Health</p><p class="mt-1 text-sm font-medium kb-text">{{ d.overview.health }}</p></div>
+          <div class="card p-4"><p class="flex items-center gap-1.5 text-xs c-muted"><kiban-icon name="info" [size]="12" /> Status</p><p class="mt-1"><span class="badge" [class.badge-success]="d.overview.status === 'running'" [class.badge-danger]="d.overview.status === 'stopped'" [class.badge-warning]="d.overview.status !== 'running' && d.overview.status !== 'stopped'">{{ d.overview.status }}</span></p></div>
+          <div class="card p-4"><p class="flex items-center gap-1.5 text-xs c-muted"><kiban-icon name="check" [size]="12" /> Health</p><p class="mt-1"><span class="badge" [class.badge-success]="d.overview.health === 'healthy'" [class.badge-danger]="d.overview.health === 'unhealthy'" [class.badge-warning]="d.overview.health !== 'healthy' && d.overview.health !== 'unhealthy'">{{ d.overview.health }}</span></p></div>
           <div class="card p-4"><p class="flex items-center gap-1.5 text-xs c-muted"><kiban-icon name="box" [size]="12" /> Installed</p><p class="mt-1 text-sm font-medium kb-text">{{ d.overview.installedAt | slice:0:10 }}</p></div>
         </section>
 
@@ -111,7 +115,14 @@ import { IconsComponent } from '../shared/icons.component';
             <div class="mt-3 space-y-2">
               @for (c of presenter.containers(d); track c.id) {
                 <div class="rounded-lg border kb-border p-3 text-sm">
-                  <div class="flex justify-between gap-3"><span class="font-medium kb-text">{{ c.name }}</span><span class="c-muted">{{ c.status }} · {{ c.health }}</span></div>
+                  <div class="flex justify-between gap-3">
+                    <span class="font-medium kb-text">{{ c.name }}</span>
+                    <div class="flex items-center gap-2">
+                      <span class="status-dot" [class.status-dot-success]="c.status === 'running'" [class.status-dot-danger]="c.status === 'stopped'" [class.status-dot-warning]="c.status !== 'running' && c.status !== 'stopped'" [class.status-dot-muted]="c.status !== 'running' && c.status !== 'stopped'"></span>
+                      <span class="badge badge-sm" [class.badge-success]="c.status === 'running'" [class.badge-danger]="c.status === 'stopped'" [class.badge-warning]="c.status !== 'running' && c.status !== 'stopped'">{{ c.status }}</span>
+                      <span class="badge badge-sm" [class.badge-success]="c.health === 'healthy'" [class.badge-danger]="c.health === 'unhealthy'" [class.badge-warning]="c.health !== 'healthy' && c.health !== 'unhealthy'">{{ c.health }}</span>
+                    </div>
+                  </div>
                   <p class="mt-1 font-mono text-xs c-muted">{{ c.image }}</p>
                   <p class="mt-1 text-xs c-muted">Restart count: {{ c.restartCount }}</p>
                 </div>
@@ -126,24 +137,39 @@ import { IconsComponent } from '../shared/icons.component';
               }
             </div>
           </div>
-          <div class="card p-4 xl:col-span-2">
-            <h2 class="flex items-center gap-2 text-sm font-semibold kb-text"><kiban-icon name="logs" [size]="14" /> Terminal</h2>
-            <p class="mt-2 text-xs c-muted">Copy a command and run it in your local terminal to open a shell inside a service runtime unit.</p>
-            <div class="mt-3 space-y-2">
-              @for (terminal of presenter.terminalCommands(d); track terminal.containerName) {
-                <div class="flex flex-col gap-2 rounded-lg border kb-border p-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div class="min-w-0">
-                    <span class="block text-[10px] c-muted">{{ terminal.containerName }}</span>
-                    <span class="block truncate font-mono text-xs kb-text">{{ terminal.command }}</span>
-                  </div>
-                  <button class="btn-secondary btn shrink-0 gap-1.5 text-xs" type="button" (click)="copy(terminal.command)"><kiban-icon name="copy" [size]="12" /> Copy</button>
+          <div class="xl:col-span-2 grid gap-4 xl:grid-cols-2">
+            <!-- Terminal -->
+            <div class="card p-0 overflow-hidden flex flex-col min-h-80 max-h-96">
+              <div class="flex items-center gap-2 px-4 py-2 border-b kb-border">
+                <kiban-icon name="box" [size]="14" />
+                <h2 class="text-sm font-semibold kb-text">Terminal</h2>
+              </div>
+              <kiban-terminal
+                class="flex-1 flex flex-col"
+                [containers]="presenter.containers(d)"
+                [state]="terminalConnectionState()"
+                [output]="terminalOutput()"
+                [errorMessage]="terminalErrorMessage()"
+                (containerChange)="onTerminalContainerChange($event)"
+                (input)="onTerminalInput($event)"
+                (resize)="onTerminalResize($event)"
+                (disconnect)="onTerminalDisconnect()"
+              />
+            </div>
+
+            <!-- Logs -->
+            <div class="card p-4 flex flex-col min-h-80 max-h-96">
+              <div class="flex items-center justify-between gap-2">
+                <h2 class="flex items-center gap-2 text-sm font-semibold kb-text"><kiban-icon name="logs" [size]="14" /> Logs</h2>
+                <div class="flex gap-1">
+                  <button class="btn-icon" type="button" (click)="toggleAutoRefresh()"><kiban-icon [name]="autoRefresh() ? 'stop' : 'play'" [size]="12" /></button>
+                  <button class="btn-icon" type="button" (click)="clearLogs()"><kiban-icon name="x" [size]="12" /></button>
+                  <button class="btn-icon" type="button" (click)="copy(logs())"><kiban-icon name="copy" [size]="12" /></button>
                 </div>
-              } @empty {
-                <p class="rounded-lg border kb-border p-3 text-sm c-muted">No runtime units available yet.</p>
-              }
+              </div>
+              <pre class="mt-3 flex-1 overflow-auto rounded-lg border kb-border p-3 text-xs c-muted">{{ logs() || presenter.logs(d) || 'No logs yet.' }}</pre>
             </div>
           </div>
-          <div class="card p-4 xl:col-span-2"><div class="flex items-center justify-between gap-2"><h2 class="flex items-center gap-2 text-sm font-semibold kb-text"><kiban-icon name="logs" [size]="14" /> Logs</h2><div class="flex gap-1"><button class="btn-icon" type="button" (click)="toggleAutoRefresh()"><kiban-icon [name]="autoRefresh() ? 'stop' : 'play'" [size]="12" /></button><button class="btn-icon" type="button" (click)="clearLogs()"><kiban-icon name="x" [size]="12" /></button><button class="btn-icon" type="button" (click)="copy(logs())"><kiban-icon name="copy" [size]="12" /></button></div></div><pre class="mt-3 max-h-80 overflow-auto rounded-lg border kb-border p-3 text-xs c-muted">{{ logs() || presenter.logs(d) || 'No logs yet.' }}</pre></div>
         </section>
       }
     </div>
@@ -157,6 +183,7 @@ export class InstalledServiceDetailsPageComponent implements OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly installedServices = inject(InstalledServicesService);
+  private readonly terminal = inject(TerminalService);
   protected readonly presenter = new ServiceDetailsPresenter();
   protected readonly details = signal<InstalledServiceDetails | null>(null);
   protected readonly message = signal<string | null>(null);
@@ -166,19 +193,28 @@ export class InstalledServiceDetailsPageComponent implements OnDestroy {
   protected readonly configurationValues = signal<Record<string, string>>({});
   protected readonly logs = signal('');
   protected readonly autoRefresh = signal(false);
+  protected readonly terminalConnectionState = signal<ConnectionState>('disconnected');
+  protected readonly terminalOutput = signal<{ readonly data: string; readonly sequence: number } | null>(null);
+  protected readonly terminalErrorMessage = signal<string | null>(null);
+  protected readonly terminalContainerId = signal<string | null>(null);
+  private terminalOutputSequence = 0;
   private timer: ReturnType<typeof setInterval> | null = null;
+  private readonly terminalSubscriptions = new Subscription();
   private readonly serviceId: string;
 
   public constructor() {
     this.serviceId = this.route.snapshot.paramMap.get('id') ?? '';
+    this.terminalSubscriptions.add(this.terminal.state$.subscribe((state) => this.terminalConnectionState.set(state)));
+    this.terminalSubscriptions.add(this.terminal.errorMessage$.subscribe((message) => this.terminalErrorMessage.set(message)));
+    this.terminalSubscriptions.add(this.terminal.output$.subscribe((output) => this.terminalOutput.set({ data: output, sequence: this.terminalOutputSequence += 1 })));
     this.load();
   }
 
-  public ngOnDestroy(): void { this.stopAutoRefresh(); }
+  public ngOnDestroy(): void { this.stopAutoRefresh(); this.terminal.disconnect(); this.terminalSubscriptions.unsubscribe(); }
 
   protected load(): void {
     this.installedServices.details(this.serviceId).subscribe({
-      next: (details) => { this.details.set(details); this.logs.set(details.logs.value); this.configurationValues.set(this.toEditableValues(details.configuration.values)); this.message.set(null); },
+      next: (details) => { this.details.set(details); this.logs.set(details.logs.value); this.configurationValues.set(this.toEditableValues(details.configuration.values)); this.connectInitialTerminal(details); this.message.set(null); },
       error: () => this.message.set('Could not load service details.')
     });
   }
@@ -186,6 +222,21 @@ export class InstalledServiceDetailsPageComponent implements OnDestroy {
   protected webUrl(ap: AccessPoint): string { return ap.url ?? `http://${ap.host}:${ap.hostPort ?? ap.port}`; }
   protected copy(value: string): void { if (typeof navigator !== 'undefined' && navigator.clipboard) navigator.clipboard.writeText(value).catch(() => {}); }
   protected toggleSecret(key: string): void { const next = new Set(this.visibleSecrets()); next.has(key) ? next.delete(key) : next.add(key); this.visibleSecrets.set(next); }
+
+  // Terminal event handlers
+  protected onTerminalContainerChange(containerId: string): void {
+    this.terminalContainerId.set(containerId);
+    this.terminal.connect(this.serviceId, containerId);
+  }
+
+  protected onTerminalInput(data: string): void { this.terminal.write(data); }
+
+  protected onTerminalResize(event: { cols: number; rows: number }): void { this.terminal.resize(event.cols, event.rows); }
+
+  protected onTerminalDisconnect(): void {
+    this.terminal.disconnect();
+    this.terminalOutput.set(null);
+  }
 
   protected runAction(action: 'start' | 'stop' | 'restart' | 'recreate'): void {
     this.actionInProgress.set(`${action} in progress…`);
@@ -212,5 +263,13 @@ export class InstalledServiceDetailsPageComponent implements OnDestroy {
   private startAutoRefresh(): void { this.autoRefresh.set(true); this.refreshLogs(); this.timer = setInterval(() => this.refreshLogs(), 3000); }
   private stopAutoRefresh(): void { this.autoRefresh.set(false); if (this.timer) clearInterval(this.timer); this.timer = null; }
   private refreshLogs(): void { this.installedServices.logs(this.serviceId).subscribe({ next: (result) => this.logs.set(result.logs), error: () => this.message.set('Could not refresh logs.') }); }
+  private connectInitialTerminal(details: InstalledServiceDetails): void {
+    const current = this.terminalContainerId();
+    if (current && details.containers.some((container) => container.id === current)) return;
+    const first = details.containers[0];
+    if (!first) return;
+    this.terminalContainerId.set(first.id);
+    this.terminal.connect(this.serviceId, first.id);
+  }
   private toEditableValues(values: Readonly<Record<string, unknown>>): Record<string, string> { return Object.fromEntries(Object.entries(values).map(([key, value]) => [key, typeof value === 'string' ? value : String(value ?? '')])); }
 }

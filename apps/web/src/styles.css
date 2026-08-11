@@ -1,3 +1,5 @@
+@import '@xterm/xterm/css/xterm.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -226,6 +228,11 @@ body {
   color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.03em;
+}
+
+.badge-sm {
+  font-size: 0.625rem;
+  padding: 0.125rem 0.375rem;
 }
 
 .badge-success {
