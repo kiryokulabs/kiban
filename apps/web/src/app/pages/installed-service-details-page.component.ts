@@ -11,21 +11,28 @@ import type { ConnectionState } from '../terminal/terminal.presenter';
 import { TerminalService } from '../terminal/terminal.service';
 import { ConfirmModalComponent } from '../shared/confirm-modal.component';
 import { IconsComponent } from '../shared/icons.component';
+import { SvgIconComponent } from '../shared/svg-icon.component';
 
 @Component({
   selector: 'kiban-installed-service-details-page',
   standalone: true,
-  imports: [FormsModule, RouterLink, SlicePipe, IconsComponent, ConfirmModalComponent, TerminalComponent],
+  imports: [FormsModule, RouterLink, SlicePipe, IconsComponent, ConfirmModalComponent, TerminalComponent, SvgIconComponent],
   template: `
     <div class="space-y-6">
       <div class="flex flex-wrap items-start justify-between gap-3">
         <div>
           <a routerLink="/installed" class="inline-flex items-center gap-1 text-xs c-muted hover:c-text transition-colors"><kiban-icon name="arrow-left" [size]="13" /> Installed services</a>
           <div class="mt-3 flex items-center gap-3">
-            <div class="grid h-10 w-10 place-items-center rounded-xl bg-brand/10 text-brand-light"><kiban-icon name="box" [size]="20" /></div>
+            <div class="grid h-12 w-12 shrink-0 place-items-center rounded-xl border kb-border bg-surface p-2">
+              @if (details()?.overview?.icon; as icon) {
+                <kiban-svg-icon [svg]="icon" />
+              } @else {
+                <kiban-icon name="box" [size]="20" class="c-muted" />
+              }
+            </div>
             <div>
               <h1 class="text-xl font-semibold kb-text">{{ details()?.overview?.name ?? 'Service' }}</h1>
-              <p class="text-sm c-muted">Manage access, configuration, runtime actions and logs.</p>
+              <p class="text-sm c-muted">{{ details()?.overview?.description ?? 'Manage access, configuration, runtime actions and logs.' }}</p>
             </div>
           </div>
         </div>
@@ -66,22 +73,32 @@ import { IconsComponent } from '../shared/icons.component';
           } @else {
             <div class="mt-3 grid gap-3 lg:grid-cols-2">
               @for (ap of d.accessPoints; track ap.name + ap.kind + ap.port; let i = $index) {
-                <article class="rounded-xl border kb-border p-3">
-                  <div class="flex items-center justify-between gap-2">
-                    <h3 class="text-sm font-medium kb-text">{{ ap.name }}</h3>
-                    @if (ap.kind === 'web' && (ap.url || ap.hostPort)) { <a class="btn-secondary btn text-xs gap-1" [href]="webUrl(ap)" target="_blank">Open <kiban-icon name="external-link" [size]="12" /></a> }
-                  </div>
-                  <div class="mt-3 space-y-2">
-                    @for (field of presenter.copyFieldsFor(ap); track field.label) {
-                      <div class="flex items-center justify-between gap-3 rounded-lg border kb-border px-3 py-2">
-                        <div class="min-w-0"><span class="block text-[10px] c-muted">{{ field.label }}</span><span class="block truncate text-xs font-mono kb-text">{{ field.secret ? presenter.displaySecret(field.value, visibleSecrets().has(i + ':' + field.label)) : field.value }}</span></div>
-                        <div class="flex gap-1">
-                          @if (field.secret) { <button class="btn-icon" type="button" (click)="toggleSecret(i + ':' + field.label)"><kiban-icon [name]="visibleSecrets().has(i + ':' + field.label) ? 'eye-off' : 'eye'" [size]="12" /></button> }
-                          <button class="btn-icon" type="button" (click)="copy(field.value)"><kiban-icon name="copy" [size]="12" /></button>
-                        </div>
+                <article class="">
+                  @if (ap.kind === 'web' && (ap.url || ap.hostPort)) {
+                    <div class="flex items-start gap-3">
+                      <div class="min-w-0 flex-1">
+                        <a class="mt-3 inline-flex max-w-full items-center gap-1 rounded-lg border kb-border px-3 py-2 font-mono text-xs kb-text hover:c-text transition-colors" [href]="webUrl(ap)" target="_blank">
+                          <span class="truncate">{{ webUrl(ap) }}</span>
+                          <kiban-icon name="external-link" [size]="12" class="shrink-0" />
+                        </a>
                       </div>
-                    }
-                  </div>
+                    </div>
+                  } @else {
+                    <div class="flex items-center justify-between gap-2">
+                      <h3 class="text-sm font-medium kb-text">{{ ap.name }}</h3>
+                    </div>
+                    <div class="mt-3 space-y-2">
+                      @for (field of presenter.copyFieldsFor(ap); track field.label) {
+                        <div class="flex items-center justify-between gap-3 rounded-lg border kb-border px-3 py-2">
+                          <div class="min-w-0"><span class="block text-[10px] c-muted">{{ field.label }}</span><span class="block truncate text-xs font-mono kb-text">{{ field.secret ? presenter.displaySecret(field.value, visibleSecrets().has(i + ':' + field.label)) : field.value }}</span></div>
+                          <div class="flex gap-1">
+                            @if (field.secret) { <button class="btn-icon" type="button" (click)="toggleSecret(i + ':' + field.label)"><kiban-icon [name]="visibleSecrets().has(i + ':' + field.label) ? 'eye-off' : 'eye'" [size]="12" /></button> }
+                            <button class="btn-icon" type="button" (click)="copy(field.value)"><kiban-icon name="copy" [size]="12" /></button>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  }
                 </article>
               }
             </div>

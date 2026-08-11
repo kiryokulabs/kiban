@@ -6,11 +6,12 @@ import { InstalledServicesService } from '../installed-services/installed-servic
 import { ServiceDetailsPresenter } from '../service-details/service-details.presenter';
 import { ModalComponent } from '../shared/modal.component';
 import { IconsComponent } from '../shared/icons.component';
+import { SvgIconComponent } from '../shared/svg-icon.component';
 
 @Component({
   selector: 'kiban-installed-page',
   standalone: true,
-  imports: [SlicePipe, ModalComponent, IconsComponent, RouterLink],
+  imports: [SlicePipe, ModalComponent, IconsComponent, RouterLink, SvgIconComponent],
   template: `
     <div class="space-y-6">
       <!-- Header -->
@@ -52,8 +53,12 @@ import { IconsComponent } from '../shared/icons.component';
               <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0 flex-1">
                   <div class="flex items-center gap-2">
-                    <div class="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-brand/10 text-brand-light">
-                      <kiban-icon name="box" [size]="14" />
+                    <div class="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-lg border kb-border bg-surface [&_svg]:h-6 [&_svg]:w-6 py-2">
+                      @if (service.icon) {
+                        <kiban-svg-icon [svg]="service.icon" />
+                      } @else {
+                        <kiban-icon name="box" [size]="14" class="c-muted" />
+                      }
                     </div>
                     <div>
                       <h2 class="text-sm font-medium kb-text truncate">{{ service.name }}</h2>

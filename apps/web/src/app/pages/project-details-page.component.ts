@@ -108,7 +108,15 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
                         <div class="flex items-start justify-between gap-2">
                           <div class="min-w-0 flex-1">
                             <div class="flex items-center gap-2">
-
+                              @if (service.icon) {
+                                <div class="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-lg border kb-border bg-surface [&_svg]:h-6 [&_svg]:w-6 py-2">
+                                  <kiban-svg-icon [svg]="service.icon" />
+                                </div>
+                              } @else {
+                                <div class="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-lg border kb-border bg-surface [&_svg]:h-6 [&_svg]:w-6 py-2">
+                                  <kiban-icon name="box" [size]="13" class="c-muted" />
+                                </div>
+                              }
                               <p class="text-sm font-medium kb-text truncate">{{ service.name }}</p>
                               <span class="badge text-[10px] px-1.5 py-0.5 leading-none" [class.badge-success]="service.status === 'running'" [class.badge-warning]="service.status === 'installing'" [class.badge-danger]="service.status === 'failed' || service.status === 'stopped' || service.status === 'removing'">
                                 {{ service.status }}

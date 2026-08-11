@@ -210,7 +210,7 @@ describe('ServiceDetailsPresenter management page helpers', () => {
   const presenter = new ServiceDetailsPresenter();
   const details = {
     location: { project: { id: 'project-1', name: 'CrossMetrics' }, environment: { id: 'env-1', name: 'Development', type: 'system' } },
-    overview: { name: 'Service', icon: '<svg />', category: 'databases', status: 'running', health: 'healthy', installedVersion: '1', runtime: 'docker', installedAt: '2026-01-01T00:00:00.000Z' },
+    overview: { name: 'Service', description: 'A generic service', icon: '<svg />', category: 'databases', status: 'running', health: 'healthy', installedVersion: '1', runtime: 'docker', installedAt: '2026-01-01T00:00:00.000Z' },
     accessPoints: [{ name: 'Database', kind: 'database', port: 5432, hostPort: 45432, host: 'localhost', username: 'kiban', password: 'secret', database: 'app', connectionString: 'database://kiban:secret@localhost:45432/app' }],
     configuration: { schema: { type: 'object', properties: { APP_PASSWORD: { type: 'string', title: 'Password' } }, required: ['APP_PASSWORD'] }, values: { APP_PASSWORD: 'secret' } },
     containers: [{ id: 'c1', name: 'db', status: 'running', health: 'healthy', image: 'example/db:1', restartCount: 1 }],
