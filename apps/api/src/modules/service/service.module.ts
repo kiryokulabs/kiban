@@ -10,10 +10,14 @@ import { RuntimeController } from './controllers/runtime.controller';
 import { ServiceController } from './controllers/service.controller';
 import { INSTALLED_SERVICE_MANAGER, RUNTIME_PROVIDER } from './interfaces/service.constants';
 import { DomainService } from '../runtime/domain/domain.service';
+import { DockerComposeTerminalProvider } from './providers/docker-compose-terminal.provider';
 import { DockerComposeRuntimeProvider } from './providers/docker-compose-runtime.provider';
 import { RoutedRuntimeProvider } from './providers/routed-runtime.provider';
 import { SqliteInstalledServiceRepository } from './repositories/sqlite-installed-service.repository';
 import { ServiceService } from './services/service.service';
+import { TerminalGateway } from './terminal/terminal.gateway';
+import { TerminalSessionService } from './terminal/terminal-session.service';
+import { TERMINAL_PROVIDER } from './terminal/terminal.types';
 
 @Module({
   imports: [DatabaseModule, CatalogModule],
@@ -24,7 +28,10 @@ import { ServiceService } from './services/service.service';
     SqliteEnvironmentRepository,
     SqliteProjectRepository,
     DomainService,
+    TerminalGateway,
+    TerminalSessionService,
     { provide: DockerComposeRuntimeProvider, useFactory: (): DockerComposeRuntimeProvider => DockerComposeRuntimeProvider.create() },
+    { provide: TERMINAL_PROVIDER, useFactory: (): DockerComposeTerminalProvider => new DockerComposeTerminalProvider() },
     { provide: RoutedRuntimeProvider, useFactory: (runtime: DockerComposeRuntimeProvider, projects: SqliteProjectRepository, domains: DomainService): RoutedRuntimeProvider => new RoutedRuntimeProvider(runtime, projects, domains), inject: [DockerComposeRuntimeProvider, SqliteProjectRepository, DomainService] },
     { provide: RUNTIME_PROVIDER, useExisting: RoutedRuntimeProvider },
     {
