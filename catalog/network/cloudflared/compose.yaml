@@ -1,0 +1,10 @@
+services:
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${KIBAN_CLOUDFLARED_TOKEN:-}
+      KIBAN_CLOUDFLARED_TOKEN: ${KIBAN_CLOUDFLARED_TOKEN:-}
+    ports: []
+volumes: {}

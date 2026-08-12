@@ -1,0 +1,17 @@
+{
+  "id": "gitea",
+  "name": "Gitea",
+  "description": "Official Gitea lightweight Git service.",
+  "category": "git",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "gitea",
+      "port": 3000
+    }
+  ]
+}

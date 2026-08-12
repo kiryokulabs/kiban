@@ -62,7 +62,43 @@ export class DatabaseService implements OnModuleInit {
         revoked_at INTEGER,
         FOREIGN KEY (user_id) REFERENCES users(id)
       );
+
+      CREATE TABLE IF NOT EXISTS environments (
+        id TEXT PRIMARY KEY,
+        project_id TEXT NOT NULL,
+        name TEXT NOT NULL,
+        slug TEXT NOT NULL,
+        type TEXT NOT NULL,
+        description TEXT,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+      );
+
+      CREATE TABLE IF NOT EXISTS installed_services (
+        id TEXT PRIMARY KEY,
+        environment_id TEXT NOT NULL,
+        service_id TEXT NOT NULL,
+        name TEXT NOT NULL,
+        status TEXT NOT NULL,
+        configuration_json TEXT NOT NULL,
+        runtime_json TEXT,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        UNIQUE(environment_id, name),
+        FOREIGN KEY (environment_id) REFERENCES environments(id) ON DELETE CASCADE
+      );
     `);
+
+    await this.addColumnIfMissing('environments', 'description', 'TEXT');
+    await this.addColumnIfMissing('installed_services', 'runtime_json', 'TEXT');
+  }
+
+  private async addColumnIfMissing(table: string, column: string, definition: string): Promise<void> {
+    const columns = await this.all<{ readonly name: string }>(`PRAGMA table_info(${table})`);
+    if (!columns.some((existing) => existing.name === column)) {
+      await this.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition};`);
+    }
   }
 
   /** Executes a SQL statement without returning rows. */
@@ -94,6 +130,11 @@ export class DatabaseService implements OnModuleInit {
     const args = json ? ['-json', this.databasePath, sql] : [this.databasePath, sql];
     const result = await execFileAsync('sqlite3', args, { maxBuffer: 1024 * 1024 });
     return result.stdout;
+  }
+
+  /** Renders a parameterized SQL statement for sqlite3 CLI execution. */
+  public toStatement(sql: string, params: readonly SqliteParameter[] = []): string {
+    return this.interpolate(sql, params);
   }
 
   private interpolate(sql: string, params: readonly SqliteParameter[]): string {

@@ -1,0 +1,17 @@
+{
+  "id": "litellm",
+  "name": "LiteLLM",
+  "description": "Official LiteLLM proxy for model providers.",
+  "category": "ai",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "litellm",
+      "port": 4000
+    }
+  ]
+}

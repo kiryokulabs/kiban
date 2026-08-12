@@ -1,0 +1,17 @@
+{
+  "id": "metabase",
+  "name": "Metabase",
+  "description": "Business intelligence and analytics with simple setup.",
+  "category": "monitoring",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "metabase",
+      "port": 3000
+    }
+  ]
+}

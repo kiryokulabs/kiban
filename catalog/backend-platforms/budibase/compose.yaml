@@ -1,0 +1,18 @@
+services:
+  budibase:
+    image: budibase/budibase:latest
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_BUDIBASE_PORT:-10000}:80"
+    volumes:
+      - budibase_data:/data
+    environment:
+      KIBAN_BUDIBASE_PORT: ${KIBAN_BUDIBASE_PORT:-10000}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:10000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+volumes:
+  budibase_data:

@@ -1,0 +1,17 @@
+{
+  "id": "nats",
+  "name": "NATS",
+  "description": "Official NATS messaging server.",
+  "category": "messaging",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "NATS",
+      "kind": "nats",
+      "service": "nats",
+      "port": 4222
+    }
+  ]
+}

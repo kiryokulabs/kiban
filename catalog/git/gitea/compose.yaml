@@ -1,0 +1,13 @@
+services:
+  gitea:
+    image: gitea/gitea:latest
+    restart: unless-stopped
+    environment:
+      USER_UID: 1000
+      USER_GID: 1000
+    ports:
+      - "${KIBAN_GITEA_PORT:-3000}:3000"
+    volumes:
+      - gitea_data:/data
+volumes:
+  gitea_data:

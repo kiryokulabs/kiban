@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "discovery.type": {
+      "type": "string",
+      "default": "single-node"
+    },
+    "plugins.security.disabled": {
+      "type": "string",
+      "default": "true"
+    },
+    "OPENSEARCH_INITIAL_ADMIN_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_OPENSEARCH_PASSWORD:-Kiban12345!}"
+    }
+  }
+}

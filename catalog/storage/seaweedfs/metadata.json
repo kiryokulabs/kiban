@@ -1,0 +1,17 @@
+{
+  "id": "seaweedfs",
+  "name": "SeaweedFS",
+  "description": "SeaweedFS distributed object store and file system.",
+  "category": "storage",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "seaweedfs",
+      "port": 8888
+    }
+  ]
+}

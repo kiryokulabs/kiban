@@ -1,0 +1,17 @@
+{
+  "id": "librechat",
+  "name": "LibreChat",
+  "description": "Enhanced ChatGPT clone with multi-user, multi-model support, plugins, and conversation persistence.",
+  "category": "ai",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "librechat",
+      "port": 3080
+    }
+  ]
+}

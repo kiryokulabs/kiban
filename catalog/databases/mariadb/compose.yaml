@@ -1,0 +1,15 @@
+services:
+  mariadb:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ${KIBAN_MARIADB_DATABASE:-kiban}
+      MARIADB_USER: ${KIBAN_MARIADB_USER:-kiban}
+      MARIADB_PASSWORD: ${KIBAN_MARIADB_PASSWORD:-kiban}
+      MARIADB_ROOT_PASSWORD: ${KIBAN_MARIADB_ROOT_PASSWORD:-kiban}
+    ports:
+      - "${KIBAN_MARIADB_PORT:-3306}:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+volumes:
+  mariadb_data:

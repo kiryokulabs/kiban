@@ -1,0 +1,13 @@
+services:
+  mongodb:
+    image: mongo:8
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${KIBAN_MONGO_ROOT_USERNAME:-kiban}
+      MONGO_INITDB_ROOT_PASSWORD: ${KIBAN_MONGO_ROOT_PASSWORD:-kiban}
+    ports:
+      - "${KIBAN_MONGODB_PORT:-27017}:27017"
+    volumes:
+      - mongodb_data:/data/db
+volumes:
+  mongodb_data:

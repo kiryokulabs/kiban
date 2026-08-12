@@ -1,0 +1,17 @@
+{
+  "id": "jellyfin",
+  "name": "Jellyfin",
+  "description": "Free and open-source media server for movies, music, TV shows, and live TV.",
+  "category": "media",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "jellyfin",
+      "port": 8096
+    }
+  ]
+}

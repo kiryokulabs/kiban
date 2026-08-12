@@ -1,7 +1,11 @@
 export * from './domain/projects/project.js';
+export * from './domain/projects/project-errors.js';
 export * from './domain/plugins/installed-plugin.js';
 export * from './domain/settings/setting.js';
 export * from './domain/catalog/catalog-item.js';
+export * from './domain/catalog/runtime-spec.js';
+export * from './domain/catalog/catalog-validation-error.js';
+export * from './domain/catalog/service-definition.js';
 export * from './application/interfaces/project-repository.js';
 export * from './application/interfaces/plugin-repository.js';
 export * from './application/interfaces/catalog-repository.js';
@@ -21,3 +25,7 @@ export * from './application/interfaces/session-token-service.js';
 export * from './application/managers/auth-manager.js';
 export * from './domain/users/user-errors.js';
 export * from './application/managers/user-manager.js';
+
+export * from './domain/services/installed-service.js';
+export * from './application/interfaces/installed-service-repository.js';
+export * from './application/managers/installed-service-manager.js';

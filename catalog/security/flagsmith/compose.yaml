@@ -1,0 +1,52 @@
+services:
+  flagsmith-db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: flagsmith
+      POSTGRES_USER: flagsmith
+      POSTGRES_PASSWORD: ${KIBAN_FLAGSMITH_DB_PASSWORD:-flagsmith}
+    volumes:
+      - flagsmith_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U flagsmith"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  flagsmith-redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - flagsmith_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  flagsmith:
+    image: flagsmith/flagsmith:latest
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_FLAGSMITH_PORT:-8000}:8000"
+    depends_on:
+      flagsmith-db:
+        condition: service_healthy
+      flagsmith-redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://flagsmith:${KIBAN_FLAGSMITH_DB_PASSWORD:-flagsmith}@flagsmith-db/flagsmith
+      REDIS_URL: redis://flagsmith-redis:6379
+      SECRET_KEY: ${KIBAN_FLAGSMITH_SECRET_KEY:-change-me-in-production}
+      ENCRYPTION_KEY: ${KIBAN_FLAGSMITH_ENCRYPTION_KEY:-}
+      KIBAN_FLAGSMITH_PORT: ${KIBAN_FLAGSMITH_PORT:-8000}
+      KIBAN_FLAGSMITH_DB_PASSWORD: ${KIBAN_FLAGSMITH_DB_PASSWORD:-flagsmith}
+      KIBAN_FLAGSMITH_SECRET_KEY: ${KIBAN_FLAGSMITH_SECRET_KEY:-change-me-in-production}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+volumes:
+  flagsmith_db_data:
+  flagsmith_redis_data:

@@ -1,0 +1,17 @@
+{
+  "id": "memos",
+  "name": "Memos",
+  "description": "Lightweight, self-hosted memo hub — write, organize, and share notes.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "memos",
+      "port": 5230
+    }
+  ]
+}

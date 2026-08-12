@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_HOMARR_PORT": {
+      "type": "string",
+      "default": "${KIBAN_HOMARR_PORT:-7575}"
+    },
+    "KIBAN_HOMARR_ENCRYPTION_KEY": {
+      "type": "string",
+      "default": "${KIBAN_HOMARR_ENCRYPTION_KEY:-}"
+    }
+  }
+}

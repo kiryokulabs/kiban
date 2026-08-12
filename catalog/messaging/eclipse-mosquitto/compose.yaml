@@ -1,0 +1,11 @@
+services:
+  eclipse-mosquitto:
+    image: eclipse-mosquitto:2
+    restart: unless-stopped
+    command: mosquitto -c /mosquitto-no-auth.conf
+    ports:
+      - "${KIBAN_ECLIPSE_MOSQUITTO_PORT:-1883}:1883"
+    volumes:
+      - eclipse_mosquitto_data:/data
+volumes:
+  eclipse_mosquitto_data:

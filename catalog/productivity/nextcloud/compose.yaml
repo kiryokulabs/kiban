@@ -1,0 +1,44 @@
+services:
+  nextcloud:
+    image: nextcloud:latest
+    restart: unless-stopped
+    environment:
+      MYSQL_HOST: nextcloud-db
+      MYSQL_DATABASE: ${KIBAN_NEXTCLOUD_DB_NAME:-nextcloud}
+      MYSQL_USER: ${KIBAN_NEXTCLOUD_DB_USER:-nextcloud}
+      MYSQL_PASSWORD: ${KIBAN_NEXTCLOUD_DB_PASSWORD:-nextcloud}
+      NEXTCLOUD_ADMIN_USER: ${KIBAN_NEXTCLOUD_ADMIN_USER:-admin}
+      NEXTCLOUD_ADMIN_PASSWORD: ${KIBAN_NEXTCLOUD_ADMIN_PASSWORD:-admin}
+      NEXTCLOUD_TRUSTED_DOMAINS: "localhost:${KIBAN_NEXTCLOUD_PORT:-8080}"
+      KIBAN_NEXTCLOUD_DB_NAME: ${KIBAN_NEXTCLOUD_DB_NAME:-nextcloud}
+      KIBAN_NEXTCLOUD_DB_USER: ${KIBAN_NEXTCLOUD_DB_USER:-nextcloud}
+      KIBAN_NEXTCLOUD_DB_PASSWORD: ${KIBAN_NEXTCLOUD_DB_PASSWORD:-nextcloud}
+      KIBAN_NEXTCLOUD_DB_ROOT_PASSWORD: ${KIBAN_NEXTCLOUD_DB_ROOT_PASSWORD:-root}
+      KIBAN_NEXTCLOUD_ADMIN_USER: ${KIBAN_NEXTCLOUD_ADMIN_USER:-admin}
+      KIBAN_NEXTCLOUD_ADMIN_PASSWORD: ${KIBAN_NEXTCLOUD_ADMIN_PASSWORD:-admin}
+    ports:
+      - "${KIBAN_NEXTCLOUD_PORT:-8080}:80"
+    depends_on:
+      nextcloud-db:
+        condition: service_healthy
+    volumes:
+      - nextcloud_data:/var/www/html
+  nextcloud-db:
+    image: mariadb:11
+    restart: unless-stopped
+    command: --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW
+    environment:
+      MYSQL_DATABASE: ${KIBAN_NEXTCLOUD_DB_NAME:-nextcloud}
+      MYSQL_USER: ${KIBAN_NEXTCLOUD_DB_USER:-nextcloud}
+      MYSQL_PASSWORD: ${KIBAN_NEXTCLOUD_DB_PASSWORD:-nextcloud}
+      MYSQL_ROOT_PASSWORD: ${KIBAN_NEXTCLOUD_DB_ROOT_PASSWORD:-root}
+    volumes:
+      - nextcloud_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "healthcheck.sh --connect --innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+volumes:
+  nextcloud_data:
+  nextcloud_db_data:

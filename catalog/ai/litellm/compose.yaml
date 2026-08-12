@@ -1,0 +1,13 @@
+services:
+  litellm:
+    image: ghcr.io/berriai/litellm:main-latest
+    restart: unless-stopped
+    command: --port 4000
+    environment:
+      LITELLM_MASTER_KEY: ${KIBAN_LITELLM_MASTER_KEY:-sk-kiban}
+    ports:
+      - "${KIBAN_LITELLM_PORT:-4000}:4000"
+    volumes:
+      - litellm_data:/data
+volumes:
+  litellm_data:

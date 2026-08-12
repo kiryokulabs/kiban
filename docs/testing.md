@@ -20,6 +20,9 @@ pnpm --filter @kiban/web test
 
 ### Core
 
+- Project creation with default environments.
+- Project creation rollback behaviour.
+- Project validation, update, delete and environment reads.
 - Admin bootstrap status.
 - First admin registration.
 - Blocking repeated admin registration.
@@ -32,6 +35,8 @@ pnpm --filter @kiban/web test
 
 ### API
 
+- Project service validation and DTO mapping.
+- Project not-found and validation error mapping.
 - Auth service DTO validation.
 - Core error to HTTP exception mapping.
 - Login response and cookie-token payload handoff.
@@ -39,15 +44,21 @@ pnpm --filter @kiban/web test
 - Password-change service behavior.
 - Users service admin authorization behavior.
 - Operator creation and deletion error mapping.
+- **Terminal: DockerComposeTerminalProvider container validation**
+- **Terminal: TerminalSessionService session lifecycle and timeouts**
+- **Terminal: TerminalGateway WebSocket event handling**
 
 ### Web
 
+- Projects HTTP client calls for list/create/get/update/delete/environments.
 - Auth HTTP client calls with credentials enabled.
 - Register-admin flow followed by login.
 - Local auth state after login/session restore.
 - Local auth state clearing after password change/logout.
 - Users HTTP client calls for list/create/delete operators.
 - Theme service default mode, cookie restore and cookie persistence.
+- **Terminal: TerminalPresenter container options and state labels**
+- **Terminal: TerminalService Socket.IO transport and state machine**
 
 ## Continuous Integration
 

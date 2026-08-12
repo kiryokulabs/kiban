@@ -1,0 +1,17 @@
+{
+  "id": "appwrite",
+  "name": "Appwrite",
+  "description": "End-to-end backend server for frontend and mobile apps with auth, database, storage, and functions.",
+  "category": "backend-platforms",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Console",
+      "kind": "web",
+      "service": "appwrite",
+      "port": 80
+    }
+  ]
+}

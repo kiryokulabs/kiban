@@ -1,0 +1,46 @@
+services:
+  owncloud:
+    image: owncloud/server:latest
+    restart: unless-stopped
+    environment:
+      OWNCLOUD_DOMAIN: localhost
+      OWNCLOUD_TRUSTED_DOMAINS: "localhost:${KIBAN_OWNCLOUD_PORT:-8080}"
+      OWNCLOUD_DB_TYPE: mysql
+      OWNCLOUD_DB_HOST: owncloud-db
+      OWNCLOUD_DB_NAME: ${KIBAN_OWNCLOUD_DB_NAME:-owncloud}
+      OWNCLOUD_DB_USER: ${KIBAN_OWNCLOUD_DB_USER:-owncloud}
+      OWNCLOUD_DB_PASSWORD: ${KIBAN_OWNCLOUD_DB_PASSWORD:-owncloud}
+      OWNCLOUD_ADMIN_USERNAME: ${KIBAN_OWNCLOUD_ADMIN_USER:-admin}
+      OWNCLOUD_ADMIN_PASSWORD: ${KIBAN_OWNCLOUD_ADMIN_PASSWORD:-admin}
+      KIBAN_OWNCLOUD_DB_NAME: ${KIBAN_OWNCLOUD_DB_NAME:-owncloud}
+      KIBAN_OWNCLOUD_DB_USER: ${KIBAN_OWNCLOUD_DB_USER:-owncloud}
+      KIBAN_OWNCLOUD_DB_PASSWORD: ${KIBAN_OWNCLOUD_DB_PASSWORD:-owncloud}
+      KIBAN_OWNCLOUD_DB_ROOT_PASSWORD: ${KIBAN_OWNCLOUD_DB_ROOT_PASSWORD:-root}
+      KIBAN_OWNCLOUD_ADMIN_USER: ${KIBAN_OWNCLOUD_ADMIN_USER:-admin}
+      KIBAN_OWNCLOUD_ADMIN_PASSWORD: ${KIBAN_OWNCLOUD_ADMIN_PASSWORD:-admin}
+    ports:
+      - "${KIBAN_OWNCLOUD_PORT:-8080}:8080"
+    depends_on:
+      owncloud-db:
+        condition: service_healthy
+    volumes:
+      - owncloud_data:/mnt/data
+  owncloud-db:
+    image: mariadb:11
+    restart: unless-stopped
+    command: --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW
+    environment:
+      MYSQL_DATABASE: ${KIBAN_OWNCLOUD_DB_NAME:-owncloud}
+      MYSQL_USER: ${KIBAN_OWNCLOUD_DB_USER:-owncloud}
+      MYSQL_PASSWORD: ${KIBAN_OWNCLOUD_DB_PASSWORD:-owncloud}
+      MYSQL_ROOT_PASSWORD: ${KIBAN_OWNCLOUD_DB_ROOT_PASSWORD:-root}
+    volumes:
+      - owncloud_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "healthcheck.sh --connect --innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+volumes:
+  owncloud_data:
+  owncloud_db_data:

@@ -1,0 +1,12 @@
+services:
+  flowise:
+    image: flowiseai/flowise:latest
+    restart: unless-stopped
+    environment:
+      PORT: 3000
+    ports:
+      - "${KIBAN_FLOWISE_PORT:-3000}:3000"
+    volumes:
+      - flowise_data:/data
+volumes:
+  flowise_data:

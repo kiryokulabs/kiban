@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_VAULTWARDEN_ADMIN_TOKEN": {
+      "type": "string",
+      "default": "${KIBAN_VAULTWARDEN_ADMIN_TOKEN:-}"
+    }
+  }
+}

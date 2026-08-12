@@ -1,0 +1,23 @@
+{
+  "id": "neo4j",
+  "name": "Neo4j",
+  "description": "Official Neo4j graph database.",
+  "category": "databases",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Database",
+      "kind": "neo4j",
+      "service": "neo4j",
+      "port": 7687
+    },
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "neo4j",
+      "port": 7474
+    }
+  ]
+}

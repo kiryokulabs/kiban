@@ -1,0 +1,18 @@
+services:
+  jellyfin:
+    image: jellyfin/jellyfin:latest
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_JELLYFIN_PORT:-8096}:8096"
+    volumes:
+      - jellyfin_config:/config
+      - jellyfin_cache:/cache
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8096/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+volumes:
+  jellyfin_config:
+  jellyfin_cache:

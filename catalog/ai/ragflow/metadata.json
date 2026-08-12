@@ -1,0 +1,17 @@
+{
+  "id": "ragflow",
+  "name": "RAGFlow",
+  "description": "Open-source RAG engine based on deep document understanding with chunk visualization and multi-model support.",
+  "category": "ai",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "ragflow",
+      "port": 9380
+    }
+  ]
+}

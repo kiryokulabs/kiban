@@ -1,0 +1,10 @@
+services:
+  adminer:
+    image: adminer:latest
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_ADMINER_PORT:-8080}:8080"
+    volumes:
+      - adminer_data:/data
+volumes:
+  adminer_data:

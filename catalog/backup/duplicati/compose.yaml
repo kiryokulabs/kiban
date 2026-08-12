@@ -1,0 +1,12 @@
+services:
+  duplicati:
+    image: duplicati/duplicati:latest
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_DUPLICATI_PORT:-8200}:8200"
+    volumes:
+      - duplicati_data:/data
+      - duplicati_config:/config
+volumes:
+  duplicati_data:
+  duplicati_config:

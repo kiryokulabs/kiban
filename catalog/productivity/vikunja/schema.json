@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_VIKUNJA_PORT": {
+      "type": "string",
+      "default": "${KIBAN_VIKUNJA_PORT:-3456}"
+    }
+  }
+}

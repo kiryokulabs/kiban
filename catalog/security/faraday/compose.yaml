@@ -1,0 +1,68 @@
+services:
+  faraday:
+    image: faradaysec/faraday:latest
+    restart: unless-stopped
+    environment:
+      PGSQL_HOST: faraday-db
+      PGSQL_PORT: 5432
+      PGSQL_USER: ${KIBAN_FARADAY_DB_USER:-faraday}
+      PGSQL_PASSWD: ${KIBAN_FARADAY_DB_PASSWORD:-faraday}
+      PGSQL_DBNAME: ${KIBAN_FARADAY_DB_NAME:-faraday}
+      REDIS_HOST: faraday-redis
+      REDIS_PORT: 6379
+      KIBAN_FARADAY_DB_USER: ${KIBAN_FARADAY_DB_USER:-faraday}
+      KIBAN_FARADAY_DB_PASSWORD: ${KIBAN_FARADAY_DB_PASSWORD:-faraday}
+      KIBAN_FARADAY_DB_NAME: ${KIBAN_FARADAY_DB_NAME:-faraday}
+    ports:
+      - "${KIBAN_FARADAY_PORT:-5985}:5985"
+    depends_on:
+      faraday-db:
+        condition: service_healthy
+      faraday-redis:
+        condition: service_healthy
+    volumes:
+      - faraday_data:/home/faraday/.faraday
+  faraday-worker:
+    image: faradaysec/faraday:latest
+    restart: unless-stopped
+    command: celery -A faraday.server.tasks worker -l INFO
+    environment:
+      PGSQL_HOST: faraday-db
+      PGSQL_PORT: 5432
+      PGSQL_USER: ${KIBAN_FARADAY_DB_USER:-faraday}
+      PGSQL_PASSWD: ${KIBAN_FARADAY_DB_PASSWORD:-faraday}
+      PGSQL_DBNAME: ${KIBAN_FARADAY_DB_NAME:-faraday}
+      REDIS_HOST: faraday-redis
+      REDIS_PORT: 6379
+    depends_on:
+      faraday-db:
+        condition: service_healthy
+      faraday-redis:
+        condition: service_healthy
+    volumes:
+      - faraday_data:/home/faraday/.faraday
+  faraday-db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${KIBAN_FARADAY_DB_NAME:-faraday}
+      POSTGRES_USER: ${KIBAN_FARADAY_DB_USER:-faraday}
+      POSTGRES_PASSWORD: ${KIBAN_FARADAY_DB_PASSWORD:-faraday}
+    volumes:
+      - faraday_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U faraday"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  faraday-redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+volumes:
+  faraday_data:
+  faraday_db_data:

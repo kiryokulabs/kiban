@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "MARIADB_DATABASE": {
+      "type": "string",
+      "default": "${KIBAN_MARIADB_DATABASE:-kiban}"
+    },
+    "MARIADB_USER": {
+      "type": "string",
+      "default": "${KIBAN_MARIADB_USER:-kiban}"
+    },
+    "MARIADB_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_MARIADB_PASSWORD:-kiban}"
+    },
+    "MARIADB_ROOT_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_MARIADB_ROOT_PASSWORD:-kiban}"
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "id": "mailpit",
+  "name": "Mailpit",
+  "description": "Official Mailpit email testing tool.",
+  "category": "email",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "mailpit",
+      "port": 8025
+    }
+  ]
+}

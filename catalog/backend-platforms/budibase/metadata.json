@@ -1,0 +1,17 @@
+{
+  "id": "budibase",
+  "name": "Budibase",
+  "description": "Open-source low-code platform for building business apps in minutes. Supports PostgreSQL, MySQL, MSSQL, MongoDB, Rest API, Docker, K8s.",
+  "category": "backend-platforms",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "budibase",
+      "port": 80
+    }
+  ]
+}

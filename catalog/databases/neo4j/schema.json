@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "NEO4J_AUTH": {
+      "type": "string",
+      "default": "${KIBAN_NEO4J_AUTH:-neo4j/kiban12345}"
+    }
+  }
+}

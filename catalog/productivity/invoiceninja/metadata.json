@@ -1,0 +1,17 @@
+{
+  "id": "invoiceninja",
+  "name": "Invoice Ninja",
+  "description": "Free open-source invoicing, expenses, and time-tracking app.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "invoiceninja",
+      "port": 80
+    }
+  ]
+}

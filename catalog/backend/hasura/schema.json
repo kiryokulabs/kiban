@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_HASURA_ADMIN_SECRET": {
+      "type": "string",
+      "default": "${KIBAN_HASURA_ADMIN_SECRET:-hasura}"
+    },
+    "KIBAN_HASURA_DB_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_HASURA_DB_PASSWORD:-hasura}"
+    }
+  }
+}

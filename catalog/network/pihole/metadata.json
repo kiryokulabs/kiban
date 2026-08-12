@@ -1,0 +1,17 @@
+{
+  "id": "pihole",
+  "name": "Pi-hole",
+  "description": "Network-wide DNS ad blocker with web interface.",
+  "category": "network",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "pihole",
+      "port": 80
+    }
+  ]
+}

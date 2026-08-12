@@ -1,0 +1,17 @@
+{
+  "id": "activepieces",
+  "name": "Activepieces",
+  "description": "Official Activepieces automation platform.",
+  "category": "automation",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "activepieces",
+      "port": 80
+    }
+  ]
+}

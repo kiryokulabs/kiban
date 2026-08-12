@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_MONICA_APP_KEY": {
+      "type": "string",
+      "default": "${KIBAN_MONICA_APP_KEY:-ChangeMeWithARandomStringOf32CharsExactly}"
+    },
+    "KIBAN_MONICA_DB_NAME": {
+      "type": "string",
+      "default": "${KIBAN_MONICA_DB_NAME:-monica}"
+    },
+    "KIBAN_MONICA_DB_USER": {
+      "type": "string",
+      "default": "${KIBAN_MONICA_DB_USER:-monica}"
+    },
+    "KIBAN_MONICA_DB_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_MONICA_DB_PASSWORD:-monica}"
+    },
+    "KIBAN_MONICA_DB_ROOT_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_MONICA_DB_ROOT_PASSWORD:-root}"
+    }
+  }
+}

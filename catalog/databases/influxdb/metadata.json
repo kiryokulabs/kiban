@@ -1,0 +1,23 @@
+{
+  "id": "influxdb",
+  "name": "InfluxDB",
+  "description": "Official InfluxDB time-series database.",
+  "category": "databases",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "influxdb",
+      "port": 8086
+    },
+    {
+      "name": "Database",
+      "kind": "influxdb",
+      "service": "influxdb",
+      "port": 8086
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+services:
+  dozzle:
+    image: amir20/dozzle:latest
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_DOZZLE_PORT:-8080}:8080"
+    volumes:
+      - dozzle_data:/data
+    environment:
+      KIBAN_DOZZLE_PORT: ${KIBAN_DOZZLE_PORT:-8080}
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+volumes:
+  dozzle_data:

@@ -1,0 +1,18 @@
+services:
+  homepage:
+    image: gethomepage/homepage:latest
+    restart: unless-stopped
+    environment:
+      HOMEPAGE_ALLOWED_HOSTS: "*"
+    ports:
+      - "${KIBAN_HOMEPAGE_PORT:-3000}:3000"
+    volumes:
+      - homepage_data:/app/config
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+volumes:
+  homepage_data:

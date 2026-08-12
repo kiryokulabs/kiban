@@ -1,0 +1,17 @@
+{
+  "id": "open-webui",
+  "name": "Open WebUI",
+  "description": "Official Open WebUI interface for local AI workflows.",
+  "category": "ai",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "open-webui",
+      "port": 8080
+    }
+  ]
+}

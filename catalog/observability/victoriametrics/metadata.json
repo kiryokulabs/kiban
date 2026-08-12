@@ -1,0 +1,17 @@
+{
+  "id": "victoriametrics",
+  "name": "VictoriaMetrics",
+  "description": "Fast, cost-effective time series database and monitoring solution with long-term storage.",
+  "category": "observability",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "victoriametrics",
+      "port": 8428
+    }
+  ]
+}

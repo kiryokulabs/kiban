@@ -1,0 +1,17 @@
+{
+  "id": "passbolt",
+  "name": "Passbolt",
+  "description": "Open-source password manager for teams.",
+  "category": "passwords",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "passbolt",
+      "port": 80
+    }
+  ]
+}

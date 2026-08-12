@@ -1,0 +1,17 @@
+{
+  "id": "windmill",
+  "name": "Windmill",
+  "description": "Open-source developer platform for building scripts, flows, and UIs.",
+  "category": "automation",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "windmill",
+      "port": 8000
+    }
+  ]
+}

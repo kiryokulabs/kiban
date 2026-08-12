@@ -1,0 +1,22 @@
+{
+  "id": "mariadb",
+  "name": "MariaDB",
+  "description": "Official MariaDB relational database.",
+  "category": "databases",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Database",
+      "kind": "mysql",
+      "service": "mariadb",
+      "port": 3306,
+      "connection": {
+        "username": "MARIADB_USER",
+        "password": "MARIADB_PASSWORD",
+        "database": "MARIADB_DATABASE"
+      }
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+services:
+  seaweedfs:
+    image: chrislusf/seaweedfs:latest
+    restart: unless-stopped
+    command: server -dir=/data -volume.max=0 -master.volumeSizeLimitMB=1024 -s3
+    ports:
+      - "${KIBAN_SEAWEEDFS_PORT:-8888}:8888"
+    volumes:
+      - seaweedfs_data:/data
+volumes:
+  seaweedfs_data:

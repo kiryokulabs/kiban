@@ -1,0 +1,17 @@
+{
+  "id": "cassandra",
+  "name": "Cassandra",
+  "description": "Distributed NoSQL database designed for high availability and linear scalability with no single point of failure.",
+  "category": "databases",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "CQL",
+      "kind": "database",
+      "service": "cassandra",
+      "port": 9042
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+services:
+  prestashop:
+    image: prestashop/prestashop:latest
+    restart: unless-stopped
+    environment:
+      DB_SERVER: prestashop-db
+      DB_NAME: ${KIBAN_PRESTASHOP_DB_NAME:-prestashop}
+      DB_USER: ${KIBAN_PRESTASHOP_DB_USER:-prestashop}
+      DB_PASSWD: ${KIBAN_PRESTASHOP_DB_PASSWORD:-prestashop}
+      KIBAN_PRESTASHOP_DB_NAME: ${KIBAN_PRESTASHOP_DB_NAME:-prestashop}
+      KIBAN_PRESTASHOP_DB_USER: ${KIBAN_PRESTASHOP_DB_USER:-prestashop}
+      KIBAN_PRESTASHOP_DB_PASSWORD: ${KIBAN_PRESTASHOP_DB_PASSWORD:-prestashop}
+      KIBAN_PRESTASHOP_DB_ROOT_PASSWORD: ${KIBAN_PRESTASHOP_DB_ROOT_PASSWORD:-root}
+    ports:
+      - "${KIBAN_PRESTASHOP_PORT:-8080}:80"
+    depends_on:
+      prestashop-db:
+        condition: service_healthy
+    volumes:
+      - prestashop_data:/var/www/html
+  prestashop-db:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${KIBAN_PRESTASHOP_DB_NAME:-prestashop}
+      MYSQL_USER: ${KIBAN_PRESTASHOP_DB_USER:-prestashop}
+      MYSQL_PASSWORD: ${KIBAN_PRESTASHOP_DB_PASSWORD:-prestashop}
+      MYSQL_ROOT_PASSWORD: ${KIBAN_PRESTASHOP_DB_ROOT_PASSWORD:-root}
+    volumes:
+      - prestashop_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "healthcheck.sh --connect --innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+volumes:
+  prestashop_data:
+  prestashop_db_data:

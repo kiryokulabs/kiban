@@ -1,0 +1,17 @@
+{
+  "id": "homepage",
+  "name": "Homepage",
+  "description": "Modern self-hosted application dashboard with Docker service discovery and widgets.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "homepage",
+      "port": 3000
+    }
+  ]
+}

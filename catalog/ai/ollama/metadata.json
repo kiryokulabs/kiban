@@ -1,0 +1,17 @@
+{
+  "id": "ollama",
+  "name": "Ollama",
+  "description": "Official Ollama local model runtime.",
+  "category": "ai",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "ollama",
+      "port": 11434
+    }
+  ]
+}

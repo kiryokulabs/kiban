@@ -1,0 +1,48 @@
+services:
+  monica:
+    image: monica:4-apache
+    restart: unless-stopped
+    environment:
+      APP_ENV: local
+      APP_KEY: ${KIBAN_MONICA_APP_KEY:-ChangeMeWithARandomStringOf32CharsExactly}
+      APP_URL: http://localhost:${KIBAN_MONICA_PORT:-8080}
+      DB_HOST: monica-db
+      DB_DATABASE: ${KIBAN_MONICA_DB_NAME:-monica}
+      DB_USERNAME: ${KIBAN_MONICA_DB_USER:-monica}
+      DB_PASSWORD: ${KIBAN_MONICA_DB_PASSWORD:-monica}
+      KIBAN_MONICA_APP_KEY: ${KIBAN_MONICA_APP_KEY:-ChangeMeWithARandomStringOf32CharsExactly}
+      KIBAN_MONICA_DB_NAME: ${KIBAN_MONICA_DB_NAME:-monica}
+      KIBAN_MONICA_DB_USER: ${KIBAN_MONICA_DB_USER:-monica}
+      KIBAN_MONICA_DB_PASSWORD: ${KIBAN_MONICA_DB_PASSWORD:-monica}
+      KIBAN_MONICA_DB_ROOT_PASSWORD: ${KIBAN_MONICA_DB_ROOT_PASSWORD:-root}
+    ports:
+      - "${KIBAN_MONICA_PORT:-8080}:80"
+    depends_on:
+      monica-db:
+        condition: service_healthy
+    volumes:
+      - monica_data:/var/www/html/storage
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+  monica-db:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${KIBAN_MONICA_DB_NAME:-monica}
+      MYSQL_USER: ${KIBAN_MONICA_DB_USER:-monica}
+      MYSQL_PASSWORD: ${KIBAN_MONICA_DB_PASSWORD:-monica}
+      MYSQL_ROOT_PASSWORD: ${KIBAN_MONICA_DB_ROOT_PASSWORD:-root}
+    volumes:
+      - monica_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "healthcheck.sh --connect --innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+volumes:
+  monica_data:
+  monica_db_data:

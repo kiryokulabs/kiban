@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_INVOICENINJA_DB_NAME": {
+      "type": "string",
+      "default": "${KIBAN_INVOICENINJA_DB_NAME:-invoiceninja}"
+    },
+    "KIBAN_INVOICENINJA_DB_USER": {
+      "type": "string",
+      "default": "${KIBAN_INVOICENINJA_DB_USER:-invoiceninja}"
+    },
+    "KIBAN_INVOICENINJA_DB_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_INVOICENINJA_DB_PASSWORD:-invoiceninja}"
+    },
+    "KIBAN_INVOICENINJA_DB_ROOT_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_INVOICENINJA_DB_ROOT_PASSWORD:-root}"
+    },
+    "KIBAN_INVOICENINJA_APP_KEY": {
+      "type": "string",
+      "default": "${KIBAN_INVOICENINJA_APP_KEY:-SomeRandomStringOf32CharsExactly}"
+    }
+  }
+}

@@ -1,0 +1,15 @@
+services:
+  garage:
+    image: dxflrs/garage:v2.3.0
+    restart: unless-stopped
+    environment:
+      RUST_LOG: info
+    ports:
+      - "${KIBAN_GARAGE_API_PORT:-3900}:3900"
+      - "${KIBAN_GARAGE_WEB_PORT:-3901}:3901"
+    volumes:
+      - garage_data:/data
+      - garage_config:/etc/garage
+volumes:
+  garage_data:
+  garage_config:

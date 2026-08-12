@@ -1,0 +1,17 @@
+{
+  "id": "langflow",
+  "name": "Langflow",
+  "description": "Visual framework for building multi-agent and RAG applications.",
+  "category": "ai",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "langflow",
+      "port": 7860
+    }
+  ]
+}

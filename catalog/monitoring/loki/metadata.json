@@ -1,0 +1,17 @@
+{
+  "id": "loki",
+  "name": "Loki",
+  "description": "Official Grafana Loki log aggregation system.",
+  "category": "monitoring",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "loki",
+      "port": 3100
+    }
+  ]
+}

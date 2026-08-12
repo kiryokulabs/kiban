@@ -1,0 +1,23 @@
+{
+  "id": "adguard-home",
+  "name": "AdGuard Home",
+  "description": "Network-wide software for blocking ads and tracking with built-in DNS server and DHCP.",
+  "category": "networking",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "adguard",
+      "port": 3000
+    },
+    {
+      "name": "DNS",
+      "kind": "network",
+      "service": "adguard",
+      "port": 53
+    }
+  ]
+}

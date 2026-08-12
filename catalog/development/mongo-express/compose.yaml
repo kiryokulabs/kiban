@@ -1,0 +1,14 @@
+services:
+  mongo-express:
+    image: mongo-express:latest
+    restart: unless-stopped
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${KIBAN_MONGOEXPRESS_USERNAME:-admin}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${KIBAN_MONGOEXPRESS_PASSWORD:-kiban}
+      ME_CONFIG_MONGODB_URL: ${KIBAN_MONGOEXPRESS_MONGODB_URL:-mongodb://admin:kiban@mongo:27017/}
+    ports:
+      - "${KIBAN_MONGO_EXPRESS_PORT:-8081}:8081"
+    volumes:
+      - mongo_express_data:/data
+volumes:
+  mongo_express_data:

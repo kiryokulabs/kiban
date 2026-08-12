@@ -1,0 +1,12 @@
+services:
+  anythingllm:
+    image: mintplexlabs/anythingllm:latest
+    restart: unless-stopped
+    environment:
+      STORAGE_DIR: /app/server/storage
+    ports:
+      - "${KIBAN_ANYTHINGLLM_PORT:-3001}:3001"
+    volumes:
+      - anythingllm_data:/app/server/storage
+volumes:
+  anythingllm_data:

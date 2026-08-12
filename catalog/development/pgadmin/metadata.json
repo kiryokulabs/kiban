@@ -1,0 +1,21 @@
+{
+  "id": "pgadmin",
+  "name": "pgAdmin",
+  "description": "Official pgAdmin PostgreSQL administration UI.",
+  "category": "development",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "pgadmin",
+      "port": 80,
+      "connection": {
+        "username": "PGADMIN_DEFAULT_EMAIL",
+        "password": "PGADMIN_DEFAULT_PASSWORD"
+      }
+    }
+  ]
+}

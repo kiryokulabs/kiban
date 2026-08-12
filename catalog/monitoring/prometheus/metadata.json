@@ -1,0 +1,17 @@
+{
+  "id": "prometheus",
+  "name": "Prometheus",
+  "description": "Official Prometheus monitoring system.",
+  "category": "monitoring",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "prometheus",
+      "port": 9090
+    }
+  ]
+}

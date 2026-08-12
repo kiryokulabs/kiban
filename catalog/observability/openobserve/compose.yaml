@@ -1,0 +1,23 @@
+services:
+  openobserve:
+    image: openobserve/openobserve:latest
+    restart: unless-stopped
+    environment:
+      ZO_DATA_DIR: /data
+      ZO_ROOT_USER_EMAIL: ${KIBAN_OPENOBSERVE_EMAIL:-admin@example.com}
+      ZO_ROOT_USER_PASSWORD: ${KIBAN_OPENOBSERVE_PASSWORD:-kiban}
+      ZO_TELEMETRY: "false"
+      KIBAN_OPENOBSERVE_EMAIL: ${KIBAN_OPENOBSERVE_EMAIL:-admin@example.com}
+      KIBAN_OPENOBSERVE_PASSWORD: ${KIBAN_OPENOBSERVE_PASSWORD:-kiban}
+    ports:
+      - "${KIBAN_OPENOBSERVE_PORT:-5080}:5080"
+    volumes:
+      - openobserve_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:5080/healthz || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+volumes:
+  openobserve_data:

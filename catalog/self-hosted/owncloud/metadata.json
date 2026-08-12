@@ -1,0 +1,17 @@
+{
+  "id": "owncloud",
+  "name": "ownCloud",
+  "description": "Self-hosted file sync and share solution.",
+  "category": "self-hosted",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "owncloud",
+      "port": 8080
+    }
+  ]
+}

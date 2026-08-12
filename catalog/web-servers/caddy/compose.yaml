@@ -1,0 +1,10 @@
+services:
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_CADDY_PORT:-80}:80"
+    volumes:
+      - caddy_data:/data
+volumes:
+  caddy_data:

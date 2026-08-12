@@ -1,0 +1,17 @@
+{
+  "id": "mailhog",
+  "name": "Mailhog",
+  "description": "Mailhog email testing tool.",
+  "category": "email",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "mailhog",
+      "port": 8025
+    }
+  ]
+}

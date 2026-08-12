@@ -1,0 +1,17 @@
+{
+  "id": "forgejo",
+  "name": "Forgejo",
+  "description": "Official Forgejo Git forge service.",
+  "category": "git",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "forgejo",
+      "port": 3000
+    }
+  ]
+}

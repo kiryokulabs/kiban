@@ -1,0 +1,17 @@
+{
+  "id": "gitlab",
+  "name": "GitLab CE",
+  "description": "Open-source DevOps platform with Git hosting, CI/CD, and more.",
+  "category": "devops",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "gitlab",
+      "port": 80
+    }
+  ]
+}

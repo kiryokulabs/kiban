@@ -1,0 +1,17 @@
+{
+  "id": "infisical",
+  "name": "Infisical",
+  "description": "Open-source secret management platform for centralizing application configuration, secrets, and PKI.",
+  "category": "security",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "infisical",
+      "port": 8080
+    }
+  ]
+}

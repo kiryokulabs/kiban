@@ -1,0 +1,17 @@
+{
+  "id": "netdata",
+  "name": "Netdata",
+  "description": "Real-time performance and health monitoring for systems and applications.",
+  "category": "monitoring",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "netdata",
+      "port": 19999
+    }
+  ]
+}

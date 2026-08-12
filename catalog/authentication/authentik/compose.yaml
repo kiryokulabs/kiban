@@ -1,0 +1,41 @@
+services:
+  authentik:
+    image: ghcr.io/goauthentik/server:latest
+    restart: unless-stopped
+    command: server
+    environment:
+      AUTHENTIK_SECRET_KEY: ${KIBAN_AUTHENTIK_SECRET_KEY:-change-me}
+      AUTHENTIK_POSTGRESQL__HOST: authentik-postgres
+      AUTHENTIK_POSTGRESQL__USER: authentik
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${KIBAN_AUTHENTIK_POSTGRES_PASSWORD:-kiban}
+      AUTHENTIK_REDIS__HOST: authentik-redis
+    ports:
+      - "${KIBAN_AUTHENTIK_PORT:-9000}:9000"
+    volumes:
+      - authentik_data:/data
+  authentik-worker:
+    image: ghcr.io/goauthentik/server:latest
+    command: worker
+    environment:
+      AUTHENTIK_SECRET_KEY: ${KIBAN_AUTHENTIK_SECRET_KEY:-change-me}
+      AUTHENTIK_POSTGRESQL__HOST: authentik-postgres
+      AUTHENTIK_POSTGRESQL__USER: authentik
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${KIBAN_AUTHENTIK_POSTGRES_PASSWORD:-kiban}
+      AUTHENTIK_REDIS__HOST: authentik-redis
+  authentik-postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: authentik
+      POSTGRES_USER: authentik
+      POSTGRES_PASSWORD: ${KIBAN_AUTHENTIK_POSTGRES_PASSWORD:-kiban}
+    volumes:
+      - authentik-postgres:/var/lib/postgresql/data
+  authentik-redis:
+    image: redis:8
+volumes:
+  authentik_data:
+  authentik_postgres:
+  authentik_redis:
+  authentik-postgres:

@@ -1,0 +1,22 @@
+{
+  "id": "postgresql",
+  "name": "PostgreSQL",
+  "description": "Official PostgreSQL relational database.",
+  "category": "databases",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Database",
+      "kind": "postgres",
+      "service": "postgresql",
+      "port": 5432,
+      "connection": {
+        "username": "POSTGRES_USER",
+        "password": "POSTGRES_PASSWORD",
+        "database": "POSTGRES_DB"
+      }
+    }
+  ]
+}

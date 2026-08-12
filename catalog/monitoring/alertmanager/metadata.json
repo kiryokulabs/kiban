@@ -1,0 +1,17 @@
+{
+  "id": "alertmanager",
+  "name": "Alertmanager",
+  "description": "Prometheus alerting component that handles deduplication, grouping, routing, and notification of alerts.",
+  "category": "monitoring",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "alertmanager",
+      "port": 9093
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "GF_SECURITY_ADMIN_USER": {
+      "type": "string",
+      "default": "${KIBAN_GRAFANA_USER:-admin}"
+    },
+    "GF_SECURITY_ADMIN_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_GRAFANA_PASSWORD:-kiban}"
+    }
+  }
+}

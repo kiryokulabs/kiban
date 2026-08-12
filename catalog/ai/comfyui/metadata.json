@@ -1,0 +1,17 @@
+{
+  "id": "comfyui",
+  "name": "ComfyUI",
+  "description": "Powerful node-based GUI for Stable Diffusion with advanced workflow capabilities and custom node support.",
+  "category": "ai",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "comfyui",
+      "port": 8188
+    }
+  ]
+}

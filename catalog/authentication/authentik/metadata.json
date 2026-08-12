@@ -1,0 +1,17 @@
+{
+  "id": "authentik",
+  "name": "Authentik",
+  "description": "Official Authentik identity provider server.",
+  "category": "authentication",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "authentik",
+      "port": 9000
+    }
+  ]
+}

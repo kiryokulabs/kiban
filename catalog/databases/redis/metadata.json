@@ -1,0 +1,17 @@
+{
+  "id": "redis",
+  "name": "Redis",
+  "description": "Official Redis in-memory data store.",
+  "category": "databases",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Database",
+      "kind": "redis",
+      "service": "redis",
+      "port": 6379
+    }
+  ]
+}

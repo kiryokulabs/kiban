@@ -1,0 +1,62 @@
+services:
+  immich-server:
+    image: ghcr.io/immich-app/immich-server:release
+    restart: unless-stopped
+    environment:
+      DB_HOSTNAME: immich-db
+      DB_USERNAME: ${KIBAN_IMMICH_DB_USER:-postgres}
+      DB_PASSWORD: ${KIBAN_IMMICH_DB_PASSWORD:-immich}
+      DB_DATABASE_NAME: ${KIBAN_IMMICH_DB_NAME:-immich}
+      REDIS_HOSTNAME: immich-redis
+      UPLOAD_LOCATION: /usr/src/app/upload
+      KIBAN_IMMICH_DB_USER: ${KIBAN_IMMICH_DB_USER:-postgres}
+      KIBAN_IMMICH_DB_PASSWORD: ${KIBAN_IMMICH_DB_PASSWORD:-immich}
+      KIBAN_IMMICH_DB_NAME: ${KIBAN_IMMICH_DB_NAME:-immich}
+    ports:
+      - "${KIBAN_IMMICH_PORT:-2283}:2283"
+    volumes:
+      - immich_upload:/usr/src/app/upload
+    depends_on:
+      immich-db:
+        condition: service_healthy
+      immich-redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:2283/api/server/ping || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+  immich-ml:
+    image: ghcr.io/immich-app/immich-machine-learning:release
+    restart: unless-stopped
+    volumes:
+      - immich_model_cache:/cache
+  immich-db:
+    image: tensorchord/pgvecto-rs:pg16-v0.2.1
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${KIBAN_IMMICH_DB_NAME:-immich}
+      POSTGRES_USER: ${KIBAN_IMMICH_DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${KIBAN_IMMICH_DB_PASSWORD:-immich}
+      POSTGRES_INITDB_ARGS: '--data-checksums'
+    command: ["postgres", "-c", "shared_preload_libraries=vectors.so", "-c", "search_path=\"$$user\", public, vectors", "-c", "logging_collector=on", "-c", "max_wal_size=2GB", "-c", "shared_buffers=512MB", "-c", "wal_compression=on"]
+    volumes:
+      - immich_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${KIBAN_IMMICH_DB_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  immich-redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+volumes:
+  immich_upload:
+  immich_model_cache:
+  immich_db_data:

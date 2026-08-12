@@ -1,0 +1,17 @@
+{
+  "id": "apache-kafka",
+  "name": "Apache Kafka",
+  "description": "Official Apache Kafka broker in KRaft mode.",
+  "category": "messaging",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Kafka",
+      "kind": "kafka",
+      "service": "apache-kafka",
+      "port": 9092
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "id": "plausible",
+  "name": "Plausible",
+  "description": "Official Plausible Analytics self-hosted service.",
+  "category": "analytics",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "plausible",
+      "port": 8000
+    }
+  ]
+}

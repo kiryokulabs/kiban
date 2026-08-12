@@ -1,0 +1,17 @@
+{
+  "id": "opensearch",
+  "name": "OpenSearch",
+  "description": "Official OpenSearch search and analytics engine.",
+  "category": "search",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "OpenSearch",
+      "kind": "opensearch",
+      "service": "opensearch",
+      "port": 9200
+    }
+  ]
+}

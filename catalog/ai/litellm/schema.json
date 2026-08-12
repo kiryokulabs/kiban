@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "LITELLM_MASTER_KEY": {
+      "type": "string",
+      "default": "${KIBAN_LITELLM_MASTER_KEY:-sk-kiban}"
+    }
+  }
+}

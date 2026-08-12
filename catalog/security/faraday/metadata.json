@@ -1,0 +1,17 @@
+{
+  "id": "faraday",
+  "name": "Faraday",
+  "description": "Collaborative vulnerability management and security monitoring platform.",
+  "category": "security",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "faraday",
+      "port": 5985
+    }
+  ]
+}

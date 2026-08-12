@@ -1,0 +1,31 @@
+{
+  "id": "rabbitmq",
+  "name": "RabbitMQ",
+  "description": "Official RabbitMQ message broker with management UI.",
+  "category": "messaging",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "AMQP",
+      "kind": "amqp",
+      "service": "rabbitmq",
+      "port": 5672,
+      "connection": {
+        "username": "RABBITMQ_DEFAULT_USER",
+        "password": "RABBITMQ_DEFAULT_PASS"
+      }
+    },
+    {
+      "name": "Management UI",
+      "kind": "web",
+      "service": "rabbitmq",
+      "port": 15672,
+      "connection": {
+        "username": "RABBITMQ_DEFAULT_USER",
+        "password": "RABBITMQ_DEFAULT_PASS"
+      }
+    }
+  ]
+}

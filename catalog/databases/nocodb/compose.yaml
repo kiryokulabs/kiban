@@ -1,0 +1,12 @@
+services:
+  nocodb:
+    image: nocodb/nocodb:latest
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_NOCODB_PORT:-8080}:8080"
+    volumes:
+      - nocodb_data:/usr/app/data
+    environment:
+      KIBAN_NOCODB_PORT: ${KIBAN_NOCODB_PORT:-8080}
+volumes:
+  nocodb_data:

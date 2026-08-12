@@ -1,0 +1,378 @@
+# Kiban Architecture
+
+## Philosophy
+
+Kiban is an open-source infrastructure platform.
+
+Its goal is to make self-hosting infrastructure as simple as possible while remaining fully local and transparent.
+
+Kiban does **not** own your infrastructure.
+
+Kiban orchestrates it.
+
+The project is designed around the following principles:
+
+- Infrastructure first
+- Local-first
+- Self-hosted
+- Docker as the first runtime
+- Runtime agnostic
+- Zero vendor lock-in
+- Zero-code extensibility
+- API-first
+- Test-first
+- Open-source forever
+
+---
+
+# High Level Architecture
+
+```
+┌───────────────────────────────┐
+│          Angular UI           │
+└──────────────┬────────────────┘
+               │
+               ▼
+┌───────────────────────────────┐
+│          NestJS API           │
+└──────────────┬────────────────┘
+               │
+        Application Layer
+               │
+               ▼
+       Domain / Business Logic
+               │
+               ▼
+  Infrastructure Layer
+               │
+               ▼
+Docker (future Podman, Kubernetes...)
+```
+
+---
+
+# Terminal Architecture
+
+The interactive terminal is documented in detail in [`docs/terminal.md`](./terminal.md).
+
+Architecture summary:
+
+```
+Angular TerminalComponent
+        ↓
+Socket.IO /terminal namespace
+        ↓
+NestJS TerminalGateway
+        ↓
+TerminalSessionService
+        ↓
+TerminalProvider interface
+        ↓
+Docker Engine API implementation
+```
+
+The terminal remains a debugging escape hatch. Docker details stay inside the infrastructure provider; UI and application code interact only with installed services and validated runtime container metadata.
+
+---
+
+# Core Concepts
+
+Everything in Kiban is built around a small set of domain concepts.
+
+```
+Project
+    │
+    ├── Environment
+    │       │
+    │       ├── Installed Services
+    │       │
+    │       └── Applications (future)
+    │
+    └── Variables (future)
+```
+
+---
+
+# Projects
+
+Projects group related infrastructure.
+
+Examples:
+
+- CrossMetrics
+- Personal Website
+- CRM
+- AI Playground
+
+Projects contain one or more environments.
+
+---
+
+# Environments
+
+Every project contains environments.
+
+By default:
+
+- Development
+- Staging
+- Production
+
+Users may create additional environments.
+
+Examples:
+
+- Demo
+- Testing
+- Customer A
+
+Environments are isolated.
+
+---
+
+# Service Catalog
+
+The Service Catalog is read-only.
+
+It is stored inside the repository.
+
+It is never stored inside the database.
+
+Each service contains:
+
+```
+service/
+
+    metadata.json
+    compose.yaml
+    schema.json
+    icon.svg
+```
+
+---
+
+# Installed Services
+
+Installed Services belong to environments.
+
+Examples:
+
+Development
+
+- PostgreSQL
+- Redis
+- MinIO
+
+Production
+
+- PostgreSQL
+- Redis
+
+Installed Services are mutable.
+
+Service Definitions are immutable.
+
+---
+
+# Runtime
+
+Kiban keeps runtime execution behind the `RuntimeProvider` interface.
+
+The first production runtime backend is **Docker Compose**. Kiban may execute Docker Compose internally, but the user never works with Compose concepts directly. The user still works only with Projects, Environments and Services.
+
+Current flow for catalog services:
+
+```
+ServiceDefinition
+  compose.yaml
+  schema.json
+  metadata.json
+        ↓
+RuntimeProvider.install()
+        ↓
+~/.kiban/runtime/services/<environmentId-serviceId>/
+  compose.yaml
+  .env
+        ↓
+docker compose up -d
+```
+
+Docker Compose is an infrastructure detail. Controllers, core managers and UI components must not execute shell commands or know Compose lifecycle details. Only the infrastructure runtime provider may run Compose commands.
+
+Runtime workspaces are ephemeral generated state. When an installed service is deleted, Kiban runs `docker compose down -v` and then removes that service workspace from `~/.kiban/runtime/services/`. When configuration is saved from the UI, Kiban recreates runtime resources and rewrites the generated `.env` file from the current saved configuration.
+
+## Default Reverse Proxy
+
+Kiban owns HTTP routing.
+
+On API startup the Docker Compose runtime provider attempts to prepare one shared internal reverse proxy for the whole Kiban installation:
+
+- shared network: `kiban`
+- reverse proxy project: `kiban-traefik`
+- reverse proxy workspace: `~/.kiban/runtime/traefik/`
+- public ports: `80` and `443`
+
+Catalog `compose.yaml` files remain untouched. During installation Kiban writes a generated runtime `compose.yaml` into the service workspace. For web access points, that generated file:
+
+- connects the target service to the shared `kiban` network
+- removes the matching host-published HTTP port
+- adds `expose` for the internal service port
+- injects Traefik labels with the generated host
+
+Non-web/TCP access points, such as databases and caches, may still publish host ports when the catalog definition intentionally exposes direct local access.
+
+Public service URLs are generated only by the backend `DomainService`. Callers must not concatenate hostnames manually. The first local format is:
+
+```
+{service}.{project}.localhost
+```
+
+Changing base domains is a configuration concern (`KIBAN_DOMAIN_DEVELOPMENT`, `KIBAN_DOMAIN_STAGING`, `KIBAN_DOMAIN_PRODUCTION`, `KIBAN_DOMAIN_DEFAULT`, `KIBAN_DOMAIN_PROTOCOL`) and must not require changing catalog definitions or frontend code.
+
+Future runtimes may include:
+
+- Podman
+- Kubernetes
+- Nomad
+
+Application code must never reference Docker or Docker Compose directly.
+
+---
+
+# Zero-Code Extensibility
+
+Adding a new service must never require changing TypeScript code.
+
+The only required action should be:
+
+```
+catalog/
+
+    databases/
+
+        cockroachdb/
+```
+
+After restarting Kiban, the service should automatically appear.
+
+No registrations.
+
+No switch statements.
+
+No hardcoded arrays.
+
+---
+
+# Clean Architecture
+
+Dependencies always point inward.
+
+```
+UI
+
+↓
+
+Application
+
+↓
+
+Domain
+
+↓
+
+Infrastructure
+```
+
+Business logic must never depend on infrastructure.
+
+---
+
+# Runtime Providers
+
+Every runtime implements the same interface.
+
+The Docker Compose provider maps generic service lifecycle operations to Compose commands:
+
+```
+install   -> docker compose up -d
+start     -> docker compose start
+stop      -> docker compose stop
+restart   -> docker compose restart
+delete    -> docker compose down -v
+logs      -> docker compose logs --no-color
+status    -> docker compose ps --format json
+```
+
+Shell execution is allowed only inside this infrastructure provider and must use argument arrays (`spawn`) rather than interpolated shell strings.
+
+Before starting a service, the provider resolves catalog host port placeholders such as:
+
+```
+${KIBAN_GITEA_PORT:-3000}:3000
+```
+
+into concrete values in the generated `.env` file. If the preferred host port is already occupied, Kiban assigns the next available host port automatically. This prevents catalog services from failing when common ports such as `3000`, `80`, `8080`, `5432` or `6379` are already in use.
+
+If Docker still reports a port collision during `compose up`, the provider treats it as runtime feedback, rewrites only the affected host-port variable in `.env`, and retries the install. This retry logic is generic and applies to every catalog service.
+
+The provider must accept both Docker Compose `ps --format json` output shapes: a single JSON array and JSON Lines output where each container is emitted as one JSON object per line.
+
+To avoid exhausting Docker's predefined address pools, Kiban does not allow Compose to create one isolated default network per installed service. The provider creates or reuses one external runtime network per environment:
+
+```
+kiban-env-<environmentId>
+```
+
+The generated runtime `compose.yaml` attaches every service to that environment network through Compose's `default` network. This keeps environment isolation while avoiding unbounded Docker network creation.
+
+```
+RuntimeProvider
+
+install()
+
+uninstall()
+
+start()
+
+stop()
+
+restart()
+
+health()
+```
+
+The application layer only depends on this abstraction.
+
+---
+
+# Current Scope
+
+Current version focuses on:
+
+- Authentication
+- Users
+- Projects
+- Environments
+- Service Catalog
+- Installed Services
+
+Everything else belongs to future milestones.
+
+---
+
+# Future
+
+Future modules include:
+
+- Applications
+- Git
+- CI/CD
+- Domains
+- SSL
+- Secrets
+- Backups
+- Monitoring
+- Teams
+- Plugins
+
+These modules must integrate with the existing architecture without requiring breaking changes.

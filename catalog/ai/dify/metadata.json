@@ -1,0 +1,23 @@
+{
+  "id": "dify",
+  "name": "Dify",
+  "description": "Open-source LLM app development platform with AI workflow, RAG pipeline, and agent capabilities.",
+  "category": "ai",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "dify-web",
+      "port": 3000
+    },
+    {
+      "name": "API",
+      "kind": "web",
+      "service": "dify-api",
+      "port": 5001
+    }
+  ]
+}

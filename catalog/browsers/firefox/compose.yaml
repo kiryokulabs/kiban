@@ -1,0 +1,10 @@
+services:
+  firefox:
+    image: jlesage/firefox:latest
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_FIREFOX_PORT:-5800}:5800"
+    volumes:
+      - firefox_data:/config
+volumes:
+  firefox_data:

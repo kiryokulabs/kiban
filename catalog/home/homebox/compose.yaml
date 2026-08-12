@@ -1,0 +1,13 @@
+services:
+  homebox:
+    image: ghcr.io/sysadminsmedia/homebox:latest
+    restart: unless-stopped
+    environment:
+      HBOX_MODE: release
+      HBOX_WEB_PORT: 80
+    ports:
+      - "${KIBAN_HOMEBOX_PORT:-3000}:80"
+    volumes:
+      - homebox_data:/data
+volumes:
+  homebox_data:

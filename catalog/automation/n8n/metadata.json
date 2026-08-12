@@ -1,0 +1,17 @@
+{
+  "id": "n8n",
+  "name": "n8n",
+  "description": "Official n8n workflow automation platform.",
+  "category": "automation",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "n8n",
+      "port": 5678
+    }
+  ]
+}

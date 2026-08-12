@@ -1,0 +1,38 @@
+services:
+  joomla:
+    image: joomla:latest
+    restart: unless-stopped
+    environment:
+      JOOMLA_DB_HOST: joomla-db
+      JOOMLA_DB_NAME: ${KIBAN_JOOMLA_DB_NAME:-joomla}
+      JOOMLA_DB_USER: ${KIBAN_JOOMLA_DB_USER:-joomla}
+      JOOMLA_DB_PASSWORD: ${KIBAN_JOOMLA_DB_PASSWORD:-joomla}
+      KIBAN_JOOMLA_DB_NAME: ${KIBAN_JOOMLA_DB_NAME:-joomla}
+      KIBAN_JOOMLA_DB_USER: ${KIBAN_JOOMLA_DB_USER:-joomla}
+      KIBAN_JOOMLA_DB_PASSWORD: ${KIBAN_JOOMLA_DB_PASSWORD:-joomla}
+      KIBAN_JOOMLA_DB_ROOT_PASSWORD: ${KIBAN_JOOMLA_DB_ROOT_PASSWORD:-root}
+    ports:
+      - "${KIBAN_JOOMLA_PORT:-8080}:80"
+    depends_on:
+      joomla-db:
+        condition: service_healthy
+    volumes:
+      - joomla_data:/var/www/html
+  joomla-db:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${KIBAN_JOOMLA_DB_NAME:-joomla}
+      MYSQL_USER: ${KIBAN_JOOMLA_DB_USER:-joomla}
+      MYSQL_PASSWORD: ${KIBAN_JOOMLA_DB_PASSWORD:-joomla}
+      MYSQL_ROOT_PASSWORD: ${KIBAN_JOOMLA_DB_ROOT_PASSWORD:-root}
+    volumes:
+      - joomla_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "healthcheck.sh --connect --innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+volumes:
+  joomla_data:
+  joomla_db_data:

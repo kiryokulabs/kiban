@@ -1,0 +1,17 @@
+{
+  "id": "traefik",
+  "name": "Traefik",
+  "description": "Official Traefik reverse proxy.",
+  "category": "web-servers",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "traefik",
+      "port": 80
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_TWENTY_PORT": {
+      "type": "string",
+      "default": "${KIBAN_TWENTY_PORT:-3000}"
+    },
+    "KIBAN_TWENTY_DB_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_TWENTY_DB_PASSWORD:-postgres}"
+    },
+    "KIBAN_TWENTY_ENCRYPTION_KEY": {
+      "type": "string",
+      "default": "${KIBAN_TWENTY_ENCRYPTION_KEY:-change-me-to-a-random-string}"
+    }
+  }
+}

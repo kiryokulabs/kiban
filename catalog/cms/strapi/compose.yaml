@@ -1,0 +1,38 @@
+services:
+  strapi:
+    image: naskio/strapi:latest
+    restart: unless-stopped
+    environment:
+      DATABASE_CLIENT: postgres
+      DATABASE_HOST: strapi-db
+      DATABASE_PORT: 5432
+      DATABASE_NAME: ${KIBAN_STRAPI_DB_NAME:-strapi}
+      DATABASE_USERNAME: ${KIBAN_STRAPI_DB_USER:-strapi}
+      DATABASE_PASSWORD: ${KIBAN_STRAPI_DB_PASSWORD:-strapi}
+      KIBAN_STRAPI_DB_NAME: ${KIBAN_STRAPI_DB_NAME:-strapi}
+      KIBAN_STRAPI_DB_USER: ${KIBAN_STRAPI_DB_USER:-strapi}
+      KIBAN_STRAPI_DB_PASSWORD: ${KIBAN_STRAPI_DB_PASSWORD:-strapi}
+    ports:
+      - "${KIBAN_STRAPI_PORT:-1337}:1337"
+    depends_on:
+      strapi-db:
+        condition: service_healthy
+    volumes:
+      - strapi_data:/opt/app
+  strapi-db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${KIBAN_STRAPI_DB_NAME:-strapi}
+      POSTGRES_USER: ${KIBAN_STRAPI_DB_USER:-strapi}
+      POSTGRES_PASSWORD: ${KIBAN_STRAPI_DB_PASSWORD:-strapi}
+    volumes:
+      - strapi_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U strapi"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+volumes:
+  strapi_data:
+  strapi_db_data:

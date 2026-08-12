@@ -1,0 +1,18 @@
+services:
+  pihole:
+    image: pihole/pihole:latest
+    restart: unless-stopped
+    environment:
+      TZ: UTC
+      WEBPASSWORD: ${KIBAN_PIHOLE_PASSWORD:-kiban}
+      KIBAN_PIHOLE_PASSWORD: ${KIBAN_PIHOLE_PASSWORD:-kiban}
+    ports:
+      - "${KIBAN_PIHOLE_PORT:-80}:80/tcp"
+      - "53:53/tcp"
+      - "53:53/udp"
+    volumes:
+      - pihole_data:/etc/pihole
+      - pihole_dnsmasq:/etc/dnsmasq.d
+volumes:
+  pihole_data:
+  pihole_dnsmasq:

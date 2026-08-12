@@ -1,0 +1,59 @@
+services:
+  erpnext-redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - erpnext_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  erpnext-db:
+    image: mariadb:10.11
+    restart: unless-stopped
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --skip-character-set-client-handshake --skip-innodb-read-only-compressed --innodb-flush-method=fsync
+    environment:
+      MYSQL_ROOT_PASSWORD: ${KIBAN_ERPNEXT_DB_PASSWORD:-erpnext}
+      MYSQL_DATABASE: erpnext
+    volumes:
+      - erpnext_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+  erpnext:
+    image: frappe/erpnext:v15
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_ERPNEXT_PORT:-8080}:8080"
+    depends_on:
+      erpnext-db:
+        condition: service_healthy
+      erpnext-redis:
+        condition: service_healthy
+    volumes:
+      - erpnext_sites:/home/frappe/frappe-bench/sites
+      - erpnext_logs:/home/frappe/frappe-bench/logs
+    environment:
+      DB_HOST: erpnext-db
+      DB_PORT: "3306"
+      REDIS_CACHE: redis://erpnext-redis:6379/0
+      REDIS_QUEUE: redis://erpnext-redis:6379/1
+      REDIS_SOCKETIO: redis://erpnext-redis:6379/2
+      KIBAN_ERPNEXT_PORT: ${KIBAN_ERPNEXT_PORT:-8080}
+      KIBAN_ERPNEXT_DB_PASSWORD: ${KIBAN_ERPNEXT_DB_PASSWORD:-erpnext}
+      KIBAN_ERPNEXT_ADMIN_PASSWORD: ${KIBAN_ERPNEXT_ADMIN_PASSWORD:-admin}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/method/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+volumes:
+  erpnext_redis_data:
+  erpnext_db_data:
+  erpnext_sites:
+  erpnext_logs:

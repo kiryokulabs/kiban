@@ -1,0 +1,12 @@
+services:
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    restart: unless-stopped
+    environment:
+      OLLAMA_BASE_URL: ${KIBAN_OPENWEBUI_OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+    ports:
+      - "${KIBAN_OPEN_WEBUI_PORT:-8080}:8080"
+    volumes:
+      - open_webui_data:/data
+volumes:
+  open_webui_data:

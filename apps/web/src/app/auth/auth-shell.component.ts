@@ -1,53 +1,81 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from './auth.service';
+import { IconsComponent } from '../shared/icons.component';
 
 @Component({
   selector: 'kiban-auth-shell',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, IconsComponent],
   template: `
-    <main class="grid min-h-screen place-items-center bg-surface px-6 text-zinc-100">
-      <section class="w-full max-w-md rounded-2xl border border-line bg-panel p-8 shadow-2xl shadow-black/20">
+    <main class="grid min-h-screen place-items-center surface-base px-6">
+      <section class="w-full max-w-sm">
         @if (requiresAdminSetup() === null && !bootstrapError()) {
-          <div class="py-10 text-center">
-            <div class="mx-auto mb-4 grid h-11 w-11 place-items-center rounded-xl bg-zinc-100 text-sm font-bold text-zinc-950">K</div>
-            <p class="text-sm text-zinc-500">Checking Kiban API…</p>
+          <!-- Loading -->
+          <div class="card p-8 text-center">
+            <div class="mx-auto mb-4 grid h-10 w-10 place-items-center rounded-xl kb-logo text-sm font-bold">K</div>
+            <p class="text-sm c-muted">Checking Kiban API…</p>
           </div>
         } @else if (requiresAdminSetup() === null && bootstrapError()) {
-          <div class="py-8">
-            <div class="mb-4 grid h-11 w-11 place-items-center rounded-xl bg-zinc-100 text-sm font-bold text-zinc-950">K</div>
-            <p class="text-sm text-red-300">API unavailable</p>
-            <h1 class="mt-2 text-2xl font-semibold tracking-tight">Kiban API is not reachable</h1>
-            <p class="mt-2 text-sm text-zinc-400">The web app cannot decide whether to show admin setup or login until the API answers <code class="text-zinc-300">/auth/bootstrap-status</code>.</p>
-            <button type="button" class="mt-6 w-full rounded-lg bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-950" (click)="loadBootstrapStatus()">Retry</button>
+          <!-- API unavailable -->
+          <div class="card p-8">
+            <div class="flex flex-col items-center text-center">
+              <div class="mb-4 grid h-10 w-10 place-items-center rounded-xl bg-danger/10" style="color: var(--color-danger)">
+                <kiban-icon name="warning" [size]="20" />
+              </div>
+              <p class="text-sm font-medium kb-text">API unavailable</p>
+              <h1 class="mt-1 text-lg font-semibold kb-text">Kiban API is not reachable</h1>
+              <p class="mt-2 text-xs leading-relaxed c-muted">The web app cannot reach the backend API. Make sure the Kiban server is running.</p>
+              <button type="button" class="btn-primary btn gap-1.5 mt-6" (click)="loadBootstrapStatus()">
+                <kiban-icon name="refresh" [size]="14" />
+                Retry
+              </button>
+            </div>
           </div>
         } @else {
-          <div class="mb-8">
-            <div class="mb-4 grid h-11 w-11 place-items-center rounded-xl bg-zinc-100 text-sm font-bold text-zinc-950">K</div>
-            <p class="text-sm text-zinc-500">{{ eyebrow() }}</p>
-            <h1 class="mt-2 text-2xl font-semibold tracking-tight">{{ title() }}</h1>
-            <p class="mt-2 text-sm text-zinc-400">{{ description() }}</p>
+          <!-- Auth form -->
+          <div class="card p-6">
+            <!-- Logo -->
+            <div class="flex flex-col items-center mb-6">
+              <div class="mx-auto mb-3 grid h-10 w-10 place-items-center rounded-xl kb-logo text-sm font-bold">K</div>
+              <p class="text-xs c-subtle uppercase tracking-wider">{{ eyebrow() }}</p>
+              <h1 class="mt-1 text-lg font-semibold kb-text text-center">{{ title() }}</h1>
+              <p class="mt-1 text-xs c-muted text-center max-w-xs">{{ description() }}</p>
+            </div>
+
+            <form class="space-y-3" (ngSubmit)="submit()">
+              <label class="block text-xs">
+                <span class="mb-1.5 block c-muted">Email</span>
+                <div class="relative">
+                  <kiban-icon name="profile" [size]="14" class="absolute left-3 top-1/2 -translate-y-1/2 c-subtle pointer-events-none" />
+                  <input name="email" type="email" autocomplete="email" [(ngModel)]="email" class="input pl-9" required />
+                </div>
+              </label>
+              <label class="block text-xs">
+                <span class="mb-1.5 block c-muted">Password</span>
+                <div class="relative">
+                  <kiban-icon name="eye" [size]="14" class="absolute left-3 top-1/2 -translate-y-1/2 c-subtle pointer-events-none" />
+                  <input name="password" type="password" [autocomplete]="requiresAdminSetup() ? 'new-password' : 'current-password'" [(ngModel)]="password" class="input pl-9" required minlength="8" />
+                </div>
+              </label>
+
+              @if (formError()) {
+                <div class="card-subtle flex items-center gap-2.5 px-4 py-3" style="border-color: color-mix(in srgb, var(--color-danger) 30%, transparent);">
+                  <kiban-icon name="warning" [size]="14" style="color: var(--color-danger);" class="shrink-0" />
+                  <p class="text-xs" style="color: var(--color-danger);">{{ formError() }}</p>
+                </div>
+              }
+
+              <button type="submit" class="btn-primary btn w-full justify-center gap-1.5 mt-2" [disabled]="loading()">
+                @if (loading()) {
+                  <span class="animate-pulse">Please wait…</span>
+                } @else {
+                  <kiban-icon name="check" [size]="14" />
+                  <span>{{ actionLabel() }}</span>
+                }
+              </button>
+            </form>
           </div>
-
-          <form class="space-y-4" (ngSubmit)="submit()">
-            <label class="block text-sm">
-              <span class="mb-2 block text-zinc-400">Email</span>
-              <input name="email" type="email" autocomplete="email" [(ngModel)]="email" class="w-full rounded-lg border border-line bg-surface px-3 py-2 text-zinc-100 outline-none focus:border-zinc-500" required />
-            </label>
-            <label class="block text-sm">
-              <span class="mb-2 block text-zinc-400">Password</span>
-              <input name="password" type="password" [autocomplete]="requiresAdminSetup() ? 'new-password' : 'current-password'" [(ngModel)]="password" class="w-full rounded-lg border border-line bg-surface px-3 py-2 text-zinc-100 outline-none focus:border-zinc-500" required minlength="8" />
-            </label>
-
-            @if (formError()) {
-              <p class="rounded-lg border border-red-900/60 bg-red-950/40 px-3 py-2 text-sm text-red-200">{{ formError() }}</p>
-            }
-
-            <button type="submit" class="w-full rounded-lg bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-950 disabled:cursor-not-allowed disabled:opacity-60" [disabled]="loading()">
-              {{ loading() ? 'Please wait…' : actionLabel() }}
-            </button>
-          </form>
         }
       </section>
     </main>
@@ -72,7 +100,6 @@ export class AuthShellComponent {
     this.loadBootstrapStatus();
   }
 
-  /** Loads the install bootstrap status before deciding between setup and login. */
   protected loadBootstrapStatus(): void {
     this.bootstrapError.set(false);
     this.formError.set(null);
@@ -83,7 +110,6 @@ export class AuthShellComponent {
     });
   }
 
-  /** Submits either the first-admin setup or normal login flow. */
   protected submit(): void {
     if (this.loading() || this.requiresAdminSetup() === null) {
       return;

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_STIRLING_PDF_PORT": {
+      "type": "integer",
+      "default": 8080
+    }
+  }
+}

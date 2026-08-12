@@ -1,0 +1,17 @@
+{
+  "id": "jenkins",
+  "name": "Jenkins",
+  "description": "Open-source automation server for CI/CD pipelines.",
+  "category": "devops",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "jenkins",
+      "port": 8080
+    }
+  ]
+}

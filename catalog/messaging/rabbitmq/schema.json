@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "RABBITMQ_DEFAULT_USER": {
+      "type": "string",
+      "default": "${KIBAN_RABBITMQ_USER:-kiban}"
+    },
+    "RABBITMQ_DEFAULT_PASS": {
+      "type": "string",
+      "default": "${KIBAN_RABBITMQ_PASSWORD:-kiban}"
+    }
+  }
+}

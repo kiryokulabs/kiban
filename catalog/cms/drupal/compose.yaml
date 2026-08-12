@@ -1,0 +1,34 @@
+services:
+  drupal:
+    image: drupal:latest
+    restart: unless-stopped
+    environment:
+      KIBAN_DRUPAL_DB_NAME: ${KIBAN_DRUPAL_DB_NAME:-drupal}
+      KIBAN_DRUPAL_DB_USER: ${KIBAN_DRUPAL_DB_USER:-drupal}
+      KIBAN_DRUPAL_DB_PASSWORD: ${KIBAN_DRUPAL_DB_PASSWORD:-drupal}
+    ports:
+      - "${KIBAN_DRUPAL_PORT:-8080}:80"
+    depends_on:
+      drupal-db:
+        condition: service_healthy
+    volumes:
+      - drupal_data:/var/www/html/modules
+      - drupal_sites:/var/www/html/sites
+  drupal-db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${KIBAN_DRUPAL_DB_NAME:-drupal}
+      POSTGRES_USER: ${KIBAN_DRUPAL_DB_USER:-drupal}
+      POSTGRES_PASSWORD: ${KIBAN_DRUPAL_DB_PASSWORD:-drupal}
+    volumes:
+      - drupal_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U drupal"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+volumes:
+  drupal_data:
+  drupal_sites:
+  drupal_db_data:

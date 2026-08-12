@@ -1,0 +1,15 @@
+services:
+  elasticsearch:
+    image: elasticsearch:9.4.4
+    restart: unless-stopped
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: ${KIBAN_ES_JAVA_OPTS:-"-Xms512m -Xmx512m"}
+      KIBAN_ES_JAVA_OPTS: ${KIBAN_ES_JAVA_OPTS:-"-Xms512m -Xmx512m"}
+    ports:
+      - "${KIBAN_ELASTICSEARCH_PORT:-9200}:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+volumes:
+  elasticsearch_data:

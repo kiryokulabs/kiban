@@ -1,0 +1,19 @@
+services:
+  dashy:
+    image: lissy93/dashy:latest
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_DASHY_PORT:-8080}:8080"
+    volumes:
+      - dashy_user_data:/app/user-data
+    environment:
+      NODE_ENV: production
+      KIBAN_DASHY_PORT: ${KIBAN_DASHY_PORT:-8080}
+    healthcheck:
+      test: ["CMD", "node", "/app/services/healthcheck.js"]
+      interval: 90s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+volumes:
+  dashy_user_data:

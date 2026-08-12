@@ -1,0 +1,17 @@
+{
+  "id": "eclipse-mosquitto",
+  "name": "Eclipse Mosquitto",
+  "description": "Official Eclipse Mosquitto MQTT broker.",
+  "category": "messaging",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "MQTT",
+      "kind": "mqtt",
+      "service": "eclipse-mosquitto",
+      "port": 1883
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+services:
+  tailscale:
+    image: tailscale/tailscale:latest
+    restart: unless-stopped
+    environment:
+      TS_AUTHKEY: ${KIBAN_TAILSCALE_AUTHKEY:-}
+      KIBAN_TAILSCALE_AUTHKEY: ${KIBAN_TAILSCALE_AUTHKEY:-}
+      TS_STATE_DIR: /var/lib/tailscale
+      TS_USERSPACE: "false"
+    volumes:
+      - tailscale_state:/var/lib/tailscale
+volumes:
+  tailscale_state:

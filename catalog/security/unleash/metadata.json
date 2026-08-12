@@ -1,0 +1,17 @@
+{
+  "id": "unleash",
+  "name": "Unleash",
+  "description": "Open-source feature management platform with feature flags, gradients, and experiments.",
+  "category": "security",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "unleash",
+      "port": 4242
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_UNLEASH_PORT": {
+      "type": "string",
+      "default": "${KIBAN_UNLEASH_PORT:-4242}"
+    },
+    "KIBAN_UNLEASH_DB_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_UNLEASH_DB_PASSWORD:-unleash}"
+    }
+  }
+}

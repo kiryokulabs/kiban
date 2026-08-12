@@ -1,0 +1,40 @@
+services:
+  wiki-db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: wiki
+      POSTGRES_USER: wiki
+      POSTGRES_PASSWORD: ${KIBAN_WIKI_DB_PASSWORD:-wiki}
+    volumes:
+      - wiki_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wiki"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  wiki:
+    image: ghcr.io/requarks/wiki:2
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_WIKI_PORT:-3000}:3000"
+    depends_on:
+      wiki-db:
+        condition: service_healthy
+    environment:
+      DB_TYPE: postgres
+      DB_HOST: wiki-db
+      DB_PORT: "5432"
+      DB_USER: wiki
+      DB_PASS: ${KIBAN_WIKI_DB_PASSWORD:-wiki}
+      DB_NAME: wiki
+      KIBAN_WIKI_PORT: ${KIBAN_WIKI_PORT:-3000}
+      KIBAN_WIKI_DB_PASSWORD: ${KIBAN_WIKI_DB_PASSWORD:-wiki}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+volumes:
+  wiki_db_data:

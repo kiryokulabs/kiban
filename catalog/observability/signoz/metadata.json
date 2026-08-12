@@ -1,0 +1,23 @@
+{
+  "id": "signoz",
+  "name": "SigNoz",
+  "description": "Open-source full-stack observability platform for traces, metrics, and logs.",
+  "category": "observability",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "signoz-standalone",
+      "port": 8080
+    },
+    {
+      "name": "OTLP gRPC",
+      "kind": "network",
+      "service": "signoz-standalone",
+      "port": 4317
+    }
+  ]
+}

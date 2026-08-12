@@ -1,0 +1,17 @@
+{
+  "id": "arangodb",
+  "name": "ArangoDB",
+  "description": "Multi-model database supporting graph, document, and key/value models in a single engine.",
+  "category": "databases",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "arangodb",
+      "port": 8529
+    }
+  ]
+}

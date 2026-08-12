@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "MONGO_INITDB_ROOT_USERNAME": {
+      "type": "string",
+      "default": "${KIBAN_MONGO_ROOT_USERNAME:-kiban}"
+    },
+    "MONGO_INITDB_ROOT_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_MONGO_ROOT_PASSWORD:-kiban}"
+    }
+  }
+}

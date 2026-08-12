@@ -1,0 +1,17 @@
+{
+  "id": "duplicati",
+  "name": "Duplicati",
+  "description": "Free backup software with encryption for cloud storage.",
+  "category": "backup",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "duplicati",
+      "port": 8200
+    }
+  ]
+}

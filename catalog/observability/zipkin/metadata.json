@@ -1,0 +1,17 @@
+{
+  "id": "zipkin",
+  "name": "Zipkin",
+  "description": "Distributed tracing system for collecting and visualizing request traces across microservices.",
+  "category": "observability",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "zipkin",
+      "port": 9411
+    }
+  ]
+}

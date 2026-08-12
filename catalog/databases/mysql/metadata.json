@@ -1,0 +1,22 @@
+{
+  "id": "mysql",
+  "name": "MySQL",
+  "description": "Official MySQL relational database.",
+  "category": "databases",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Database",
+      "kind": "mysql",
+      "service": "mysql",
+      "port": 3306,
+      "connection": {
+        "username": "MYSQL_USER",
+        "password": "MYSQL_PASSWORD",
+        "database": "MYSQL_DATABASE"
+      }
+    }
+  ]
+}

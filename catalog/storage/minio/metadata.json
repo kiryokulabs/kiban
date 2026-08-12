@@ -1,0 +1,21 @@
+{
+  "id": "minio",
+  "name": "MinIO",
+  "description": "Official MinIO object storage.",
+  "category": "storage",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "minio",
+      "port": 9000,
+      "connection": {
+        "username": "MINIO_ROOT_USER",
+        "password": "MINIO_ROOT_PASSWORD"
+      }
+    }
+  ]
+}

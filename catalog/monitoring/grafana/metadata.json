@@ -1,0 +1,21 @@
+{
+  "id": "grafana",
+  "name": "Grafana",
+  "description": "Official Grafana observability dashboard.",
+  "category": "monitoring",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "grafana",
+      "port": 3000,
+      "connection": {
+        "username": "GF_SECURITY_ADMIN_USER",
+        "password": "GF_SECURITY_ADMIN_PASSWORD"
+      }
+    }
+  ]
+}

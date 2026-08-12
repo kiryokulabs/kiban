@@ -1,0 +1,17 @@
+{
+  "id": "redis-insight",
+  "name": "Redis Insight",
+  "description": "Official Redis Insight administration UI.",
+  "category": "development",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "redis-insight",
+      "port": 5540
+    }
+  ]
+}

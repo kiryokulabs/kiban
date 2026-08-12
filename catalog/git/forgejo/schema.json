@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "USER_UID": {
+      "type": "string",
+      "default": "1000"
+    },
+    "USER_GID": {
+      "type": "string",
+      "default": "1000"
+    }
+  }
+}

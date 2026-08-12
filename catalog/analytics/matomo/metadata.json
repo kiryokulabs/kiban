@@ -1,0 +1,17 @@
+{
+  "id": "matomo",
+  "name": "Matomo",
+  "description": "Official Matomo web analytics platform.",
+  "category": "analytics",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "matomo",
+      "port": 80
+    }
+  ]
+}

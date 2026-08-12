@@ -1,0 +1,17 @@
+{
+  "id": "supabase",
+  "name": "Supabase",
+  "description": "Supabase self-hosted foundation using official Supabase images.",
+  "category": "backend-platforms",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "supabase",
+      "port": 3000
+    }
+  ]
+}

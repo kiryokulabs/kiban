@@ -1,0 +1,17 @@
+{
+  "id": "kibana",
+  "name": "Kibana",
+  "description": "Data visualization and exploration dashboard for Elasticsearch.",
+  "category": "observability",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "kibana",
+      "port": 5601
+    }
+  ]
+}

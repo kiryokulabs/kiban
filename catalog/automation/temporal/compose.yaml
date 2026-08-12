@@ -1,0 +1,34 @@
+services:
+  temporal:
+    image: temporalio/auto-setup:latest
+    restart: unless-stopped
+    environment:
+      POSTGRES_SEEDS: temporal-db
+      POSTGRES_USER: ${KIBAN_TEMPORAL_DB_USER:-postgres}
+      POSTGRES_PWD: ${KIBAN_TEMPORAL_DB_PASSWORD:-temporal}
+      KIBAN_TEMPORAL_DB_PASSWORD: ${KIBAN_TEMPORAL_DB_PASSWORD:-temporal}
+      DB: postgresql
+      DB_PORT: 5432
+      POSTGRES_DB: ${KIBAN_TEMPORAL_DB:-temporal}
+    ports:
+      - "${KIBAN_TEMPORAL_PORT:-7233}:7233"
+      - "${KIBAN_TEMPORAL_UI_PORT:-8080}:8080"
+    depends_on:
+      temporal-db:
+        condition: service_healthy
+  temporal-db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${KIBAN_TEMPORAL_DB:-temporal}
+      POSTGRES_USER: ${KIBAN_TEMPORAL_DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${KIBAN_TEMPORAL_DB_PASSWORD:-temporal}
+    volumes:
+      - temporal_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+volumes:
+  temporal_db_data:

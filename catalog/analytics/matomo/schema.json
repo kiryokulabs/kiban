@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "MATOMO_DATABASE_HOST": {
+      "type": "string",
+      "default": "matomo-db"
+    },
+    "MATOMO_DATABASE_ADAPTER": {
+      "type": "string",
+      "default": "mysql"
+    },
+    "MATOMO_DATABASE_TABLES_PREFIX": {
+      "type": "string",
+      "default": "matomo_"
+    },
+    "MATOMO_DATABASE_USERNAME": {
+      "type": "string",
+      "default": "matomo"
+    },
+    "MATOMO_DATABASE_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_MATOMO_DB_PASSWORD:-kiban}"
+    },
+    "MATOMO_DATABASE_DBNAME": {
+      "type": "string",
+      "default": "matomo"
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "id": "databasus",
+  "name": "Databasus",
+  "description": "Open-source database backup tool with Point-In-Time Recovery.",
+  "category": "databases",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "databasus",
+      "port": 4005
+    }
+  ]
+}

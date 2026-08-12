@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KAFKA_NODE_ID": {
+      "type": "string",
+      "default": "1"
+    },
+    "KAFKA_PROCESS_ROLES": {
+      "type": "string",
+      "default": "broker,controller"
+    },
+    "KAFKA_CONTROLLER_QUORUM_VOTERS": {
+      "type": "string",
+      "default": "1@apache-kafka:9093"
+    },
+    "KAFKA_LISTENERS": {
+      "type": "string",
+      "default": "PLAINTEXT://:9092,CONTROLLER://:9093"
+    },
+    "KAFKA_ADVERTISED_LISTENERS": {
+      "type": "string",
+      "default": "PLAINTEXT://localhost:9092"
+    },
+    "KAFKA_CONTROLLER_LISTENER_NAMES": {
+      "type": "string",
+      "default": "CONTROLLER"
+    },
+    "KAFKA_INTER_BROKER_LISTENER_NAME": {
+      "type": "string",
+      "default": "PLAINTEXT"
+    },
+    "KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR": {
+      "type": "string",
+      "default": "1"
+    },
+    "KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR": {
+      "type": "string",
+      "default": "1"
+    },
+    "KAFKA_TRANSACTION_STATE_LOG_MIN_ISR": {
+      "type": "string",
+      "default": "1"
+    }
+  }
+}

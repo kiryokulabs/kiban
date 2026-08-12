@@ -1,0 +1,17 @@
+services:
+  alertmanager:
+    image: prom/alertmanager:latest
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_ALERTMANAGER_PORT:-9093}:9093"
+    volumes:
+      - alertmanager_data:/alertmanager
+    environment:
+      KIBAN_ALERTMANAGER_PORT: ${KIBAN_ALERTMANAGER_PORT:-9093}
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9093/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+volumes:
+  alertmanager_data:

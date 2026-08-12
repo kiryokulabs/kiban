@@ -1,0 +1,17 @@
+{
+  "id": "adminer",
+  "name": "Adminer",
+  "description": "Official Adminer database administration UI.",
+  "category": "development",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "adminer",
+      "port": 8080
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "POSTGRES_DB": {
+      "type": "string",
+      "default": "${KIBAN_POSTGRES_DB:-kiban}"
+    },
+    "POSTGRES_USER": {
+      "type": "string",
+      "default": "${KIBAN_POSTGRES_USER:-kiban}"
+    },
+    "POSTGRES_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_POSTGRES_PASSWORD:-kiban}"
+    }
+  }
+}

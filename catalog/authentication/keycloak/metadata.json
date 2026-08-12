@@ -1,0 +1,21 @@
+{
+  "id": "keycloak",
+  "name": "Keycloak",
+  "description": "Official Keycloak identity and access management server.",
+  "category": "authentication",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "keycloak",
+      "port": 8080,
+      "connection": {
+        "username": "KC_BOOTSTRAP_ADMIN_USERNAME",
+        "password": "KC_BOOTSTRAP_ADMIN_PASSWORD"
+      }
+    }
+  ]
+}

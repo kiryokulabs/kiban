@@ -1,0 +1,18 @@
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    restart: unless-stopped
+    environment:
+      CLICKHOUSE_DB: ${KIBAN_CLICKHOUSE_DB:-kiban}
+      CLICKHOUSE_USER: ${KIBAN_CLICKHOUSE_USER:-kiban}
+      CLICKHOUSE_PASSWORD: ${KIBAN_CLICKHOUSE_PASSWORD:-kiban}
+      KIBAN_CLICKHOUSE_DB: ${KIBAN_CLICKHOUSE_DB:-kiban}
+      KIBAN_CLICKHOUSE_USER: ${KIBAN_CLICKHOUSE_USER:-kiban}
+      KIBAN_CLICKHOUSE_PASSWORD: ${KIBAN_CLICKHOUSE_PASSWORD:-kiban}
+    ports:
+      - "${KIBAN_CLICKHOUSE_HTTP_PORT:-8123}:8123"
+      - "${KIBAN_CLICKHOUSE_TCP_PORT:-9000}:9000"
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+volumes:
+  clickhouse_data:

@@ -1,0 +1,17 @@
+{
+  "id": "nocodb",
+  "name": "NocoDB",
+  "description": "Open-source Airtable alternative that turns any database into a smart spreadsheet.",
+  "category": "databases",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "nocodb",
+      "port": 8080
+    }
+  ]
+}

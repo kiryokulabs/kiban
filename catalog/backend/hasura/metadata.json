@@ -1,0 +1,17 @@
+{
+  "id": "hasura",
+  "name": "Hasura",
+  "description": "Instant real-time GraphQL and REST APIs on any database.",
+  "category": "backend",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "hasura",
+      "port": 8080
+    }
+  ]
+}

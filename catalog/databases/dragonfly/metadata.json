@@ -1,0 +1,20 @@
+{
+  "id": "dragonfly",
+  "name": "Dragonfly",
+  "description": "Modern in-memory datastore compatible with Redis and Memcached.",
+  "category": "databases",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Database",
+      "kind": "redis",
+      "service": "dragonfly",
+      "port": 6379,
+      "connection": {
+        "password": "KIBAN_DRAGONFLY_PASSWORD"
+      }
+    }
+  ]
+}

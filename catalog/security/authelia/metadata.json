@@ -1,0 +1,17 @@
+{
+  "id": "authelia",
+  "name": "Authelia",
+  "description": "Open-source authentication and authorization server with SSO, 2FA, and portal for reverse proxies.",
+  "category": "security",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "authelia",
+      "port": 9091
+    }
+  ]
+}

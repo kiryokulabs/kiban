@@ -1,0 +1,20 @@
+services:
+  homarr:
+    image: ghcr.io/homarr-labs/homarr:latest
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_HOMARR_PORT:-7575}:7575"
+    volumes:
+      - homarr_appdata:/appdata
+    environment:
+      SECRET_ENCRYPTION_KEY: ${KIBAN_HOMARR_ENCRYPTION_KEY:-}
+      KIBAN_HOMARR_PORT: ${KIBAN_HOMARR_PORT:-7575}
+      KIBAN_HOMARR_ENCRYPTION_KEY: ${KIBAN_HOMARR_ENCRYPTION_KEY:-}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7575"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+volumes:
+  homarr_appdata:

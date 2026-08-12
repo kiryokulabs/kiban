@@ -1,0 +1,21 @@
+{
+  "id": "mongodb",
+  "name": "MongoDB",
+  "description": "Official MongoDB document database.",
+  "category": "databases",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Database",
+      "kind": "mongodb",
+      "service": "mongodb",
+      "port": 27017,
+      "connection": {
+        "username": "MONGO_INITDB_ROOT_USERNAME",
+        "password": "MONGO_INITDB_ROOT_PASSWORD"
+      }
+    }
+  ]
+}

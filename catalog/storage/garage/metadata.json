@@ -1,0 +1,23 @@
+{
+  "id": "garage",
+  "name": "Garage",
+  "description": "Open-source distributed storage system compatible with S3 API.",
+  "category": "storage",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "API",
+      "kind": "web",
+      "service": "garage",
+      "port": 3900
+    },
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "garage",
+      "port": 3901
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "id": "prestashop",
+  "name": "PrestaShop",
+  "description": "Open-source e-commerce platform for online stores.",
+  "category": "cms",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "prestashop",
+      "port": 80
+    }
+  ]
+}

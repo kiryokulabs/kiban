@@ -1,0 +1,17 @@
+{
+  "id": "nextcloud",
+  "name": "Nextcloud",
+  "description": "Self-hosted cloud storage, calendar, contacts, and collaboration platform.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "nextcloud",
+      "port": 80
+    }
+  ]
+}

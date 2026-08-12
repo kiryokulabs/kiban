@@ -1,0 +1,14 @@
+services:
+  keycloak:
+    image: keycloak/keycloak:latest
+    restart: unless-stopped
+    command: start-dev
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KIBAN_KEYCLOAK_ADMIN:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KIBAN_KEYCLOAK_PASSWORD:-kiban}
+    ports:
+      - "${KIBAN_KEYCLOAK_PORT:-8080}:8080"
+    volumes:
+      - keycloak_data:/data
+volumes:
+  keycloak_data:

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_DOZZLE_PORT": {
+      "type": "string",
+      "default": "${KIBAN_DOZZLE_PORT:-8080}"
+    }
+  }
+}

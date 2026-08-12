@@ -1,0 +1,17 @@
+{
+  "id": "glances",
+  "name": "Glances",
+  "description": "Cross-platform system monitoring tool with web interface.",
+  "category": "monitoring",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "glances",
+      "port": 61208
+    }
+  ]
+}
