@@ -1,6 +1,6 @@
 import { access, mkdir, rm, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
-import { join, resolve, sep } from 'node:path';
+import { dirname, join, resolve, sep } from 'node:path';
 import { spawn } from 'node:child_process';
 import { createServer } from 'node:net';
 import http from 'node:http';
@@ -163,8 +163,9 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
     const projectName = this.projectName(plan.environment.id, plan.serviceDefinition.id);
     const networkName = this.networkName(plan.environment.id);
     await this.ensureReverseProxy();
-    const generatedComposeYaml = this.composeYamlForRuntime(plan.serviceDefinition.composeYaml, networkName, plan.publicEndpoints ?? []);
-    let variables = await this.variablesWithAvailableHostPorts(generatedComposeYaml, plan.variables);
+    let generatedComposeYaml = this.composeYamlForRuntime(plan.serviceDefinition.composeYaml, networkName, plan.publicEndpoints ?? []);
+    generatedComposeYaml = await this.materializeGeneratedBindFiles(workspace, generatedComposeYaml);
+    let variables = await this.variablesWithAvailableHostPorts(generatedComposeYaml, this.variablesWithPublicEndpoints(plan.variables, plan.publicEndpoints ?? [], plan.serviceDefinition.id));
     await this.ensureEnvironmentNetwork(workspace, networkName);
     await writeFile(composeFile, generatedComposeYaml, 'utf8');
     await writeFile(envFile, this.envFile(variables), 'utf8');
@@ -319,6 +320,29 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
     return stringify(document);
   }
 
+  private async materializeGeneratedBindFiles(workspace: string, composeYaml: string): Promise<string> {
+    const document = this.composeDocument(composeYaml);
+    const services = this.recordValue(document['services']);
+    if (!services) return composeYaml;
+    for (const rawService of Object.values(services)) {
+      const service = this.recordValue(rawService);
+      const volumes = Array.isArray(service?.['volumes']) ? service['volumes'] : undefined;
+      if (!volumes) continue;
+      for (const volume of volumes) {
+        const entry = this.recordValue(volume);
+        if (!entry || entry['type'] !== 'bind' || typeof entry['source'] !== 'string' || typeof entry['content'] !== 'string') continue;
+        const targetPath = resolve(workspace, entry['source']);
+        if (!targetPath.startsWith(resolve(workspace) + sep)) {
+          throw new Error('Generated bind file source must stay inside the service workspace.');
+        }
+        await mkdir(dirname(targetPath), { recursive: true });
+        await writeFile(targetPath, entry['content'], 'utf8');
+        delete entry['content'];
+      }
+    }
+    return stringify(document);
+  }
+
   private composeDocument(composeYaml: string): Record<string, unknown> {
     const parsed = parse(composeYaml) as unknown;
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return { services: {} };
@@ -396,6 +420,26 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
       if (resolved.variableName) lines.set(resolved.variableName, resolved.value);
     }
     return [...lines.entries()].map(([key, value]) => `${key}=${this.escapeEnvValue(value)}`).join('\n') + '\n';
+  }
+
+  private variablesWithPublicEndpoints(
+    variables: Readonly<Record<string, unknown>>,
+    publicEndpoints: readonly RuntimePublicEndpoint[],
+    serviceId: string
+  ): Readonly<Record<string, unknown>> {
+    const result: Record<string, unknown> = { ...variables };
+    for (const endpoint of publicEndpoints) {
+      for (const key of [this.serviceVariableKey(endpoint.service), this.serviceVariableKey(serviceId)]) {
+        result[`SERVICE_URL_${key}`] = endpoint.url;
+        result[`SERVICE_FQDN_${key}`] = endpoint.host;
+        result[`SERVICE_URL_${key}_${endpoint.port}`] = endpoint.url;
+      }
+    }
+    return result;
+  }
+
+  private serviceVariableKey(value: string): string {
+    return value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
   }
 
   private async variablesWithAvailableHostPorts(composeYaml: string, variables: Readonly<Record<string, unknown>>): Promise<Readonly<Record<string, unknown>>> {

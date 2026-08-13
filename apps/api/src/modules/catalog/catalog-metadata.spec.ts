@@ -21,7 +21,11 @@ import { CatalogLoader } from './loader/catalog.loader';
 const CATALOG_ROOT = join(__dirname, '..', '..', '..', '..', '..', 'catalog');
 
 const allEnvironmentKeys = (def: ServiceDefinition): ReadonlySet<string> =>
-  new Set(def.runtime.services.flatMap((svc) => svc.environment.map((e) => e.key)));
+  new Set(def.runtime.services.flatMap((svc) => svc.environment.flatMap((e) => [
+    e.key,
+    e.sourceVariableName,
+    ...(e.sourceVariableNames ?? [])
+  ].filter((key): key is string => key !== undefined))));
 
 describe('Catalog invariants', () => {
   let catalog: readonly ServiceDefinition[] = [];

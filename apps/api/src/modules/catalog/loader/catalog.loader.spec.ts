@@ -290,6 +290,40 @@ describe('CatalogLoader — access points', () => {
 });
 
 describe('CatalogLoader — schema and cross-file rules', () => {
+  it('accepts schema fields backed by compose interpolation variables', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'kiban-loader-'));
+    const dir = writeService(root, 'databases', 'postgresql');
+    writeFileSync(join(dir, 'compose.yaml'), [
+      'services:',
+      '  postgresql:',
+      '    image: postgres:17',
+      '    ports:',
+      '      - "5432"',
+      '    environment:',
+      '      POSTGRES_PASSWORD: ${SERVICE_PASSWORD_POSTGRES:-kiban}'
+    ].join('\n'));
+    writeFileSync(join(dir, 'schema.json'), JSON.stringify({ type: 'object', properties: { SERVICE_PASSWORD_POSTGRES: { type: 'string' } } }));
+
+    await expect(load(root)).resolves.toHaveLength(1);
+  });
+
+  it('accepts schema fields backed by interpolation variables inside composed environment values', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'kiban-loader-'));
+    const dir = writeService(root, 'databases', 'postgresql');
+    writeFileSync(join(dir, 'compose.yaml'), [
+      'services:',
+      '  postgresql:',
+      '    image: postgres:17',
+      '    ports:',
+      '      - "5432"',
+      '    environment:',
+      '      DATABASE_URL: postgres://${SERVICE_USER_POSTGRES}:${SERVICE_PASSWORD_POSTGRES}@postgresql:5432/app'
+    ].join('\n'));
+    writeFileSync(join(dir, 'schema.json'), JSON.stringify({ type: 'object', properties: { SERVICE_PASSWORD_POSTGRES: { type: 'string' } } }));
+
+    await expect(load(root)).resolves.toHaveLength(1);
+  });
+
   it('rejects schema fields not declared in the compose environment', async () => {
     const root = mkdtempSync(join(tmpdir(), 'kiban-loader-'));
     const dir = writeService(root, 'databases', 'postgresql');

@@ -33,6 +33,14 @@ const isObject = (value: unknown): value is Record<string, unknown> =>
 const isStringArray = (value: unknown): value is readonly string[] =>
   Array.isArray(value) && value.every((entry) => typeof entry === 'string');
 
+const isGeneratedBindFile = (entry: Record<string, unknown>): boolean =>
+  entry['type'] === 'bind' &&
+  typeof entry['source'] === 'string' &&
+  entry['source'].startsWith('./') &&
+  !entry['source'].includes('..') &&
+  typeof entry['target'] === 'string' &&
+  typeof entry['content'] === 'string';
+
 /**
  * Validates the structural shape of a parsed compose document and rejects any
  * compose feature outside the supported subset. Produces one issue per problem;
@@ -131,7 +139,7 @@ export function validateComposeDocument(
       for (const entry of volumes) {
         if (typeof entry === 'string') continue;
         if (isObject(entry)) {
-          if (entry['type'] === 'bind') {
+          if (entry['type'] === 'bind' && !isGeneratedBindFile(entry)) {
             add(servicePath, 'unsupported compose feature: bind mounts are not supported');
           }
         } else {

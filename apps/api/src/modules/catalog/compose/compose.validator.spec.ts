@@ -120,6 +120,19 @@ describe('validateComposeDocument', () => {
     expect(issues[0]!.reason).toContain('bind');
   });
 
+  it('accepts generated bind files that are materialized inside the runtime workspace', () => {
+    const doc = {
+      services: {
+        app: {
+          image: 'x',
+          volumes: [{ type: 'bind', source: './config/app.yml', target: '/etc/app.yml', content: 'enabled: true\n' }]
+        }
+      }
+    };
+
+    expect(validateComposeDocument(doc, CONTEXT)).toEqual([]);
+  });
+
   it('rejects a non-map labels block', () => {
     const doc = { services: { app: { image: 'x', labels: ['a=b'] } } };
     const issues = validateComposeDocument(doc, CONTEXT);
