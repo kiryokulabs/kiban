@@ -18,11 +18,17 @@ export interface RuntimeServicePort {
  * An environment variable a compose service declares.
  * `value` is the resolved default (from `${VAR:-default}` or a plain value).
  * `required` is true when no default exists (bare `${VAR}`).
+ * `sourceVariableName` is present when the value comes from a compose
+ * interpolation variable such as `POSTGRES_PASSWORD: ${SERVICE_PASSWORD_DB}`.
+ * `sourceVariableNames` includes every interpolation variable referenced by
+ * composed values such as `DATABASE_URL: postgres://${USER}:${PASSWORD}@db`.
  */
 export interface RuntimeEnvironmentEntry {
   readonly key: string;
   readonly value?: string;
   readonly required: boolean;
+  readonly sourceVariableName?: string;
+  readonly sourceVariableNames?: readonly string[];
 }
 
 /** A volume mount. `name` is present for named volumes, absent for anonymous. */
