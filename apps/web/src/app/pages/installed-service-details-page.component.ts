@@ -271,14 +271,14 @@ import { SvgIconComponent } from '../shared/svg-icon.component';
                 <p class="text-sm font-medium kb-text">Recreate this service</p>
                 <p class="mt-1 text-xs c-muted">This rebuilds the runtime units and may delete any data stored inside containers but not persisted in volumes.</p>
               </div>
-              <button class="btn-danger btn gap-1.5" type="button" [disabled]="!!actionInProgress()" (click)="confirmRecreate.set(true)"><kiban-icon name="refresh" [size]="14" /> Recreate</button>
+              <button class="btn-danger btn gap-1.5" type="button" [disabled]="!!actionInProgress()" (click)="confirmRecreate.set(true)"><kiban-icon name="refresh" [size]="14" style="color: var(--color-danger);" /> Recreate</button>
             </div>
             <div class="flex items-center justify-between gap-3 rounded-lg border border-danger/30 p-3">
             <div>
               <p class="text-sm font-medium kb-text">Delete this service</p>
               <p class="mt-1 text-xs c-muted">This removes the service from Kiban and deletes its runtime resources.</p>
             </div>
-            <button class="btn-danger btn gap-1.5" type="button" [disabled]="!!actionInProgress()" (click)="confirmDelete.set(true)"><kiban-icon name="trash" [size]="14" /> Delete</button>
+            <button class="btn-danger btn gap-1.5" type="button" [disabled]="!!actionInProgress()" (click)="confirmDelete.set(true)"><kiban-icon name="trash" [size]="14" style="color: var(--color-danger);" /> Delete</button>
             </div>
           </div>
         </section>

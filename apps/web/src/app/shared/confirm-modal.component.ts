@@ -34,7 +34,7 @@ import { IconsComponent } from './icons.component';
           type="button"
           (click)="confirmAction()"
         >
-          @if (destructive) { <kiban-icon name="trash" [size]="14" /> }
+          @if (destructive) { <kiban-icon name="trash" [size]="14" style="color: var(--color-danger);" /> }
           {{ confirmLabel }}
         </button>
       </div>

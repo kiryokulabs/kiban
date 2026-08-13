@@ -118,7 +118,13 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
                                 </div>
                               }
                               <p class="text-sm font-medium kb-text truncate">{{ service.name }}</p>
-                              <span class="badge text-[10px] px-1.5 py-0.5 leading-none" [class.badge-success]="service.status === 'running'" [class.badge-warning]="service.status === 'installing'" [class.badge-danger]="service.status === 'failed' || service.status === 'stopped' || service.status === 'removing'">
+                              <span class="badge text-[10px] px-1.5 py-0.5 leading-none"
+                                [class.badge-success]="service.status === 'running'"
+                                [class.badge-warning]="service.status === 'installing'"
+                                [class.badge-danger]="service.status === 'failed'
+                                || service.status === 'stopped'
+                                || service.status === 'removing'"
+                              >
                                 {{ service.status }}
                               </span>
                             </div>
@@ -135,7 +141,7 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
                             <!--<p class="mt-1 text-[11px] c-subtle">{{ service.createdAt | slice:0:10 }}</p> -->
                           </div>
                           <button class="btn-danger btn gap-1 text-[11px] px-2 py-1" type="button" (click)="requestDeleteInstalledService(service)">
-                            <kiban-icon name="trash" [size]="12" />
+                            <kiban-icon name="trash" [size]="12" style="color: var(--color-danger);" />
                           </button>
                         </div>
                         <div class="mt-2 flex flex-wrap items-center gap-1.5">
@@ -166,7 +172,7 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
               @if (environment.type === 'custom') {
                 <div class="border-t kb-border px-4 py-2.5">
                   <button type="button" class="btn-danger btn gap-1 text-xs w-full justify-center" (click)="requestDeleteEnvironment(environment)">
-                    <kiban-icon name="trash" [size]="12" />
+                    <kiban-icon name="trash" [size]="12" style="color: var(--color-danger);" />
                     Delete environment
                   </button>
                 </div>
@@ -266,12 +272,12 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
 
             <!-- Step 3: Review -->
             @if (installStep() === 3 && selectedService()) {
-              <div class="space-y-3 text-sm">
-                <div class="flex items-center justify-between border-b kb-border pb-2">
+              <div class="space-y-4 text-sm">
+                <div class="flex items-center justify-between border-b kb-border pb-2 mt-2">
                   <span class="text-xs c-muted">Name</span>
                   <span class="text-xs font-medium kb-text">{{ selectedService()?.name }}</span>
                 </div>
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between pb-2 mt-2">
                   <span class="text-xs c-muted">Env variables</span>
                   <span class="text-xs kb-text">{{ configurationKeys().join(', ') || 'None' }}</span>
                 </div>

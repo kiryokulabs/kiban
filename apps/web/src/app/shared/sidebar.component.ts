@@ -24,7 +24,7 @@ export interface NavItem {
     >
       <!-- Logo area -->
       <div class="flex h-12 items-center gap-3 border-b kb-border px-4" [class.justify-center]="collapsed()">
-        <div class="grid h-7 w-7 shrink-0 place-items-center rounded-lg kb-logo text-xs font-bold">K</div>
+        <img src="assets/logo.svg" alt="Kiban" class="h-7 w-7 shrink-0 rounded-lg" />
         @if (!collapsed()) {
           <div class="flex min-w-0 flex-1 items-center justify-between">
             <span class="text-sm font-semibold kb-text">Kiban</span>

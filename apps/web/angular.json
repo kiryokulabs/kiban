@@ -22,7 +22,9 @@
             "styles": [
               "src/styles.css"
             ],
-            "assets": []
+            "assets": [
+              "src/assets"
+            ]
           },
           "configurations": {
             "production": {
