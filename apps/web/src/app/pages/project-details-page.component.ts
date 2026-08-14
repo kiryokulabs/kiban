@@ -15,6 +15,8 @@ import { ConfirmModalComponent } from '../shared/confirm-modal.component';
 import { ModalComponent } from '../shared/modal.component';
 import { IconsComponent } from '../shared/icons.component';
 import { SvgIconComponent } from '../shared/svg-icon.component';
+import { SkeletonProjectDetailComponent } from '../shared/skeleton-project-detail.component';
+import { SkeletonComponent } from '../shared/skeleton.component';
 
 type InstallStep = 1 | 2 | 3;
 interface SchemaField { readonly key: string; readonly label: string; readonly required: boolean; readonly defaultValue: string; }
@@ -22,7 +24,7 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
 @Component({
   selector: 'kiban-project-details-page',
   standalone: true,
-  imports: [FormsModule, RouterLink, ConfirmModalComponent, ModalComponent, IconsComponent, SvgIconComponent],
+  imports: [FormsModule, RouterLink, ConfirmModalComponent, ModalComponent, IconsComponent, SvgIconComponent, SkeletonProjectDetailComponent, SkeletonComponent],
   template: `
     <div class="space-y-6">
       <!-- Back & header -->
@@ -95,7 +97,21 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
                   </button>
                 </div>
 
-                @if (installedFor(environment.id).length === 0) {
+                @if (isEnvironmentLoading(environment.id)) {
+                  <div class="space-y-2">
+                    @for (i of [1, 2]; track i) {
+                      <div class="rounded-lg border kb-border p-3">
+                        <div class="flex items-center gap-2">
+                          <kiban-skeleton width="2.5rem" height="2.5rem" blockClass="rounded-lg shrink-0" />
+                          <div class="flex-1 space-y-1.5">
+                            <kiban-skeleton width="60%" height="0.75rem" />
+                            <kiban-skeleton width="30%" height="0.625rem" />
+                          </div>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                } @else if (installedFor(environment.id).length === 0) {
                   <div class="flex flex-col items-center justify-center rounded-lg border border-dashed kb-border py-8 text-center">
                     <kiban-icon name="box" [size]="20" class="c-subtle" />
                     <p class="mt-2 text-xs font-medium c-muted">No services</p>
@@ -437,22 +453,21 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
           <kiban-confirm-modal title="Delete environment" [message]="deleteEnvironmentMessage()" confirmLabel="Delete environment" [destructive]="true" (cancel)="cancelDeleteEnvironment()" (confirm)="confirmDeleteEnvironment()" />
         }
       } @else {
-        <div class="card p-8 text-center">
-          <p class="text-sm c-muted">Loading project…</p>
-        </div>
+        <kiban-skeleton-project-detail />
       }
     </div>
   `
 })
 export class ProjectDetailsPageComponent {
   private readonly route = inject(ActivatedRoute); private readonly projectsService = inject(ProjectsService); private readonly installedServices = inject(InstalledServicesService); private readonly catalogService = inject(CatalogService); private readonly environmentPresenter = new EnvironmentCardPresenter(); private readonly catalogPresenter = new CatalogPagePresenter();
-  protected readonly detailsPresenter = new ServiceDetailsPresenter(); protected readonly project = signal<ProjectDetails | null>(null); protected readonly message = signal<string | null>(null); protected readonly environmentPendingDelete = signal<EnvironmentItem | null>(null); protected readonly installedServicePendingDelete = signal<InstalledService | null>(null); protected readonly environmentModalOpen = signal(false); protected readonly servicesByEnvironment = signal<Readonly<Record<string, readonly InstalledService[]>>>({}); protected readonly catalogCategories = signal<readonly CatalogCategory[]>([]); protected readonly catalogItems = signal<readonly CatalogItem[]>([]); protected readonly installEnvironment = signal<EnvironmentItem | null>(null); protected readonly selectedService = signal<CatalogItem | null>(null); protected readonly installStep = signal<InstallStep>(1); protected readonly installingService = signal(false); protected readonly selectedCatalogCategory = signal('all'); protected readonly serviceForDetails = signal<InstalledService | null>(null); protected readonly visiblePasswords = signal<ReadonlySet<number>>(new Set());
+  protected readonly detailsPresenter = new ServiceDetailsPresenter();   protected readonly project = signal<ProjectDetails | null>(null); protected readonly message = signal<string | null>(null); protected readonly environmentPendingDelete = signal<EnvironmentItem | null>(null); protected readonly installedServicePendingDelete = signal<InstalledService | null>(null); protected readonly environmentModalOpen = signal(false); protected readonly servicesByEnvironment = signal<Readonly<Record<string, readonly InstalledService[]>>>({}); protected readonly loadingEnvironments = signal<ReadonlySet<string>>(new Set()); protected readonly catalogCategories = signal<readonly CatalogCategory[]>([]); protected readonly catalogItems = signal<readonly CatalogItem[]>([]); protected readonly installEnvironment = signal<EnvironmentItem | null>(null); protected readonly selectedService = signal<CatalogItem | null>(null); protected readonly installStep = signal<InstallStep>(1); protected readonly installingService = signal(false); protected readonly selectedCatalogCategory = signal('all'); protected readonly serviceForDetails = signal<InstalledService | null>(null); protected readonly visiblePasswords = signal<ReadonlySet<number>>(new Set());
   protected environmentName = ''; protected environmentDescriptionText = ''; protected serviceSearch = ''; protected configurationValues: Record<string, string> = {}; private readonly projectId: string | null;
   public constructor() { this.projectId = this.route.snapshot.paramMap.get('id'); this.loadCatalog(); this.loadProject(); }
   protected loadProject(): void { if (this.projectId) this.projectsService.getProject(this.projectId).subscribe({ next: (project) => { this.project.set(project); for (const environment of project.environments) this.loadInstalledServices(environment.id); }, error: () => this.message.set('Could not load project.') }); }
   protected loadCatalog(): void { this.catalogService.list().subscribe({ next: (catalog) => { this.catalogCategories.set(catalog.categories); this.catalogItems.set(catalog.items); }, error: () => this.message.set('Could not load catalog.') }); }
   protected installedFor(environmentId: string): readonly InstalledService[] { return this.servicesByEnvironment()[environmentId] ?? []; }
-  private loadInstalledServices(environmentId: string): void { if (!this.projectId) return; this.installedServices.list(this.projectId, environmentId).subscribe({ next: (services) => this.servicesByEnvironment.set({ ...this.servicesByEnvironment(), [environmentId]: services }), error: () => this.message.set('Could not load installed services.') }); }
+  protected isEnvironmentLoading(environmentId: string): boolean { return this.loadingEnvironments().has(environmentId); }
+  private loadInstalledServices(environmentId: string): void { if (!this.projectId) return; this.loadingEnvironments.set(new Set([...this.loadingEnvironments(), environmentId])); this.installedServices.list(this.projectId, environmentId).subscribe({ next: (services) => { this.servicesByEnvironment.set({ ...this.servicesByEnvironment(), [environmentId]: services }); this.loadingEnvironments.set(new Set([...this.loadingEnvironments()].filter((id) => id !== environmentId))); }, error: () => { this.loadingEnvironments.set(new Set([...this.loadingEnvironments()].filter((id) => id !== environmentId))); this.message.set('Could not load installed services.'); } }); }
   protected openInstallDialog(environment: EnvironmentItem): void { this.installEnvironment.set(environment); this.selectedService.set(null); this.installStep.set(1); this.configurationValues = {}; this.serviceSearch = ''; this.selectedCatalogCategory.set('all'); }
   protected closeInstallDialog(): void { if (this.installingService()) return; this.installEnvironment.set(null); }
   protected selectableServices(): readonly CatalogItem[] { const searched = this.catalogItems().filter((item) => `${item.name} ${item.description}`.toLowerCase().includes(this.serviceSearch.toLowerCase())); return this.catalogPresenter.visibleItems(searched, this.selectedCatalogCategory()); }

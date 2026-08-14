@@ -5,11 +5,12 @@ import { AuthService } from './auth/auth.service';
 import { ThemeService } from './theme/theme.service';
 import { IconsComponent } from './shared/icons.component';
 import { SidebarComponent, type NavItem } from './shared/sidebar.component';
+import { ProgressBarComponent } from './shared/progress-bar.component';
 
 @Component({
   selector: 'kiban-root',
   standalone: true,
-  imports: [AuthShellComponent, RouterLink, RouterOutlet, SidebarComponent, IconsComponent],
+  imports: [AuthShellComponent, RouterLink, RouterOutlet, SidebarComponent, IconsComponent, ProgressBarComponent],
   template: `
     @if (initializing()) {
       <!-- Loading state -->
@@ -23,6 +24,9 @@ import { SidebarComponent, type NavItem } from './shared/sidebar.component';
       <kiban-auth-shell />
     } @else {
       <div class="min-h-screen surface-base">
+        <!-- Loading progress bar -->
+        <kiban-progress-bar />
+
         <!-- Sidebar -->
         <kiban-sidebar [navItems]="navItems()" (collapseChange)="sidebarCollapsed.set($event)" />
 
