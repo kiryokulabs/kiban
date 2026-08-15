@@ -1,14 +1,36 @@
 services:
   keycloak:
-    image: keycloak/keycloak:latest
-    restart: unless-stopped
-    command: start-dev
+    image: quay.io/keycloak/keycloak:26.1
+    command:
+      - start
     environment:
-      KC_BOOTSTRAP_ADMIN_USERNAME: ${KIBAN_KEYCLOAK_ADMIN:-admin}
-      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KIBAN_KEYCLOAK_PASSWORD:-kiban}
-    ports:
-      - "${KIBAN_KEYCLOAK_PORT:-8080}:8080"
+      SERVICE_URL_KEYCLOAK_8080: ${SERVICE_URL_KEYCLOAK_8080:-http://localhost}
+      TZ: ${TIMEZONE:-UTC}
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${SERVICE_USER_ADMIN}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${SERVICE_PASSWORD_ADMIN}
+      KC_HOSTNAME: ${SERVICE_URL_KEYCLOAK}
+      KC_HTTP_ENABLED: ${KC_HTTP_ENABLED:-true}
+      KC_HEALTH_ENABLED: ${KC_HEALTH_ENABLED:-true}
+      KC_PROXY_HEADERS: ${KC_PROXY_HEADERS:-xforwarded}
     volumes:
-      - keycloak_data:/data
+      - keycloak-data:/opt/keycloak/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - "exec 3<>/dev/tcp/127.0.0.1/9000; echo -e 'GET /health/ready HTTP/1.1\r
+
+          Host: localhost:9000\r
+
+          Connection: close\r
+
+          \r
+
+          ' >&3;cat <&3 | grep -q '\"status\": \"UP\"' && exit 0 || exit 1"
+      interval: 5s
+      timeout: 20s
+      retries: 10
+    restart: unless-stopped
+    ports:
+      - "8080"
 volumes:
-  keycloak_data:
+  keycloak-data: {}

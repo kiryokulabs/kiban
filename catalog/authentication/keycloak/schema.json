@@ -3,13 +3,16 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "KC_BOOTSTRAP_ADMIN_USERNAME": {
+    "SERVICE_PASSWORD_ADMIN": {
       "type": "string",
-      "default": "${KIBAN_KEYCLOAK_ADMIN:-admin}"
+      "title": "Service Password Admin",
+      "default": "kiban",
+      "x-kiban-secret": true
     },
-    "KC_BOOTSTRAP_ADMIN_PASSWORD": {
+    "SERVICE_USER_ADMIN": {
       "type": "string",
-      "default": "${KIBAN_KEYCLOAK_PASSWORD:-kiban}"
+      "title": "Service User Admin",
+      "default": "admin"
     }
   }
 }
