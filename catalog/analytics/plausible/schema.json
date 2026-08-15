@@ -3,13 +3,68 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "BASE_URL": {
+    "CLICKHOUSE_DATABASE_URL": {
       "type": "string",
-      "default": "${KIBAN_PLAUSIBLE_BASE_URL:-http://localhost:8000}"
+      "title": "Clickhouse Database Url",
+      "default": "http://plausible-events-db:8123/plausible_events_db"
     },
-    "SECRET_KEY_BASE": {
+    "CLICKHOUSE_SKIP_USER_SETUP": {
       "type": "string",
-      "default": "${KIBAN_PLAUSIBLE_SECRET_KEY_BASE:-change-me-change-me-change-me}"
+      "title": "Clickhouse Skip User Setup",
+      "default": "1"
+    },
+    "GOOGLE_CLIENT_ID": {
+      "type": "string",
+      "title": "Google Client Id",
+      "default": "kiban"
+    },
+    "GOOGLE_CLIENT_SECRET": {
+      "type": "string",
+      "title": "Google Client Secret",
+      "default": "kiban-secret",
+      "x-kiban-secret": true
+    },
+    "MAILER_EMAIL": {
+      "type": "string",
+      "title": "Mailer Email",
+      "default": "admin@kiban.local"
+    },
+    "POSTGRES_DB": {
+      "type": "string",
+      "title": "Postgres Db",
+      "default": "plausible-db"
+    },
+    "SERVICE_BASE64_64_PLAUSIBLE": {
+      "type": "string",
+      "title": "Service Base64 64 Plausible",
+      "default": "bWlua2liYW4tcGxhdXVzaWJsZS1zZWNyZXQta2V5LWJhc2Utd2l0aC1tb3JlLXRoYW4tMzItYnl0ZXMtZm9yLXBsYXVzaWJsZS1hcHBsaWNhdGlvbg"
+    },
+    "SERVICE_PASSWORD_POSTGRES": {
+      "type": "string",
+      "title": "Service Password Postgres",
+      "default": "kiban",
+      "x-kiban-secret": true
+    },
+    "SERVICE_REALBASE64_32_TOTP": {
+      "type": "string",
+      "title": "Service Realbase64 32 Totp",
+      "default": "MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTI="
+    },
+    "SERVICE_USER_POSTGRES": {
+      "type": "string",
+      "title": "Service User Postgres",
+      "default": "admin"
+    },
+    "SMTP_USER_NAME": {
+      "type": "string",
+      "title": "Smtp User Name",
+      "default": ""
+    },
+    "SMTP_USER_PWD": {
+      "type": "string",
+      "title": "Smtp User Pwd",
+      "default": "",
+      "x-kiban-secret": true
     }
   }
 }
