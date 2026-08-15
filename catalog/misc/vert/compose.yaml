@@ -3,10 +3,10 @@ services:
     image: ghcr.io/vert-sh/vert:latest
     restart: unless-stopped
     ports:
-      - "${KIBAN_VERT_PORT:-3000}:3000"
+      - "${KIBAN_VERT_PORT:-3000}:80"
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 80 || exit 1"]
       interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
