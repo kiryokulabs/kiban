@@ -3,17 +3,60 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "AP_QUEUE_MODE": {
+    "POSTGRES_DB": {
       "type": "string",
-      "default": "MEMORY"
+      "title": "Postgres Db",
+      "default": "activepieces"
     },
-    "AP_DB_TYPE": {
+    "POSTGRES_HOST": {
       "type": "string",
-      "default": "SQLITE3"
+      "title": "Postgres Host",
+      "default": "postgres"
     },
-    "AP_FRONTEND_URL": {
+    "POSTGRES_PORT": {
       "type": "string",
-      "default": "${KIBAN_ACTIVEPIECES_FRONTEND_URL:-http://localhost}"
+      "title": "Postgres Port",
+      "default": "5432"
+    },
+    "REDIS_HOST": {
+      "type": "string",
+      "title": "Redis Host",
+      "default": "redis"
+    },
+    "REDIS_PORT": {
+      "type": "string",
+      "title": "Redis Port",
+      "default": "6379"
+    },
+    "SERVICE_PASSWORD_64_APIKEY": {
+      "type": "string",
+      "title": "Service Password 64 Apikey",
+      "default": "kiban-kiban-kiban-kiban-kiban-kiban-kiban-kiban",
+      "x-kiban-secret": true
+    },
+    "SERVICE_PASSWORD_64_JWT": {
+      "type": "string",
+      "title": "Service Password 64 Jwt",
+      "default": "kiban-kiban-kiban-kiban-kiban-kiban-kiban-kiban",
+      "x-kiban-secret": true
+    },
+    "AP_ENCRYPTION_KEY": {
+      "type": "string",
+      "title": "Encryption Key",
+      "description": "Must be a 32-character hexadecimal string. Generate with: openssl rand -hex 16",
+      "default": "0123456789abcdef0123456789abcdef",
+      "x-kiban-secret": true
+    },
+    "SERVICE_PASSWORD_POSTGRES": {
+      "type": "string",
+      "title": "Service Password Postgres",
+      "default": "kiban",
+      "x-kiban-secret": true
+    },
+    "SERVICE_USER_POSTGRES": {
+      "type": "string",
+      "title": "Service User Postgres",
+      "default": "admin"
     }
   }
 }
