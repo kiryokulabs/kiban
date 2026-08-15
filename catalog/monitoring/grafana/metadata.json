@@ -13,8 +13,8 @@
       "service": "grafana",
       "port": 3000,
       "connection": {
-        "username": "GF_SECURITY_ADMIN_USER",
-        "password": "GF_SECURITY_ADMIN_PASSWORD"
+        "username": "SERVICE_USER_GRAFANA",
+        "password": "SERVICE_PASSWORD_GRAFANA"
       }
     }
   ]
