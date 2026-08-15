@@ -10,8 +10,12 @@
     {
       "name": "Web UI",
       "kind": "web",
-      "service": "authentik",
-      "port": 9000
+      "service": "authentik-server",
+      "port": 9000,
+      "connection": {
+        "username": "AUTHENTIK_BOOTSTRAP_EMAIL",
+        "password": "AUTHENTIK_BOOTSTRAP_PASSWORD"
+      }
     }
   ]
 }

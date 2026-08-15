@@ -3,29 +3,84 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "AUTHENTIK_SECRET_KEY": {
+    "AUTHENTIK_BOOTSTRAP_EMAIL": {
       "type": "string",
-      "default": "${KIBAN_AUTHENTIK_SECRET_KEY:-change-me}"
+      "title": "Authentik Bootstrap Email",
+      "default": "admin@kiban.local"
     },
-    "AUTHENTIK_POSTGRESQL__HOST": {
+    "AUTHENTIK_BOOTSTRAP_PASSWORD": {
       "type": "string",
-      "default": "authentik-postgres"
+      "title": "Authentik Bootstrap Password",
+      "default": "kiban",
+      "x-kiban-secret": true
     },
-    "AUTHENTIK_POSTGRESQL__USER": {
+    "AUTHENTIK_EMAIL__FROM": {
       "type": "string",
+      "title": "Authentik Email From",
+      "default": "admin@kiban.local"
+    },
+    "AUTHENTIK_EMAIL__HOST": {
+      "type": "string",
+      "title": "Authentik Email Host",
+      "default": "admin@kiban.local"
+    },
+    "AUTHENTIK_EMAIL__PASSWORD": {
+      "type": "string",
+      "title": "Authentik Email Password",
+      "default": "admin@kiban.local",
+      "x-kiban-secret": true
+    },
+    "AUTHENTIK_EMAIL__PORT": {
+      "type": "string",
+      "title": "Authentik Email Port",
+      "default": "admin@kiban.local"
+    },
+    "AUTHENTIK_EMAIL__TIMEOUT": {
+      "type": "string",
+      "title": "Authentik Email Timeout",
+      "default": "admin@kiban.local"
+    },
+    "AUTHENTIK_EMAIL__USE_SSL": {
+      "type": "string",
+      "title": "Authentik Email Use Ssl",
+      "default": "admin@kiban.local"
+    },
+    "AUTHENTIK_EMAIL__USE_TLS": {
+      "type": "string",
+      "title": "Authentik Email Use Tls",
+      "default": "admin@kiban.local"
+    },
+    "AUTHENTIK_EMAIL__USERNAME": {
+      "type": "string",
+      "title": "Authentik Email Username",
+      "default": "admin@kiban.local"
+    },
+    "POSTGRES_DB": {
+      "type": "string",
+      "title": "Postgres Db",
       "default": "authentik"
     },
-    "AUTHENTIK_POSTGRESQL__NAME": {
+    "POSTGRES_HOST": {
       "type": "string",
-      "default": "authentik"
+      "title": "Postgres Host",
+      "default": "postgresql"
     },
-    "AUTHENTIK_POSTGRESQL__PASSWORD": {
+    "SERVICE_PASSWORD_64_AUTHENTIKSERVER": {
       "type": "string",
-      "default": "${KIBAN_AUTHENTIK_POSTGRES_PASSWORD:-kiban}"
+      "title": "Service Password 64 Authentikserver",
+      "default": "kiban-kiban-kiban-kiban-kiban-kiban-kiban-kiban",
+      "x-kiban-secret": true
     },
-    "AUTHENTIK_REDIS__HOST": {
+    "SERVICE_PASSWORD_POSTGRESQL": {
       "type": "string",
-      "default": "authentik-redis"
+      "title": "Service Password Postgresql",
+      "default": "kiban",
+      "x-kiban-secret": true
+    },
+    "SERVICE_USER_POSTGRESQL": {
+      "type": "string",
+      "title": "Service User Postgresql",
+      "default": "admin"
     }
   }
 }
