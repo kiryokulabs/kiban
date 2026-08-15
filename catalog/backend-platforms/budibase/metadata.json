@@ -10,8 +10,8 @@
     {
       "name": "Web UI",
       "kind": "web",
-      "service": "budibase",
-      "port": 80
+      "service": "proxy-service",
+      "port": 10000
     }
   ]
 }

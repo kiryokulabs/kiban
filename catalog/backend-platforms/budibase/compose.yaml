@@ -1,18 +1,167 @@
 services:
-  budibase:
-    image: budibase/budibase:latest
+  app-service:
+    image: budibase.docker.scarf.sh/budibase/apps
+    environment:
+      SELF_HOSTED: "1"
+      COUCH_DB_URL: http://${SERVICE_USER_COUCHDB:-admin}:${SERVICE_PASSWORD_COUCHDB:-kiban}@couchdb-service:5984
+      WORKER_URL: http://worker-service:4003
+      MINIO_URL: http://minio-service:9000
+      MINIO_ACCESS_KEY: ${SERVICE_USER_MINIO:-admin}
+      MINIO_SECRET_KEY: ${SERVICE_PASSWORD_MINIO:-kiban}
+      INTERNAL_API_KEY: ${SERVICE_BASE64_128_BUDIBASE:-kiban}
+      BUDIBASE_ENVIRONMENT: ${BUDIBASE_ENVIRONMENT:-PRODUCTION}
+      PORT: "4002"
+      API_ENCRYPTION_KEY: ${SERVICE_BASE64_64_BUDIBASEAPI:-kiban}
+      ENCRYPTION_KEY: ${SERVICE_BASE64_64_BUDIBASE:-kiban}
+      JWT_SECRET: ${SERVICE_BASE64_64_BUDIBASEJWT:-kiban}
+      LOG_LEVEL: info
+      ENABLE_ANALYTICS: ${ENABLE_ANALYTICS:-true}
+      REDIS_URL: redis-service:6379
+      REDIS_PASSWORD: ${SERVICE_PASSWORD_REDIS:-kiban}
+      BB_ADMIN_USER_EMAIL: ""
+      BB_ADMIN_USER_PASSWORD: ""
+    depends_on:
+      - worker-service
+      - redis-service
+    healthcheck:
+      test:
+        - CMD
+        - wget
+        - --spider
+        - -qO-
+        - http://localhost:4002/health
+      interval: 15s
+      timeout: 15s
+      start_period: 10s
+      retries: 5
+    restart: unless-stopped
+  worker-service:
+    image: budibase.docker.scarf.sh/budibase/worker
+    environment:
+      SELF_HOSTED: "1"
+      PORT: "4003"
+      CLUSTER_PORT: "10000"
+      API_ENCRYPTION_KEY: ${SERVICE_BASE64_64_BUDIBASEAPI:-kiban}
+      JWT_SECRET: ${SERVICE_BASE64_64_BUDIBASEJWT:-kiban}
+      MINIO_ACCESS_KEY: ${SERVICE_USER_MINIO:-admin}
+      MINIO_SECRET_KEY: ${SERVICE_PASSWORD_MINIO:-kiban}
+      MINIO_URL: http://minio-service:9000
+      APPS_URL: http://app-service:4002
+      COUCH_DB_USERNAME: ${SERVICE_USER_COUCHDB:-admin}
+      COUCH_DB_PASSWORD: ${SERVICE_PASSWORD_COUCHDB:-kiban}
+      COUCH_DB_URL: http://${SERVICE_USER_COUCHDB:-admin}:${SERVICE_PASSWORD_COUCHDB:-kiban}@couchdb-service:5984
+      INTERNAL_API_KEY: ${SERVICE_BASE64_128_BUDIBASE:-kiban}
+      REDIS_URL: redis-service:6379
+      REDIS_PASSWORD: ${SERVICE_PASSWORD_REDIS:-kiban}
+    depends_on:
+      - redis-service
+      - minio-service
+    healthcheck:
+      test:
+        - CMD
+        - wget
+        - --spider
+        - -qO-
+        - http://localhost:4003/health
+      interval: 15s
+      timeout: 15s
+      start_period: 10s
+      retries: 5
+    restart: unless-stopped
+  minio-service:
+    image: ghcr.io/coollabsio/minio:RELEASE.2025-10-15T17-29-55Z
+    volumes:
+      - minio_data:/data
+    environment:
+      MINIO_ROOT_USER: ${SERVICE_USER_MINIO:-admin}
+      MINIO_ROOT_PASSWORD: ${SERVICE_PASSWORD_MINIO:-kiban}
+      MINIO_BROWSER: off
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test:
+        - CMD
+        - mc
+        - ready
+        - local
+      interval: 5s
+      timeout: 20s
+      retries: 10
+    restart: unless-stopped
+  proxy-service:
+    image: budibase/proxy
+    environment:
+      SERVICE_URL_BUDIBASE_10000: ${SERVICE_URL_BUDIBASE_10000:-http://localhost}
+      PROXY_RATE_LIMIT_WEBHOOKS_PER_SECOND: "10"
+      PROXY_RATE_LIMIT_API_PER_SECOND: "20"
+      APPS_UPSTREAM_URL: http://app-service:4002
+      WORKER_UPSTREAM_URL: http://worker-service:4003
+      MINIO_UPSTREAM_URL: http://minio-service:9000
+      COUCHDB_UPSTREAM_URL: http://couchdb-service:5984
+      WATCHTOWER_UPSTREAM_URL: http://watchtower-service:8080
+      RESOLVER: 127.0.0.11
+    depends_on:
+      - minio-service
+      - worker-service
+      - app-service
+      - couchdb-service
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -f
+        - http://localhost:10000/
+      interval: 15s
+      timeout: 15s
+      start_period: 10s
+      retries: 5
     restart: unless-stopped
     ports:
-      - "${KIBAN_BUDIBASE_PORT:-10000}:80"
-    volumes:
-      - budibase_data:/data
+      - "10000"
+  couchdb-service:
+    image: budibase/couchdb
     environment:
-      KIBAN_BUDIBASE_PORT: ${KIBAN_BUDIBASE_PORT:-10000}
+      COUCHDB_PASSWORD: ${SERVICE_PASSWORD_COUCHDB:-kiban}
+      COUCHDB_USER: ${SERVICE_USER_COUCHDB:-admin}
+      TARGETBUILD: docker-compose
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:10000/"]
-      interval: 30s
-      timeout: 10s
+      test:
+        - CMD
+        - curl
+        - -f
+        - http://localhost:5984/
+      interval: 15s
+      timeout: 15s
+      start_period: 10s
       retries: 5
-      start_period: 60s
+    volumes:
+      - couchdb3_data:/opt/couchdb/data
+    restart: unless-stopped
+  redis-service:
+    image: redis
+    command: redis-server --requirepass "${SERVICE_PASSWORD_REDIS:-kiban}"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - -a
+        - ${SERVICE_PASSWORD_REDIS:-kiban}
+        - ping
+      interval: 15s
+      timeout: 15s
+      start_period: 10s
+      retries: 5
+    restart: unless-stopped
+  watchtower-service:
+    restart: always
+    image: containrrr/watchtower
+    command: --debug --http-api-update bbapps bbworker bbproxy
+    environment:
+      WATCHTOWER_HTTP_API: "true"
+      WATCHTOWER_HTTP_API_TOKEN: ${SERVICE_PASSWORD_WATCHTOWER:-kiban}
+      WATCHTOWER_CLEANUP: "true"
 volumes:
-  budibase_data:
+  couchdb3_data: {}
+  minio_data: {}
+  redis_data: {}
