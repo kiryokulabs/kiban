@@ -6,5 +6,16 @@ services:
       - "${KIBAN_HOMEASSISTANT_PORT:-8123}:8123"
     volumes:
       - homeassistant_data:/config
+      - type: bind
+        source: ./configuration.yaml
+        target: /config/configuration.yaml
+        content: |
+          http:
+            use_x_forwarded_for: true
+            trusted_proxies:
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+              - 10.0.0.0/8
+              - fd00::/8
 volumes:
   homeassistant_data:
