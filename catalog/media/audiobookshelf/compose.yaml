@@ -10,10 +10,10 @@ services:
       - audiobookshelf_config:/config
       - audiobookshelf_metadata:/metadata
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80/healthcheck"]
+      test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:80/healthcheck', r => r.statusCode === 200 ? process.exit(0) : process.exit(1)).on('error', () => process.exit(1))\""]
       interval: 30s
-      timeout: 5s
-      retries: 3
+      timeout: 10s
+      retries: 5
       start_period: 30s
 volumes:
   audiobookshelf_data:
