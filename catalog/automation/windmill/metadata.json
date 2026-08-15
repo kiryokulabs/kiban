@@ -10,7 +10,7 @@
     {
       "name": "Web UI",
       "kind": "web",
-      "service": "windmill",
+      "service": "windmill-server",
       "port": 8000
     }
   ]
