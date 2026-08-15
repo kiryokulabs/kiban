@@ -8,5 +8,5 @@ services:
       - pocketbase_data:/pb/pb_data
       - pocketbase_public:/pb/pb_public
 volumes:
-  pocketbase_data:
-  pocketbase_public:
+  pocketbase_data: {}
+  pocketbase_public: {}
