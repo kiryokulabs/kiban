@@ -9,7 +9,7 @@
     },
     "KIBAN_HOMARR_ENCRYPTION_KEY": {
       "type": "string",
-      "default": "${KIBAN_HOMARR_ENCRYPTION_KEY:-}"
+      "default": "${KIBAN_HOMARR_ENCRYPTION_KEY:-83c4a0910199866716fdedf22c1949ccf8a470bd9f8260583246aaecffcc825e}"
     }
   }
 }
