@@ -3,21 +3,47 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "KIBAN_GHOST_DB_NAME": {
+    "database__client": {
       "type": "string",
-      "default": "${KIBAN_GHOST_DB_NAME:-ghost}"
+      "title": "Database Client",
+      "default": "mysql"
     },
-    "KIBAN_GHOST_DB_USER": {
+    "database__connection__database": {
       "type": "string",
-      "default": "${KIBAN_GHOST_DB_USER:-ghost}"
+      "title": "Database Connection Database",
+      "default": "ghost"
     },
-    "KIBAN_GHOST_DB_PASSWORD": {
+    "database__connection__host": {
       "type": "string",
-      "default": "${KIBAN_GHOST_DB_PASSWORD:-ghost}"
+      "title": "Database Connection Host",
+      "default": "mysql"
     },
-    "KIBAN_GHOST_DB_ROOT_PASSWORD": {
+    "MAIL_OPTIONS_AUTH_USER": {
       "type": "string",
-      "default": "${KIBAN_GHOST_DB_ROOT_PASSWORD:-root}"
+      "title": "Mail Options Auth User",
+      "default": "admin"
+    },
+    "MYSQL_DATABASE": {
+      "type": "string",
+      "title": "Mysql Database",
+      "default": "kiban"
+    },
+    "SERVICE_PASSWORD_MYSQL": {
+      "type": "string",
+      "title": "Service Password Mysql",
+      "default": "kiban",
+      "x-kiban-secret": true
+    },
+    "SERVICE_PASSWORD_MYSQLROOT": {
+      "type": "string",
+      "title": "Service Password Mysqlroot",
+      "default": "kiban",
+      "x-kiban-secret": true
+    },
+    "SERVICE_USER_MYSQL": {
+      "type": "string",
+      "title": "Service User Mysql",
+      "default": "admin"
     }
   }
 }
