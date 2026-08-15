@@ -4,13 +4,16 @@ services:
     restart: unless-stopped
     environment:
       DATABASE_URL: postgres://postgres:${KIBAN_DOCMOST_DB_PASSWORD:-docmost}@docmost-db:5432/docmost
-      APP_SECRET: ${KIBAN_DOCMOST_APP_SECRET:-changeme}
+      REDIS_URL: redis://docmost-redis:6379
+      APP_SECRET: ${KIBAN_DOCMOST_APP_SECRET:-a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0}
       KIBAN_DOCMOST_DB_PASSWORD: ${KIBAN_DOCMOST_DB_PASSWORD:-docmost}
-      KIBAN_DOCMOST_APP_SECRET: ${KIBAN_DOCMOST_APP_SECRET:-changeme}
+      KIBAN_DOCMOST_APP_SECRET: ${KIBAN_DOCMOST_APP_SECRET:-a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0}
     ports:
       - "${KIBAN_DOCMOST_PORT:-3000}:3000"
     depends_on:
       docmost-db:
+        condition: service_healthy
+      docmost-redis:
         condition: service_healthy
   docmost-db:
     image: postgres:17
@@ -23,6 +26,14 @@ services:
       - docmost_db_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  docmost-redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 5s
       retries: 5
