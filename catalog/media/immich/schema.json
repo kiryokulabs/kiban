@@ -3,17 +3,26 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "KIBAN_IMMICH_DB_USER": {
+    "DB_DATABASE_NAME": {
       "type": "string",
-      "default": "${KIBAN_IMMICH_DB_USER:-postgres}"
+      "title": "Db Database Name",
+      "default": "immich"
     },
-    "KIBAN_IMMICH_DB_PASSWORD": {
+    "POSTGRES_INITDB_ARGS": {
       "type": "string",
-      "default": "${KIBAN_IMMICH_DB_PASSWORD:-immich}"
+      "title": "Postgres Initdb Args",
+      "default": "--data-checksums"
     },
-    "KIBAN_IMMICH_DB_NAME": {
+    "SERVICE_PASSWORD_POSTGRES": {
       "type": "string",
-      "default": "${KIBAN_IMMICH_DB_NAME:-immich}"
+      "title": "Service Password Postgres",
+      "default": "kiban",
+      "x-kiban-secret": true
+    },
+    "SERVICE_USER_POSTGRES": {
+      "type": "string",
+      "title": "Service User Postgres",
+      "default": "admin"
     }
   }
 }

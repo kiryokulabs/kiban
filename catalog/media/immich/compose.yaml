@@ -1,62 +1,66 @@
 services:
-  immich-server:
-    image: ghcr.io/immich-app/immich-server:release
-    restart: unless-stopped
-    environment:
-      DB_HOSTNAME: immich-db
-      DB_USERNAME: ${KIBAN_IMMICH_DB_USER:-postgres}
-      DB_PASSWORD: ${KIBAN_IMMICH_DB_PASSWORD:-immich}
-      DB_DATABASE_NAME: ${KIBAN_IMMICH_DB_NAME:-immich}
-      REDIS_HOSTNAME: immich-redis
-      UPLOAD_LOCATION: /usr/src/app/upload
-      KIBAN_IMMICH_DB_USER: ${KIBAN_IMMICH_DB_USER:-postgres}
-      KIBAN_IMMICH_DB_PASSWORD: ${KIBAN_IMMICH_DB_PASSWORD:-immich}
-      KIBAN_IMMICH_DB_NAME: ${KIBAN_IMMICH_DB_NAME:-immich}
-    ports:
-      - "${KIBAN_IMMICH_PORT:-2283}:2283"
+  immich:
+    image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
     volumes:
-      - immich_upload:/usr/src/app/upload
+      - immich-uploads:/usr/src/app/upload
+    environment:
+      SERVICE_URL_IMMICH_2283: ${SERVICE_URL_IMMICH_2283:-http://localhost}
+      UPLOAD_LOCATION: ./library
+      DB_DATA_LOCATION: ./postgres
+      DB_PASSWORD: ${SERVICE_PASSWORD_POSTGRES:-kiban}
+      DB_USERNAME: ${SERVICE_USER_POSTGRES:-admin}
+      DB_DATABASE_NAME: ${DB_DATABASE_NAME:-immich}
+      TZ: ${TZ:-Etc/UTC}
     depends_on:
-      immich-db:
+      redis:
         condition: service_healthy
-      immich-redis:
+      database:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:2283/api/server/ping || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
-  immich-ml:
-    image: ghcr.io/immich-app/immich-machine-learning:release
     restart: unless-stopped
+    ports:
+      - "2283"
+  immich-machine-learning:
+    image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}
     volumes:
-      - immich_model_cache:/cache
-  immich-db:
-    image: tensorchord/pgvecto-rs:pg16-v0.2.1
-    restart: unless-stopped
+      - immich-model-cache:/cache
     environment:
-      POSTGRES_DB: ${KIBAN_IMMICH_DB_NAME:-immich}
-      POSTGRES_USER: ${KIBAN_IMMICH_DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${KIBAN_IMMICH_DB_PASSWORD:-immich}
-      POSTGRES_INITDB_ARGS: '--data-checksums'
-    command: ["postgres", "-c", "shared_preload_libraries=vectors.so", "-c", "search_path=\"$$user\", public, vectors", "-c", "logging_collector=on", "-c", "max_wal_size=2GB", "-c", "shared_buffers=512MB", "-c", "wal_compression=on"]
-    volumes:
-      - immich_db_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${KIBAN_IMMICH_DB_USER:-postgres}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-  immich-redis:
-    image: redis:7-alpine
+      UPLOAD_LOCATION: ./library
+      DB_DATA_LOCATION: ./postgres
+      DB_PASSWORD: ${SERVICE_PASSWORD_POSTGRES:-kiban}
+      DB_USERNAME: ${SERVICE_USER_POSTGRES:-admin}
+      DB_DATABASE_NAME: ${DB_DATABASE_NAME:-immich}
+      TZ: ${TZ:-Etc/UTC}
     restart: unless-stopped
+  redis:
+    image: redis:7.4-alpine
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      test:
+        - CMD
+        - redis-cli
+        - PING
+      interval: 5s
+      timeout: 10s
+      retries: 20
+    restart: unless-stopped
+  database:
+    image: ghcr.io/immich-app/postgres:14-vectorchord0.3.0-pgvectors0.2.0
+    environment:
+      POSTGRES_PASSWORD: ${SERVICE_PASSWORD_POSTGRES}
+      POSTGRES_USER: ${SERVICE_USER_POSTGRES}
+      POSTGRES_DB: ${DB_DATABASE_NAME:-immich}
+      POSTGRES_INITDB_ARGS: --data-checksums
+      DB_STORAGE_TYPE: ${DB_STORAGE_TYPE:-SSD}
+    volumes:
+      - immich-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}
+      interval: 5s
+      timeout: 20s
+      retries: 10
+    restart: unless-stopped
 volumes:
-  immich_upload:
-  immich_model_cache:
-  immich_db_data:
+  immich-model-cache: {}
+  immich-postgres-data: {}
+  immich-uploads: {}

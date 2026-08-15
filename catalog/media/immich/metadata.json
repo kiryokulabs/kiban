@@ -10,7 +10,7 @@
     {
       "name": "Web UI",
       "kind": "web",
-      "service": "immich-server",
+      "service": "immich",
       "port": 2283
     }
   ]
