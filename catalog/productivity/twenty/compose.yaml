@@ -26,6 +26,8 @@ services:
   twenty:
     image: twentycrm/twenty:latest
     restart: unless-stopped
+    entrypoint: ["sh", "-c"]
+    command: ["yarn database:init:prod && yarn start:prod"]
     ports:
       - "${KIBAN_TWENTY_PORT:-3000}:3000"
     depends_on:
@@ -38,34 +40,46 @@ services:
     environment:
       PG_DATABASE_URL: postgres://postgres:${KIBAN_TWENTY_DB_PASSWORD:-postgres}@twenty-db:5432/default
       REDIS_URL: redis://twenty-redis:6379
-      SERVER_URL: http://localhost:${KIBAN_TWENTY_PORT:-3000}
-      ENCRYPTION_KEY: ${KIBAN_TWENTY_ENCRYPTION_KEY:-change-me-to-a-random-string}
-      FALLBACK_ENCRYPTION_KEY: ${KIBAN_TWENTY_ENCRYPTION_KEY:-change-me-to-a-random-string}
+      SERVER_URL: ${SERVICE_URL_TWENTY:-http://localhost:3000}
+      NODE_PORT: 3000
+      PORT: 3000
+      ENCRYPTION_KEY: ${KIBAN_TWENTY_ENCRYPTION_KEY:-tWeN7y32ch4rR4nd0mK3yF0rEncryp}
+      FALLBACK_ENCRYPTION_KEY: ${KIBAN_TWENTY_ENCRYPTION_KEY:-tWeN7y32ch4rR4nd0mK3yF0rEncryp}
+      APP_SECRET: ${KIBAN_TWENTY_APP_SECRET:-a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6}
+      ACCESS_TOKEN_SECRET: ${KIBAN_TWENTY_ACCESS_TOKEN_SECRET:-b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7}
+      LOGIN_TOKEN_SECRET: ${KIBAN_TWENTY_LOGIN_TOKEN_SECRET:-c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8}
+      REFRESH_TOKEN_SECRET: ${KIBAN_TWENTY_REFRESH_TOKEN_SECRET:-d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9}
+      FILE_TOKEN_SECRET: ${KIBAN_TWENTY_FILE_TOKEN_SECRET:-e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0}
+      STORAGE_TYPE: local
       KIBAN_TWENTY_PORT: ${KIBAN_TWENTY_PORT:-3000}
       KIBAN_TWENTY_DB_PASSWORD: ${KIBAN_TWENTY_DB_PASSWORD:-postgres}
-      KIBAN_TWENTY_ENCRYPTION_KEY: ${KIBAN_TWENTY_ENCRYPTION_KEY:-change-me-to-a-random-string}
+      KIBAN_TWENTY_ENCRYPTION_KEY: ${KIBAN_TWENTY_ENCRYPTION_KEY:-tWeN7y32ch4rR4nd0mK3yF0rEncryp}
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:3000/healthz"]
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/healthz', r => process.exit(r.statusCode < 400 ? 0 : 1)).on('error', () => process.exit(1))"]
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 120s
+      start_period: 600s
   twenty-worker:
     image: twentycrm/twenty:latest
     restart: unless-stopped
-    command: ["yarn", "worker:prod"]
+    entrypoint: ["sh", "-c"]
+    command: ["yarn worker:prod"]
     depends_on:
       twenty-db:
         condition: service_healthy
       twenty-redis:
         condition: service_healthy
+      twenty:
+        condition: service_healthy
     environment:
       PG_DATABASE_URL: postgres://postgres:${KIBAN_TWENTY_DB_PASSWORD:-postgres}@twenty-db:5432/default
       REDIS_URL: redis://twenty-redis:6379
-      SERVER_URL: http://localhost:${KIBAN_TWENTY_PORT:-3000}
+      SERVER_URL: http://twenty:3000
       DISABLE_DB_MIGRATIONS: "true"
-      ENCRYPTION_KEY: ${KIBAN_TWENTY_ENCRYPTION_KEY:-change-me-to-a-random-string}
-      FALLBACK_ENCRYPTION_KEY: ${KIBAN_TWENTY_ENCRYPTION_KEY:-change-me-to-a-random-string}
+      APP_SECRET: ${KIBAN_TWENTY_APP_SECRET:-a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6}
+      ENCRYPTION_KEY: ${KIBAN_TWENTY_ENCRYPTION_KEY:-tWeN7y32ch4rR4nd0mK3yF0rEncryp}
+      FALLBACK_ENCRYPTION_KEY: ${KIBAN_TWENTY_ENCRYPTION_KEY:-tWeN7y32ch4rR4nd0mK3yF0rEncryp}
 volumes:
   twenty_db_data:
   twenty_redis_data:
