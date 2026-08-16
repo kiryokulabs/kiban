@@ -33,7 +33,7 @@ services:
       KIBAN_UNLEASH_PORT: ${KIBAN_UNLEASH_PORT:-4242}
       KIBAN_UNLEASH_DB_PASSWORD: ${KIBAN_UNLEASH_DB_PASSWORD:-unleash}
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4242/health"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:4242/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
