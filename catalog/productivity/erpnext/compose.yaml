@@ -1,14 +1,124 @@
 services:
-  erpnext-redis:
-    image: redis:7-alpine
+  erpnext-frontend:
+    image: frappe/erpnext:v15
     restart: unless-stopped
+    command: nginx-entrypoint.sh
+    ports:
+      - "${KIBAN_ERPNEXT_PORT:-8080}:8080"
+    depends_on:
+      - erpnext-backend
+      - erpnext-websocket
+    environment:
+      BACKEND: erpnext-backend:8000
+      SOCKETIO: erpnext-websocket:9000
+      FRAPPE_SITE_NAME_HEADER: "${FRAPPE_SITE_NAME:-frontend}"
+      UPSTREAM_REAL_IP_ADDRESS: 127.0.0.1
+      UPSTREAM_REAL_IP_HEADER: X-Forwarded-For
+      UPSTREAM_REAL_IP_RECURSIVE: "off"
+      PROXY_READ_TIMEOUT: 120
+      CLIENT_MAX_BODY_SIZE: 50m
+      KIBAN_ERPNEXT_PORT: ${KIBAN_ERPNEXT_PORT:-8080}
     volumes:
-      - erpnext_redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+      - erpnext_sites:/home/frappe/frappe-bench/sites
+      - erpnext_logs:/home/frappe/frappe-bench/logs
+
+  erpnext-backend:
+    image: frappe/erpnext:v15
+    restart: unless-stopped
+    depends_on:
+      erpnext-db:
+        condition: service_healthy
+      erpnext-redis-cache:
+        condition: service_healthy
+      erpnext-redis-queue:
+        condition: service_healthy
+    environment:
+      DB_HOST: erpnext-db
+      DB_PORT: "3306"
+      REDIS_CACHE: redis://erpnext-redis-cache:6379/0
+      REDIS_QUEUE: redis://erpnext-redis-queue:6379/1
+      REDIS_SOCKETIO: redis://erpnext-redis-queue:6379/2
+      KIBAN_ERPNEXT_DB_PASSWORD: ${KIBAN_ERPNEXT_DB_PASSWORD:-erpnext}
+      KIBAN_ERPNEXT_ADMIN_PASSWORD: ${KIBAN_ERPNEXT_ADMIN_PASSWORD:-admin}
+    volumes:
+      - erpnext_sites:/home/frappe/frappe-bench/sites
+      - erpnext_logs:/home/frappe/frappe-bench/logs
+
+  erpnext-websocket:
+    image: frappe/erpnext:v15
+    restart: unless-stopped
+    command: node /home/frappe/frappe-bench/apps/frappe/socketio.js
+    depends_on:
+      - erpnext-backend
+    volumes:
+      - erpnext_sites:/home/frappe/frappe-bench/sites
+      - erpnext_logs:/home/frappe/frappe-bench/logs
+
+  erpnext-queue-long:
+    image: frappe/erpnext:v15
+    restart: unless-stopped
+    command: bench worker --queue long,default,short
+    depends_on:
+      - erpnext-backend
+    volumes:
+      - erpnext_sites:/home/frappe/frappe-bench/sites
+      - erpnext_logs:/home/frappe/frappe-bench/logs
+
+  erpnext-queue-short:
+    image: frappe/erpnext:v15
+    restart: unless-stopped
+    command: bench worker --queue short,default
+    depends_on:
+      - erpnext-backend
+    volumes:
+      - erpnext_sites:/home/frappe/frappe-bench/sites
+      - erpnext_logs:/home/frappe/frappe-bench/logs
+
+  erpnext-scheduler:
+    image: frappe/erpnext:v15
+    restart: unless-stopped
+    command: bench schedule
+    depends_on:
+      - erpnext-backend
+    volumes:
+      - erpnext_sites:/home/frappe/frappe-bench/sites
+      - erpnext_logs:/home/frappe/frappe-bench/logs
+
+  erpnext-configurator:
+    image: frappe/erpnext:v15
+    restart: "no"
+    entrypoint: ["bash", "-c"]
+    command:
+      - >
+        ls -1 apps > sites/apps.txt;
+        echo '{"db_host": "erpnext-db", "db_port": 3306, "db_password": "erpnext", "redis_cache": "redis://erpnext-redis-cache:6379/0", "redis_queue": "redis://erpnext-redis-queue:6379/1", "redis_socketio": "redis://erpnext-redis-queue:6379/2"}' > sites/common_site_config.json;
+    depends_on:
+      erpnext-db:
+        condition: service_healthy
+      erpnext-redis-cache:
+        condition: service_healthy
+      erpnext-redis-queue:
+        condition: service_healthy
+    volumes:
+      - erpnext_sites:/home/frappe/frappe-bench/sites
+      - erpnext_logs:/home/frappe/frappe-bench/logs
+
+  erpnext-create-site:
+    image: frappe/erpnext:v15
+    restart: "no"
+    entrypoint: ["bash", "-c"]
+    command:
+      - >
+        wait-for-it -t 120 erpnext-db:3306;
+        [ -f sites/frontend/site_config.json ] && exit 0;
+        bench new-site frontend --mariadb-root-password erpnext --admin-password admin --no-mariadb-socket --install-app erpnext;
+    depends_on:
+      erpnext-configurator:
+        condition: service_completed_successfully
+    volumes:
+      - erpnext_sites:/home/frappe/frappe-bench/sites
+      - erpnext_logs:/home/frappe/frappe-bench/logs
+
   erpnext-db:
     image: mariadb:10.11
     restart: unless-stopped
@@ -24,36 +134,32 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
-  erpnext:
-    image: frappe/erpnext:v15
+
+  erpnext-redis-cache:
+    image: redis:7-alpine
     restart: unless-stopped
-    ports:
-      - "${KIBAN_ERPNEXT_PORT:-8080}:8080"
-    depends_on:
-      erpnext-db:
-        condition: service_healthy
-      erpnext-redis:
-        condition: service_healthy
     volumes:
-      - erpnext_sites:/home/frappe/frappe-bench/sites
-      - erpnext_logs:/home/frappe/frappe-bench/logs
-    environment:
-      DB_HOST: erpnext-db
-      DB_PORT: "3306"
-      REDIS_CACHE: redis://erpnext-redis:6379/0
-      REDIS_QUEUE: redis://erpnext-redis:6379/1
-      REDIS_SOCKETIO: redis://erpnext-redis:6379/2
-      KIBAN_ERPNEXT_PORT: ${KIBAN_ERPNEXT_PORT:-8080}
-      KIBAN_ERPNEXT_DB_PASSWORD: ${KIBAN_ERPNEXT_DB_PASSWORD:-erpnext}
-      KIBAN_ERPNEXT_ADMIN_PASSWORD: ${KIBAN_ERPNEXT_ADMIN_PASSWORD:-admin}
+      - erpnext_redis_cache_data:/data
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/api/method/ping"]
-      interval: 30s
-      timeout: 10s
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
       retries: 5
-      start_period: 120s
+
+  erpnext-redis-queue:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - erpnext_redis_queue_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
 volumes:
-  erpnext_redis_data:
-  erpnext_db_data:
   erpnext_sites:
   erpnext_logs:
+  erpnext_db_data:
+  erpnext_redis_cache_data:
+  erpnext_redis_queue_data:
