@@ -10,7 +10,7 @@
     {
       "name": "Web UI",
       "kind": "web",
-      "service": "temporal",
+      "service": "temporal-ui",
       "port": 8080
     },
     {

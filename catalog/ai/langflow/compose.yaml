@@ -3,10 +3,12 @@ services:
     image: langflowai/langflow:latest
     restart: unless-stopped
     environment:
-      LANGFLOW_DATABASE_URL: sqlite:///./app/langflow.db
+      LANGFLOW_DATABASE_URL: sqlite:////app/data/langflow.db
+      LANGFLOW_SUPERUSER: ${KIBAN_LANGFLOW_SUPERUSER:-admin}
+      LANGFLOW_SUPERUSER_PASSWORD: ${KIBAN_LANGFLOW_SUPERUSER_PASSWORD:-kiban}
     ports:
       - "${KIBAN_LANGFLOW_PORT:-7860}:7860"
     volumes:
-      - langflow_data:/app/langflow
+      - langflow_data:/app/data
 volumes:
   langflow_data:

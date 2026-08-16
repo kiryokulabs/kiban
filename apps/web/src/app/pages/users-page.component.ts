@@ -76,7 +76,7 @@ import { IconsComponent } from '../shared/icons.component';
                   @if (deleting() === user.id) {
                     <span>Deleting…</span>
                   } @else {
-                    <kiban-icon name="trash" [size]="12" />
+                    <kiban-icon name="trash" [size]="12" style="color: var(--color-danger);" />
                     <span class="hidden sm:inline">Delete</span>
                   }
                 </button>

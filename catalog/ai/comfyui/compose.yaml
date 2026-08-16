@@ -1,6 +1,7 @@
 services:
   comfyui:
-    image: ghcr.io/ai-dock/comfyui:latest
+    image: ghcr.io/ai-dock/comfyui:v2-cpu-22.04-v0.2.7
+    platform: linux/amd64
     restart: unless-stopped
     ports:
       - "${KIBAN_COMFYUI_PORT:-8188}:8188"
@@ -11,8 +12,11 @@ services:
       - comfyui_custom_nodes:/app/ComfyUI/custom_nodes
     environment:
       KIBAN_COMFYUI_PORT: ${KIBAN_COMFYUI_PORT:-8188}
+      DIRECT_ADDRESS: ${SERVICE_FQDN_COMFYUI:-localhost}
+      COMFYUI_URL: ${SERVICE_URL_COMFYUI:-http://localhost:8188}
+      WEB_ENABLE_AUTH: "false"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8188/system_stats"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8188/system_stats || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5

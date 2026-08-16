@@ -91,13 +91,12 @@ import { IconsComponent } from '../shared/icons.component';
               <div class="flex items-center gap-1.5">
                 <a [routerLink]="['/projects', project.id]" class="btn-secondary btn gap-1 text-xs">
                   <kiban-icon name="eye" [size]="12" />
-                  <span class="hidden sm:inline">Open</span>
                 </a>
                 <button class="btn-ghost btn text-xs" type="button" (click)="openEditModal(project)">
                   <kiban-icon name="edit" [size]="12" />
                 </button>
                 <button class="btn-danger btn text-xs" type="button" (click)="requestDeleteProject(project)">
-                  <kiban-icon name="trash" [size]="12" />
+                  <kiban-icon name="trash" [size]="12" style="color: var(--color-danger);" />
                 </button>
               </div>
             </div>

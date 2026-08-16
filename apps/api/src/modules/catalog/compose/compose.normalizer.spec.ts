@@ -62,8 +62,8 @@ describe('normalizeComposeDocument', () => {
       CONTEXT
     );
     expect(firstService(spec).environment).toEqual([
-      { key: 'WITH_DEFAULT', value: 'kiban', required: false },
-      { key: 'REQUIRED', required: true },
+      { key: 'WITH_DEFAULT', value: 'kiban', required: false, sourceVariableName: 'KIBAN_A' },
+      { key: 'REQUIRED', required: true, sourceVariableName: 'KIBAN_B' },
       { key: 'PLAIN', value: 'value', required: false }
     ]);
   });
@@ -74,8 +74,24 @@ describe('normalizeComposeDocument', () => {
       CONTEXT
     );
     expect(firstService(spec).environment).toEqual([
-      { key: 'A', value: 'x', required: false },
-      { key: 'B', required: true }
+      { key: 'A', value: 'x', required: false, sourceVariableName: 'KIBAN_A' },
+      { key: 'B', required: true, sourceVariableName: 'KIBAN_B' }
+    ]);
+  });
+
+  it('records interpolation variables used inside composed environment values', () => {
+    const { spec } = normalizeComposeDocument(
+      { services: { app: { image: 'x', environment: { DATABASE_URL: 'postgres://${SERVICE_USER_POSTGRES}:${SERVICE_PASSWORD_POSTGRES}@postgres:5432/app' } } } },
+      CONTEXT
+    );
+
+    expect(firstService(spec).environment).toEqual([
+      {
+        key: 'DATABASE_URL',
+        value: 'postgres://${SERVICE_USER_POSTGRES}:${SERVICE_PASSWORD_POSTGRES}@postgres:5432/app',
+        required: false,
+        sourceVariableNames: ['SERVICE_USER_POSTGRES', 'SERVICE_PASSWORD_POSTGRES']
+      }
     ]);
   });
 
@@ -104,6 +120,15 @@ describe('normalizeComposeDocument', () => {
       CONTEXT
     );
     expect(firstService(spec).volumes).toEqual([{ name: 'data', target: '/var/lib/data' }]);
+  });
+
+  it('ignores generated bind files when reporting persistent runtime volumes', () => {
+    const { spec, issues } = normalizeComposeDocument(
+      { services: { app: { image: 'x', volumes: [{ type: 'bind', source: './config/app.yml', target: '/etc/app.yml', content: 'enabled: true\n' }] } } },
+      CONTEXT
+    );
+    expect(issues).toEqual([]);
+    expect(firstService(spec).volumes).toEqual([]);
   });
 
   it('reports an issue when a named volume is not declared at the top level', () => {

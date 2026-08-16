@@ -13,7 +13,27 @@
     },
     "KIBAN_TWENTY_ENCRYPTION_KEY": {
       "type": "string",
-      "default": "${KIBAN_TWENTY_ENCRYPTION_KEY:-change-me-to-a-random-string}"
+      "default": "${KIBAN_TWENTY_ENCRYPTION_KEY:-tWeN7y32ch4rR4nd0mK3yF0rEncryp}"
+    },
+    "KIBAN_TWENTY_APP_SECRET": {
+      "type": "string",
+      "default": "${KIBAN_TWENTY_APP_SECRET:-a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6}"
+    },
+    "KIBAN_TWENTY_ACCESS_TOKEN_SECRET": {
+      "type": "string",
+      "default": "${KIBAN_TWENTY_ACCESS_TOKEN_SECRET:-b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7}"
+    },
+    "KIBAN_TWENTY_LOGIN_TOKEN_SECRET": {
+      "type": "string",
+      "default": "${KIBAN_TWENTY_LOGIN_TOKEN_SECRET:-c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8}"
+    },
+    "KIBAN_TWENTY_REFRESH_TOKEN_SECRET": {
+      "type": "string",
+      "default": "${KIBAN_TWENTY_REFRESH_TOKEN_SECRET:-d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9}"
+    },
+    "KIBAN_TWENTY_FILE_TOKEN_SECRET": {
+      "type": "string",
+      "default": "${KIBAN_TWENTY_FILE_TOKEN_SECRET:-e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0}"
     }
   }
 }

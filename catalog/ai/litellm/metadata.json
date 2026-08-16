@@ -11,7 +11,11 @@
       "name": "Web UI",
       "kind": "web",
       "service": "litellm",
-      "port": 4000
+      "port": 4000,
+      "connection": {
+        "username": "SERVICE_USER_UI",
+        "password": "SERVICE_PASSWORD_UI"
+      }
     }
   ]
 }

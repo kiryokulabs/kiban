@@ -1,23 +1,41 @@
 services:
   umami:
-    image: ghcr.io/umami-software/umami:postgresql-latest
+    image: ghcr.io/umami-software/umami:3.0.3
+    environment:
+      SERVICE_URL_UMAMI_3000: ${SERVICE_URL_UMAMI_3000:-http://localhost}
+      DATABASE_URL: postgres://${SERVICE_USER_POSTGRES:-admin}:${SERVICE_PASSWORD_POSTGRES:-kiban}@postgresql:5432/${POSTGRES_DB:-kiban}
+      DATABASE_TYPE: postgres
+      APP_SECRET: ${SERVICE_PASSWORD_64_UMAMI:-kiban-kiban-kiban-kiban-kiban-kiban-kiban-kiban}
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -f
+        - http://127.0.0.1:3000/api/heartbeat
+      interval: 5s
+      timeout: 20s
+      retries: 10
     restart: unless-stopped
-    environment:
-      DATABASE_URL: postgresql://umami:${KIBAN_UMAMI_DB_PASSWORD:-kiban}@umami-postgres:5432/umami
-      DATABASE_TYPE: postgresql
-      APP_SECRET: ${KIBAN_UMAMI_APP_SECRET:-change-me}
     ports:
-      - "${KIBAN_UMAMI_PORT:-3000}:3000"
+      - "3000"
+  postgresql:
+    image: postgres:16-alpine
     volumes:
-      - umami_data:/data
-  umami-postgres:
-    image: postgres:17
+      - postgresql-data:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: umami
-      POSTGRES_USER: umami
-      POSTGRES_PASSWORD: ${KIBAN_UMAMI_DB_PASSWORD:-kiban}
-    volumes:
-      - umami-postgres:/var/lib/postgresql/data
+      POSTGRES_USER: ${SERVICE_USER_POSTGRES:-admin}
+      POSTGRES_PASSWORD: ${SERVICE_PASSWORD_POSTGRES:-kiban}
+      POSTGRES_DB: ${POSTGRES_DB:-umami}
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}
+      interval: 5s
+      timeout: 20s
+      retries: 10
+    restart: unless-stopped
 volumes:
-  umami_data:
-  umami-postgres:
+  postgresql-data: {}

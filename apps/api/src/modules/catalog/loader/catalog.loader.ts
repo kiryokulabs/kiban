@@ -440,7 +440,11 @@ export class CatalogLoader {
     if (propertyKeys.length === 0) {
       return;
     }
-    const envKeys = new Set(runtime.services.flatMap((service) => service.environment.map((entry) => entry.key)));
+    const envKeys = new Set(runtime.services.flatMap((service) => service.environment.flatMap((entry) => [
+      entry.key,
+      entry.sourceVariableName,
+      ...(entry.sourceVariableNames ?? [])
+    ].filter((key): key is string => key !== undefined))));
     for (const key of propertyKeys) {
       if (!envKeys.has(key)) {
         issues.push({ file, service: folderName, reason: `schema field "${key}" is not declared in the compose environment` });

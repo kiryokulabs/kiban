@@ -3,9 +3,21 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "KIBAN_WINDMILL_DB_PASSWORD": {
+    "POSTGRES_DB": {
       "type": "string",
-      "default": "${KIBAN_WINDMILL_DB_PASSWORD:-windmill}"
+      "title": "Postgres Db",
+      "default": "windmill-db"
+    },
+    "SERVICE_PASSWORD_POSTGRES": {
+      "type": "string",
+      "title": "Service Password Postgres",
+      "default": "kiban",
+      "x-kiban-secret": true
+    },
+    "SERVICE_USER_POSTGRES": {
+      "type": "string",
+      "title": "Service User Postgres",
+      "default": "admin"
     }
   }
 }

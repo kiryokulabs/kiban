@@ -2,5 +2,54 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "additionalProperties": false,
-  "properties": {}
+  "properties": {
+    "CLICKHOUSE_SKIP_USER_SETUP": {
+      "type": "string",
+      "title": "Clickhouse Skip User Setup",
+      "default": "1"
+    },
+    "SERVICE_REALBASE64_JWTSECRET": {
+      "type": "string",
+      "title": "Service Realbase64 Jwtsecret",
+      "default": "kiban-kiban-kiban-kiban-kiban-kiban-kiban-kiban",
+      "x-kiban-secret": true
+    },
+    "SIGNOZ_ALERTMANAGER_SIGNOZ_GLOBAL_SMTP__AUTH__PASSWORD": {
+      "type": "string",
+      "title": "Signoz Alertmanager Signoz Global Smtp Auth Password",
+      "default": "kiban",
+      "x-kiban-secret": true
+    },
+    "SIGNOZ_ALERTMANAGER_SIGNOZ_GLOBAL_SMTP__AUTH__USERNAME": {
+      "type": "string",
+      "title": "Signoz Alertmanager Signoz Global Smtp Auth Username",
+      "default": "admin"
+    },
+    "SIGNOZ_EMAILING_ENABLED": {
+      "type": "string",
+      "title": "Signoz Emailing Enabled",
+      "default": "false"
+    },
+    "SIGNOZ_EMAILING_SMTP_ADDRESS": {
+      "type": "string",
+      "title": "Signoz Emailing Smtp Address",
+      "default": "admin@kiban.local"
+    },
+    "SIGNOZ_EMAILING_SMTP_AUTH_PASSWORD": {
+      "type": "string",
+      "title": "Signoz Emailing Smtp Auth Password",
+      "default": "admin@kiban.local",
+      "x-kiban-secret": true
+    },
+    "SIGNOZ_EMAILING_SMTP_AUTH_USERNAME": {
+      "type": "string",
+      "title": "Signoz Emailing Smtp Auth Username",
+      "default": "admin@kiban.local"
+    },
+    "SIGNOZ_EMAILING_SMTP_FROM": {
+      "type": "string",
+      "title": "Signoz Emailing Smtp From",
+      "default": "admin@kiban.local"
+    }
+  }
 }

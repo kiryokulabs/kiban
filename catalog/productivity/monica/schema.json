@@ -5,7 +5,7 @@
   "properties": {
     "KIBAN_MONICA_APP_KEY": {
       "type": "string",
-      "default": "${KIBAN_MONICA_APP_KEY:-ChangeMeWithARandomStringOf32CharsExactly}"
+      "default": "${KIBAN_MONICA_APP_KEY:-aB3fK9mX2pQ7rT4vY8nL1cD6gH5jW0sE}"
     },
     "KIBAN_MONICA_DB_NAME": {
       "type": "string",

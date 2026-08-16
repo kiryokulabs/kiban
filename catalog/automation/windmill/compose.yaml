@@ -1,29 +1,140 @@
 services:
-  windmill:
-    image: ghcr.io/windmill-labs/windmill:latest
-    restart: unless-stopped
-    environment:
-      DATABASE_URL: postgres://postgres:windmill@windmill-db:5432/windmill
-      BASE_URL: http://localhost:${KIBAN_WINDMILL_PORT:-8000}
-      KIBAN_WINDMILL_DB_PASSWORD: ${KIBAN_WINDMILL_DB_PASSWORD:-windmill}
-    ports:
-      - "${KIBAN_WINDMILL_PORT:-8000}:8000"
-    depends_on:
-      windmill-db:
-        condition: service_healthy
-  windmill-db:
-    image: postgres:17
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: windmill
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${KIBAN_WINDMILL_DB_PASSWORD:-windmill}
+  db:
+    image: postgres:16
     volumes:
-      - windmill_db_data:/var/lib/postgresql/data
+      - db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: ${SERVICE_PASSWORD_POSTGRES}
+      POSTGRES_USER: ${SERVICE_USER_POSTGRES}
+      POSTGRES_DB: ${POSTGRES_DB:-windmill-db}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
+      test:
+        - CMD-SHELL
+        - pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}
+      interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
+  windmill-server:
+    image: ghcr.io/windmill-labs/windmill:main
+    environment:
+      SERVICE_URL_WINDMILL_8000: ${SERVICE_URL_WINDMILL_8000:-http://localhost}
+      DATABASE_URL: postgres://${SERVICE_USER_POSTGRES}:${SERVICE_PASSWORD_POSTGRES}@db/${POSTGRES_DB:-windmill-db}
+      MODE: server
+      BASE_URL: ${SERVICE_URL_WINDMILL}
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - worker-logs:/tmp/windmill/logs
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -f
+        - http://localhost:8000/health
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    ports:
+      - "8000"
+  windmill-worker-1:
+    image: ghcr.io/windmill-labs/windmill:main
+    environment:
+      DATABASE_URL: postgres://${SERVICE_USER_POSTGRES}:${SERVICE_PASSWORD_POSTGRES}@db/${POSTGRES_DB:-windmill-db}
+      MODE: worker
+      WORKER_GROUP: default
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - worker-dependency-cache:/tmp/windmill/cache
+      - worker-logs:/tmp/windmill/logs
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - exit 0
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+  windmill-worker-2:
+    image: ghcr.io/windmill-labs/windmill:main
+    environment:
+      DATABASE_URL: postgres://${SERVICE_USER_POSTGRES}:${SERVICE_PASSWORD_POSTGRES}@db/${POSTGRES_DB:-windmill-db}
+      MODE: worker
+      WORKER_GROUP: default
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - worker-dependency-cache:/tmp/windmill/cache
+      - worker-logs:/tmp/windmill/logs
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - exit 0
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+  windmill-worker-3:
+    image: ghcr.io/windmill-labs/windmill:main
+    environment:
+      DATABASE_URL: postgres://${SERVICE_USER_POSTGRES}:${SERVICE_PASSWORD_POSTGRES}@db/${POSTGRES_DB:-windmill-db}
+      MODE: worker
+      WORKER_GROUP: default
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - worker-dependency-cache:/tmp/windmill/cache
+      - worker-logs:/tmp/windmill/logs
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - exit 0
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+  windmill-worker-native:
+    image: ghcr.io/windmill-labs/windmill:main
+    environment:
+      DATABASE_URL: postgres://${SERVICE_USER_POSTGRES}:${SERVICE_PASSWORD_POSTGRES}@db/${POSTGRES_DB:-windmill-db}
+      MODE: worker
+      WORKER_GROUP: native
+      NUM_WORKERS: "8"
+      SLEEP_QUEUE: "200"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - worker-logs:/tmp/windmill/logs
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - exit 0
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+  lsp:
+    image: ghcr.io/windmill-labs/windmill-lsp:latest
+    volumes:
+      - lsp-cache:/root/.cache
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - exit 0
+      interval: 30s
+      timeout: 10s
+      start_period: 20s
+      retries: 3
+    restart: unless-stopped
 volumes:
-  windmill_db_data:
+  db-data: {}
+  lsp-cache: {}
+  worker-dependency-cache: {}
+  worker-logs: {}

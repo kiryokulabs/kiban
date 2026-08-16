@@ -1,6 +1,6 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InstalledServiceManager, ProjectNotFoundError, ProjectValidationError } from '@kiban/core';
-import type { RuntimeProvider, ServiceDefinition } from '@kiban/core';
+import type { InstalledService, RuntimeProvider, ServiceDefinition } from '@kiban/core';
 import { CatalogService } from '../../catalog/services/catalog.service';
 import { SqliteEnvironmentRepository } from '../../project/repositories/sqlite-environment.repository';
 import { SqliteProjectRepository } from '../../project/repositories/sqlite-project.repository';
@@ -121,16 +121,17 @@ export class ServiceService {
     return this.catalogMap;
   }
 
-  private async enrichOne(service: import('@kiban/core').InstalledService): Promise<InstalledServiceDto> {
+  private async enrichOne(service: InstalledService): Promise<InstalledServiceDto> {
     const all = await this.enrichAll([service]);
     return all[0]!;
   }
 
-  private async enrichAll(services: readonly import('@kiban/core').InstalledService[]): Promise<readonly InstalledServiceDto[]> {
+  private async enrichAll(services: readonly InstalledService[]): Promise<readonly InstalledServiceDto[]> {
     let catalogMap: Map<string, ServiceDefinition> | undefined;
     try { catalogMap = await this.loadCatalogMap(); } catch { /* catalog unavailable, return without access points */ }
-    const locationMap = await this.loadLocationMap(services);
-    return services.map((service) => {
+    const refreshedServices = await this.refreshRuntimeState(services);
+    const locationMap = await this.loadLocationMap(refreshedServices);
+    return refreshedServices.map((service) => {
       const dto = mapInstalledServiceToDto(service);
       const location = locationMap.get(service.environmentId);
       const base = location ? { ...dto, location } : dto;
@@ -149,7 +150,19 @@ export class ServiceService {
     });
   }
 
-  private async loadLocationMap(services: readonly import('@kiban/core').InstalledService[]): Promise<Map<string, InstalledServiceLocationDto>> {
+  private async refreshRuntimeState(services: readonly InstalledService[]): Promise<readonly InstalledService[]> {
+    if (!this.runtime.refresh) return services;
+    return Promise.all(services.map(async (service) => {
+      try {
+        const refreshed = await this.runtime.refresh!(service);
+        return refreshed.runtime ? { ...service, status: refreshed.status, runtime: refreshed.runtime } : service;
+      } catch {
+        return service;
+      }
+    }));
+  }
+
+  private async loadLocationMap(services: readonly InstalledService[]): Promise<Map<string, InstalledServiceLocationDto>> {
     const result = new Map<string, InstalledServiceLocationDto>();
     const environmentIds = [...new Set(services.map((service) => service.environmentId))];
     await Promise.all(environmentIds.map(async (environmentId) => {

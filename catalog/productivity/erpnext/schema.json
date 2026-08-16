@@ -5,15 +5,15 @@
   "properties": {
     "KIBAN_ERPNEXT_PORT": {
       "type": "string",
-      "default": "${KIBAN_ERPNEXT_PORT:-8080}"
+      "default": "8080"
     },
     "KIBAN_ERPNEXT_DB_PASSWORD": {
       "type": "string",
-      "default": "${KIBAN_ERPNEXT_DB_PASSWORD:-erpnext}"
+      "default": "erpnext"
     },
     "KIBAN_ERPNEXT_ADMIN_PASSWORD": {
       "type": "string",
-      "default": "${KIBAN_ERPNEXT_ADMIN_PASSWORD:-admin}"
+      "default": "admin"
     }
   }
 }

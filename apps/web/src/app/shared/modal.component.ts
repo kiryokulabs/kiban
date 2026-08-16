@@ -24,7 +24,7 @@ import { IconsComponent } from './icons.component';
             <kiban-icon name="x" [size]="14" />
           </button>
         </div>
-        <div class="px-5 py-4">
+        <div class="px-5 py-4 mt-3 max-h-96 space-y-1 overflow-auto">
           <ng-content />
         </div>
       </section>

@@ -3,9 +3,76 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "LITELLM_MASTER_KEY": {
+    "ANTHROPIC_API_BASE": {
       "type": "string",
-      "default": "${KIBAN_LITELLM_MASTER_KEY:-sk-kiban}"
+      "title": "Anthropic Api Base",
+      "default": "kiban"
+    },
+    "ANTHROPIC_API_KEY": {
+      "type": "string",
+      "title": "Anthropic Api Key",
+      "default": "kiban-secret",
+      "x-kiban-secret": true
+    },
+    "OPENAI_API_BASE": {
+      "type": "string",
+      "title": "Openai Api Base",
+      "default": "kiban"
+    },
+    "OPENAI_API_KEY": {
+      "type": "string",
+      "title": "Openai Api Key",
+      "default": "kiban-secret",
+      "x-kiban-secret": true
+    },
+    "POSTGRES_DB": {
+      "type": "string",
+      "title": "Postgres Db",
+      "default": "litellm"
+    },
+    "REDIS_HOST": {
+      "type": "string",
+      "title": "Redis Host",
+      "default": "redis"
+    },
+    "REDIS_PORT": {
+      "type": "string",
+      "title": "Redis Port",
+      "default": "6379"
+    },
+    "SERVICE_PASSWORD_MASTERKEY": {
+      "type": "string",
+      "title": "Service Password Masterkey",
+      "default": "kiban",
+      "x-kiban-secret": true
+    },
+    "SERVICE_PASSWORD_POSTGRES": {
+      "type": "string",
+      "title": "Service Password Postgres",
+      "default": "kiban",
+      "x-kiban-secret": true
+    },
+    "SERVICE_PASSWORD_UI": {
+      "type": "string",
+      "title": "Service Password Ui",
+      "default": "kiban",
+      "x-kiban-secret": true
+    },
+    "SERVICE_USER_POSTGRES": {
+      "type": "string",
+      "title": "Service User Postgres",
+      "default": "admin"
+    },
+    "SERVICE_USER_UI": {
+      "type": "string",
+      "title": "Service User Ui",
+      "default": "admin"
+    },
+    "VOYAGE_API_KEY": {
+      "type": "string",
+      "title": "Voyage Api Key",
+      "default": "kiban-secret",
+      "x-kiban-secret": true
     }
   }
 }

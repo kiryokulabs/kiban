@@ -3,17 +3,32 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "DATABASE_URL": {
-      "type": "string",
-      "default": "postgresql://umami:${KIBAN_UMAMI_DB_PASSWORD:-kiban}@umami-postgres:5432/umami"
-    },
     "DATABASE_TYPE": {
       "type": "string",
-      "default": "postgresql"
+      "title": "Database Type",
+      "default": "postgres"
     },
-    "APP_SECRET": {
+    "POSTGRES_DB": {
       "type": "string",
-      "default": "${KIBAN_UMAMI_APP_SECRET:-change-me}"
+      "title": "Postgres Db",
+      "default": "umami"
+    },
+    "SERVICE_PASSWORD_64_UMAMI": {
+      "type": "string",
+      "title": "Service Password 64 Umami",
+      "default": "kiban-kiban-kiban-kiban-kiban-kiban-kiban-kiban",
+      "x-kiban-secret": true
+    },
+    "SERVICE_PASSWORD_POSTGRES": {
+      "type": "string",
+      "title": "Service Password Postgres",
+      "default": "kiban",
+      "x-kiban-secret": true
+    },
+    "SERVICE_USER_POSTGRES": {
+      "type": "string",
+      "title": "Service User Postgres",
+      "default": "admin"
     }
   }
 }

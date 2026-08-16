@@ -7,16 +7,18 @@ services:
       ND_SCANSCHEDULE: 1h
       ND_SESSIONTIMEOUT: 720h
       ND_BASEURL: ""
+      ND_REVERSEPROXYUSERHEADER: "X-Forwarded-User"
+      ND_REVERSEPROXYENABLED: "true"
     ports:
       - "${KIBAN_NAVIDROME_PORT:-4533}:4533"
     volumes:
       - navidrome_data:/data
       - navidrome_music:/music:ro
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4533/ping"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:4533/ping || exit 1"]
       interval: 30s
-      timeout: 5s
-      retries: 3
+      timeout: 10s
+      retries: 5
       start_period: 30s
 volumes:
   navidrome_data:

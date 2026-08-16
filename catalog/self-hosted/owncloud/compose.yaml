@@ -8,21 +8,21 @@ services:
       OWNCLOUD_DB_TYPE: mysql
       OWNCLOUD_DB_HOST: owncloud-db
       OWNCLOUD_DB_NAME: ${KIBAN_OWNCLOUD_DB_NAME:-owncloud}
-      OWNCLOUD_DB_USER: ${KIBAN_OWNCLOUD_DB_USER:-owncloud}
+      OWNCLOUD_DB_USERNAME: ${KIBAN_OWNCLOUD_DB_USER:-owncloud}
       OWNCLOUD_DB_PASSWORD: ${KIBAN_OWNCLOUD_DB_PASSWORD:-owncloud}
       OWNCLOUD_ADMIN_USERNAME: ${KIBAN_OWNCLOUD_ADMIN_USER:-admin}
       OWNCLOUD_ADMIN_PASSWORD: ${KIBAN_OWNCLOUD_ADMIN_PASSWORD:-admin}
-      KIBAN_OWNCLOUD_DB_NAME: ${KIBAN_OWNCLOUD_DB_NAME:-owncloud}
-      KIBAN_OWNCLOUD_DB_USER: ${KIBAN_OWNCLOUD_DB_USER:-owncloud}
-      KIBAN_OWNCLOUD_DB_PASSWORD: ${KIBAN_OWNCLOUD_DB_PASSWORD:-owncloud}
-      KIBAN_OWNCLOUD_DB_ROOT_PASSWORD: ${KIBAN_OWNCLOUD_DB_ROOT_PASSWORD:-root}
-      KIBAN_OWNCLOUD_ADMIN_USER: ${KIBAN_OWNCLOUD_ADMIN_USER:-admin}
-      KIBAN_OWNCLOUD_ADMIN_PASSWORD: ${KIBAN_OWNCLOUD_ADMIN_PASSWORD:-admin}
     ports:
       - "${KIBAN_OWNCLOUD_PORT:-8080}:8080"
     depends_on:
       owncloud-db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/status.php || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
     volumes:
       - owncloud_data:/mnt/data
   owncloud-db:

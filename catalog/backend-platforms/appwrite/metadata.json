@@ -8,9 +8,9 @@
   "icon": "icon.svg",
   "accessPoints": [
     {
-      "name": "Console",
+      "name": "Web UI",
       "kind": "web",
-      "service": "appwrite",
+      "service": "appwrite-proxy",
       "port": 80
     }
   ]

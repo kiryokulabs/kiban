@@ -11,7 +11,7 @@
       "name": "Web UI",
       "kind": "web",
       "service": "homebox",
-      "port": 80
+      "port": 7745
     }
   ]
 }

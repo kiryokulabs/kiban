@@ -7,11 +7,13 @@ import { ServiceDetailsPresenter } from '../service-details/service-details.pres
 import { ModalComponent } from '../shared/modal.component';
 import { IconsComponent } from '../shared/icons.component';
 import { SvgIconComponent } from '../shared/svg-icon.component';
+import { SkeletonPageHeaderComponent } from '../shared/skeleton-page-header.component';
+import { SkeletonCardComponent } from '../shared/skeleton-card.component';
 
 @Component({
   selector: 'kiban-installed-page',
   standalone: true,
-  imports: [SlicePipe, ModalComponent, IconsComponent, RouterLink, SvgIconComponent],
+  imports: [SlicePipe, ModalComponent, IconsComponent, RouterLink, SvgIconComponent, SkeletonPageHeaderComponent, SkeletonCardComponent],
   template: `
     <div class="space-y-6">
       <!-- Header -->
@@ -38,7 +40,14 @@ import { SvgIconComponent } from '../shared/svg-icon.component';
         </div>
       }
 
-      @if (services().length === 0 && !loading()) {
+      @if (loading()) {
+        <kiban-skeleton-page-header />
+        <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+            <kiban-skeleton-card />
+          }
+        </div>
+      } @else if (services().length === 0) {
         <div class="card flex flex-col items-center justify-center py-16 text-center">
           <div class="mb-4 grid h-12 w-12 place-items-center rounded-xl bg-brand/10 text-brand-light">
             <kiban-icon name="box" [size]="24" />

@@ -1,41 +1,68 @@
 services:
-  authentik:
-    image: ghcr.io/goauthentik/server:latest
+  authentik-server:
+    image: ghcr.io/goauthentik/server:${AUTHENTIK_TAG:-2025.10.3}
     restart: unless-stopped
     command: server
     environment:
-      AUTHENTIK_SECRET_KEY: ${KIBAN_AUTHENTIK_SECRET_KEY:-change-me}
-      AUTHENTIK_POSTGRESQL__HOST: authentik-postgres
-      AUTHENTIK_POSTGRESQL__USER: authentik
-      AUTHENTIK_POSTGRESQL__NAME: authentik
-      AUTHENTIK_POSTGRESQL__PASSWORD: ${KIBAN_AUTHENTIK_POSTGRES_PASSWORD:-kiban}
-      AUTHENTIK_REDIS__HOST: authentik-redis
+      SERVICE_URL_AUTHENTIKSERVER_9000: ${SERVICE_URL_AUTHENTIKSERVER_9000:-http://localhost}
+      AUTHENTIK_POSTGRESQL__HOST: ${POSTGRES_HOST:-postgresql}
+      AUTHENTIK_POSTGRESQL__USER: ${SERVICE_USER_POSTGRESQL}
+      AUTHENTIK_POSTGRESQL__NAME: ${POSTGRES_DB:-authentik}
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${SERVICE_PASSWORD_POSTGRESQL}
+      AUTHENTIK_SECRET_KEY: ${SERVICE_PASSWORD_64_AUTHENTIKSERVER}
+      AUTHENTIK_ERROR_REPORTING__ENABLED: ${AUTHENTIK_ERROR_REPORTING__ENABLED:-true}
+      AUTHENTIK_EMAIL__HOST: ${AUTHENTIK_EMAIL__HOST}
+      AUTHENTIK_EMAIL__PORT: ${AUTHENTIK_EMAIL__PORT}
+      AUTHENTIK_EMAIL__USERNAME: ${AUTHENTIK_EMAIL__USERNAME}
+      AUTHENTIK_EMAIL__PASSWORD: ${AUTHENTIK_EMAIL__PASSWORD}
+      AUTHENTIK_EMAIL__USE_TLS: ${AUTHENTIK_EMAIL__USE_TLS}
+      AUTHENTIK_EMAIL__USE_SSL: ${AUTHENTIK_EMAIL__USE_SSL}
+      AUTHENTIK_EMAIL__TIMEOUT: ${AUTHENTIK_EMAIL__TIMEOUT}
+      AUTHENTIK_EMAIL__FROM: ${AUTHENTIK_EMAIL__FROM}
+      AUTHENTIK_BOOTSTRAP_EMAIL: ${AUTHENTIK_BOOTSTRAP_EMAIL:-admin@kiban.local}
+      AUTHENTIK_BOOTSTRAP_PASSWORD: ${AUTHENTIK_BOOTSTRAP_PASSWORD:-kiban}
+    depends_on:
+      postgresql:
+        condition: service_healthy
     ports:
-      - "${KIBAN_AUTHENTIK_PORT:-9000}:9000"
-    volumes:
-      - authentik_data:/data
+      - "9000"
   authentik-worker:
-    image: ghcr.io/goauthentik/server:latest
+    image: ghcr.io/goauthentik/server:${AUTHENTIK_TAG:-2025.10.3}
+    restart: unless-stopped
     command: worker
     environment:
-      AUTHENTIK_SECRET_KEY: ${KIBAN_AUTHENTIK_SECRET_KEY:-change-me}
-      AUTHENTIK_POSTGRESQL__HOST: authentik-postgres
-      AUTHENTIK_POSTGRESQL__USER: authentik
-      AUTHENTIK_POSTGRESQL__NAME: authentik
-      AUTHENTIK_POSTGRESQL__PASSWORD: ${KIBAN_AUTHENTIK_POSTGRES_PASSWORD:-kiban}
-      AUTHENTIK_REDIS__HOST: authentik-redis
-  authentik-postgres:
-    image: postgres:17
-    environment:
-      POSTGRES_DB: authentik
-      POSTGRES_USER: authentik
-      POSTGRES_PASSWORD: ${KIBAN_AUTHENTIK_POSTGRES_PASSWORD:-kiban}
+      AUTHENTIK_POSTGRESQL__HOST: ${POSTGRES_HOST:-postgresql}
+      AUTHENTIK_POSTGRESQL__USER: ${SERVICE_USER_POSTGRESQL}
+      AUTHENTIK_POSTGRESQL__NAME: ${POSTGRES_DB:-authentik}
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${SERVICE_PASSWORD_POSTGRESQL}
+      AUTHENTIK_SECRET_KEY: ${SERVICE_PASSWORD_64_AUTHENTIKSERVER}
+      AUTHENTIK_ERROR_REPORTING__ENABLED: ${AUTHENTIK_ERROR_REPORTING__ENABLED}
+      AUTHENTIK_EMAIL__HOST: ${AUTHENTIK_EMAIL__HOST}
+      AUTHENTIK_EMAIL__PORT: ${AUTHENTIK_EMAIL__PORT}
+      AUTHENTIK_EMAIL__USERNAME: ${AUTHENTIK_EMAIL__USERNAME}
+      AUTHENTIK_EMAIL__PASSWORD: ${AUTHENTIK_EMAIL__PASSWORD}
+      AUTHENTIK_EMAIL__USE_TLS: ${AUTHENTIK_EMAIL__USE_TLS}
+      AUTHENTIK_EMAIL__USE_SSL: ${AUTHENTIK_EMAIL__USE_SSL}
+      AUTHENTIK_EMAIL__TIMEOUT: ${AUTHENTIK_EMAIL__TIMEOUT}
+      AUTHENTIK_EMAIL__FROM: ${AUTHENTIK_EMAIL__FROM}
+    depends_on:
+      postgresql:
+        condition: service_healthy
+  postgresql:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}
+      interval: 2s
+      timeout: 10s
+      retries: 15
     volumes:
-      - authentik-postgres:/var/lib/postgresql/data
-  authentik-redis:
-    image: redis:8
+      - authentik-db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: ${SERVICE_PASSWORD_POSTGRESQL}
+      POSTGRES_USER: ${SERVICE_USER_POSTGRESQL}
+      POSTGRES_DB: authentik
 volumes:
-  authentik_data:
-  authentik_postgres:
-  authentik_redis:
-  authentik-postgres:
+  authentik-db: {}

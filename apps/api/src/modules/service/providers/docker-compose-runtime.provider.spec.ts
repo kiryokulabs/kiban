@@ -208,6 +208,48 @@ describe('DockerComposeRuntimeProvider', () => {
     expect(runner.calls.some((call) => call.args.includes('up') && call.args.includes('-d'))).toBe(true);
   });
 
+  it('injects generated public endpoint variables into the env file', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'kiban-compose-runtime-'));
+    const runner = new FakeRunner();
+    const provider = DockerComposeRuntimeProvider.withRunner(runner, root, new FakePortAllocator());
+
+    const result = await provider.install({
+      ...routedPlan,
+      publicEndpoints: [{ name: 'Web UI', service: 'mongo-express', port: 8081, host: 'mongo-express.development.crossmetrics.localhost', url: 'http://mongo-express.development.crossmetrics.localhost', protocol: 'http' }]
+    });
+
+    const envFile = await readFile(join(String(result.runtime?.['workingDirectory']), '.env'), 'utf8');
+    expect(envFile).toContain('SERVICE_URL_MONGOEXPRESS=http://mongo-express.development.crossmetrics.localhost');
+    expect(envFile).toContain('SERVICE_FQDN_MONGOEXPRESS=mongo-express.development.crossmetrics.localhost');
+    expect(envFile).toContain('SERVICE_URL_MONGOEXPRESS_8081=http://mongo-express.development.crossmetrics.localhost');
+  });
+
+  it('materializes generated bind file content before running compose', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'kiban-compose-runtime-'));
+    const runner = new FakeRunner();
+    const provider = DockerComposeRuntimeProvider.withRunner(runner, root, new FakePortAllocator());
+    const definitionWithGeneratedFile: ServiceDefinition = {
+      ...definition,
+      composeYaml: [
+        'services:',
+        '  app:',
+        '    image: app:1',
+        '    volumes:',
+        '      - type: bind',
+        '        source: ./config/app.yml',
+        '        target: /etc/app.yml',
+        '        content: |',
+        '          enabled: true'
+      ].join('\n')
+    };
+
+    const result = await provider.install({ ...plan, serviceDefinition: definitionWithGeneratedFile });
+
+    const workingDirectory = String(result.runtime?.['workingDirectory']);
+    await expect(readFile(join(workingDirectory, 'config/app.yml'), 'utf8')).resolves.toBe('enabled: true\n');
+    await expect(readFile(join(workingDirectory, 'compose.yaml'), 'utf8')).resolves.not.toContain('content:');
+  });
+
   it('uses one external default network per environment instead of creating a Compose network per service', async () => {
     const root = await mkdtemp(join(tmpdir(), 'kiban-compose-runtime-'));
     const runner = new FakeRunner();

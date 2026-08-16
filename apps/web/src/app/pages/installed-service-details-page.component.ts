@@ -12,11 +12,12 @@ import { TerminalService } from '../terminal/terminal.service';
 import { ConfirmModalComponent } from '../shared/confirm-modal.component';
 import { IconsComponent } from '../shared/icons.component';
 import { SvgIconComponent } from '../shared/svg-icon.component';
+import { SkeletonInstalledDetailComponent } from '../shared/skeleton-installed-detail.component';
 
 @Component({
   selector: 'kiban-installed-service-details-page',
   standalone: true,
-  imports: [FormsModule, RouterLink, SlicePipe, IconsComponent, ConfirmModalComponent, TerminalComponent, SvgIconComponent],
+  imports: [FormsModule, RouterLink, SlicePipe, IconsComponent, ConfirmModalComponent, TerminalComponent, SvgIconComponent, SkeletonInstalledDetailComponent],
   template: `
     <div class="space-y-6">
       <div class="flex flex-wrap items-start justify-between gap-3">
@@ -41,7 +42,9 @@ import { SvgIconComponent } from '../shared/svg-icon.component';
 
       @if (message()) { <div class="card-subtle px-4 py-3 text-sm c-muted">{{ message() }}</div> }
 
-      @if (details(); as d) {
+      @if (loading() && !details()) {
+        <kiban-skeleton-installed-detail />
+      } @else if (details(); as d) {
         <section class="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
           <div class="card p-4 xl:col-span-2">
             <p class="flex items-center gap-1.5 text-xs c-muted"><kiban-icon name="folder" [size]="12" /> Location</p>
@@ -271,14 +274,14 @@ import { SvgIconComponent } from '../shared/svg-icon.component';
                 <p class="text-sm font-medium kb-text">Recreate this service</p>
                 <p class="mt-1 text-xs c-muted">This rebuilds the runtime units and may delete any data stored inside containers but not persisted in volumes.</p>
               </div>
-              <button class="btn-danger btn gap-1.5" type="button" [disabled]="!!actionInProgress()" (click)="confirmRecreate.set(true)"><kiban-icon name="refresh" [size]="14" /> Recreate</button>
+              <button class="btn-danger btn gap-1.5" type="button" [disabled]="!!actionInProgress()" (click)="confirmRecreate.set(true)"><kiban-icon name="refresh" [size]="14" style="color: var(--color-danger);" /> Recreate</button>
             </div>
             <div class="flex items-center justify-between gap-3 rounded-lg border border-danger/30 p-3">
             <div>
               <p class="text-sm font-medium kb-text">Delete this service</p>
               <p class="mt-1 text-xs c-muted">This removes the service from Kiban and deletes its runtime resources.</p>
             </div>
-            <button class="btn-danger btn gap-1.5" type="button" [disabled]="!!actionInProgress()" (click)="confirmDelete.set(true)"><kiban-icon name="trash" [size]="14" /> Delete</button>
+            <button class="btn-danger btn gap-1.5" type="button" [disabled]="!!actionInProgress()" (click)="confirmDelete.set(true)"><kiban-icon name="trash" [size]="14" style="color: var(--color-danger);" /> Delete</button>
             </div>
           </div>
         </section>
@@ -304,6 +307,7 @@ export class InstalledServiceDetailsPageComponent implements OnDestroy {
   private readonly terminal = inject(TerminalService);
   protected readonly presenter = new ServiceDetailsPresenter();
   protected readonly details = signal<InstalledServiceDetails | null>(null);
+  protected readonly loading = signal(true);
   protected readonly message = signal<string | null>(null);
   protected readonly actionInProgress = signal<string | null>(null);
   protected readonly confirmDelete = signal(false);
@@ -334,9 +338,10 @@ export class InstalledServiceDetailsPageComponent implements OnDestroy {
   public ngOnDestroy(): void { this.stopAutoRefresh(); this.terminal.disconnect(); this.terminalSubscriptions.unsubscribe(); }
 
   protected load(): void {
+    this.loading.set(true);
     this.installedServices.details(this.serviceId).subscribe({
-      next: (details) => { this.details.set(details); this.logs.set(details.logs.value); this.configurationValues.set(this.toEditableValues(details.configuration.values)); this.connectInitialTerminal(details); this.message.set(null); },
-      error: () => this.message.set('Could not load service details.')
+      next: (details) => { this.details.set(details); this.loading.set(false); this.logs.set(details.logs.value); this.configurationValues.set(this.toEditableValues(details.configuration.values)); this.connectInitialTerminal(details); this.message.set(null); },
+      error: () => { this.loading.set(false); this.message.set('Could not load service details.'); }
     });
   }
 

@@ -2,5 +2,22 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "additionalProperties": false,
-  "properties": {}
+  "properties": {
+    "POSTGRESQL_DATABASE": {
+      "type": "string",
+      "title": "Postgresql Database",
+      "default": "metabase"
+    },
+    "SERVICE_PASSWORD_POSTGRESQL": {
+      "type": "string",
+      "title": "Service Password Postgresql",
+      "default": "kiban",
+      "x-kiban-secret": true
+    },
+    "SERVICE_USER_POSTGRESQL": {
+      "type": "string",
+      "title": "Service User Postgresql",
+      "default": "admin"
+    }
+  }
 }

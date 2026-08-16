@@ -10,6 +10,14 @@
     "KIBAN_TOOLJET_DB_PASSWORD": {
       "type": "string",
       "default": "${KIBAN_TOOLJET_DB_PASSWORD:-tooljet}"
+    },
+    "KIBAN_TOOLJET_LOCKBOX_KEY": {
+      "type": "string",
+      "default": "${KIBAN_TOOLJET_LOCKBOX_KEY:-069c11f02f8212f9c16ef0e5808f52517f1a1a63c150b203c23b3942c4c1c0c5}"
+    },
+    "KIBAN_TOOLJET_SECRET_KEY": {
+      "type": "string",
+      "default": "${KIBAN_TOOLJET_SECRET_KEY:-development_secret_key_base_that_is_at_least_64_bytes_long_for_tooljet_to_work_correctly_in_development_mode_ok}"
     }
   }
 }

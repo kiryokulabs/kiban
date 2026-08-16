@@ -1,14 +1,24 @@
 services:
   strapi:
-    image: naskio/strapi:latest
+    image: vshadbolt/strapi:latest
+    platform: linux/amd64
     restart: unless-stopped
     environment:
+      NODE_ENV: production
       DATABASE_CLIENT: postgres
       DATABASE_HOST: strapi-db
       DATABASE_PORT: 5432
       DATABASE_NAME: ${KIBAN_STRAPI_DB_NAME:-strapi}
       DATABASE_USERNAME: ${KIBAN_STRAPI_DB_USER:-strapi}
       DATABASE_PASSWORD: ${KIBAN_STRAPI_DB_PASSWORD:-strapi}
+      JWT_SECRET: ${KIBAN_STRAPI_JWT_SECRET:-KibanStrapiJwtSecret2026}
+      ADMIN_JWT_SECRET: ${KIBAN_STRAPI_ADMIN_JWT_SECRET:-KibanStrapiAdminJwtSecret2026}
+      APP_KEYS: ${KIBAN_STRAPI_APP_KEYS:-key1AbCdEfGhIjKlMnOpQrStUvWxYz,key2AbCdEfGhIjKlMnOpQrStUvWxYz,key3AbCdEfGhIjKlMnOpQrStUvWxYz,key4AbCdEfGhIjKlMnOpQrStUvWxYz}
+      API_TOKEN_SALT: ${KIBAN_STRAPI_API_TOKEN_SALT:-KibanStrapiApiTokenSalt2026}
+      TRANSFER_TOKEN_SALT: ${KIBAN_STRAPI_TRANSFER_TOKEN_SALT:-KibanStrapiTransferTokenSalt2026}
+      BUILD: "true"
+      ADMIN_URL: ${SERVICE_URL_STRAPI}/admin
+      PUBLIC_URL: ${SERVICE_URL_STRAPI}
       KIBAN_STRAPI_DB_NAME: ${KIBAN_STRAPI_DB_NAME:-strapi}
       KIBAN_STRAPI_DB_USER: ${KIBAN_STRAPI_DB_USER:-strapi}
       KIBAN_STRAPI_DB_PASSWORD: ${KIBAN_STRAPI_DB_PASSWORD:-strapi}
@@ -17,8 +27,6 @@ services:
     depends_on:
       strapi-db:
         condition: service_healthy
-    volumes:
-      - strapi_data:/opt/app
   strapi-db:
     image: postgres:17
     restart: unless-stopped
@@ -34,5 +42,4 @@ services:
       timeout: 5s
       retries: 5
 volumes:
-  strapi_data:
   strapi_db_data:

@@ -13,8 +13,8 @@
       "service": "keycloak",
       "port": 8080,
       "connection": {
-        "username": "KC_BOOTSTRAP_ADMIN_USERNAME",
-        "password": "KC_BOOTSTRAP_ADMIN_PASSWORD"
+        "username": "SERVICE_USER_ADMIN",
+        "password": "SERVICE_PASSWORD_ADMIN"
       }
     }
   ]

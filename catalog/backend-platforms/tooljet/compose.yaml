@@ -13,29 +13,55 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-  tooljet:
-    image: tooljet/tooljet:ce-latest
+  tooljet-redis:
+    image: redis:7-alpine
     restart: unless-stopped
+    volumes:
+      - tooljet_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  tooljet:
+    image: tooljet/tooljet-ce:ce-latest
+    platform: linux/amd64
+    restart: unless-stopped
+    entrypoint: ["npm", "run", "start:prod"]
     ports:
       - "${KIBAN_TOOLJET_PORT:-3000}:3000"
     depends_on:
       tooljet-db:
         condition: service_healthy
+      tooljet-redis:
+        condition: service_healthy
     environment:
+      PG_HOST: tooljet-db
+      PG_PORT: "5432"
+      PG_USER: tooljet
+      PG_PASS: ${KIBAN_TOOLJET_DB_PASSWORD:-tooljet}
+      PG_DB: tooljet_db
       TOOLJET_DB_HOST: tooljet-db
       TOOLJET_DB_PORT: "5432"
       TOOLJET_DB_USER: tooljet
-      TOOLJET_DB_PASSWORD: ${KIBAN_TOOLJET_DB_PASSWORD:-tooljet}
+      TOOLJET_DB_PASS: ${KIBAN_TOOLJET_DB_PASSWORD:-tooljet}
       TOOLJET_DB: tooljet_db
-      TOOLJET_HOST: 0.0.0.0
+      TOOLJET_HOST: ${SERVICE_URL_TOOLJET}
       PORT: "3000"
+      REDIS_HOST: tooljet-redis
+      REDIS_PORT: "6379"
+      LOCKBOX_MASTER_KEY: ${KIBAN_TOOLJET_LOCKBOX_KEY:-069c11f02f8212f9c16ef0e5808f52517f1a1a63c150b203c23b3942c4c1c0c5}
+      SECRET_KEY_BASE: ${KIBAN_TOOLJET_SECRET_KEY:-development_secret_key_base_that_is_at_least_64_bytes_long_for_tooljet_to_work_correctly_in_development_mode_ok}
       KIBAN_TOOLJET_PORT: ${KIBAN_TOOLJET_PORT:-3000}
       KIBAN_TOOLJET_DB_PASSWORD: ${KIBAN_TOOLJET_DB_PASSWORD:-tooljet}
+      KIBAN_TOOLJET_LOCKBOX_KEY: ${KIBAN_TOOLJET_LOCKBOX_KEY:-069c11f02f8212f9c16ef0e5808f52517f1a1a63c150b203c23b3942c4c1c0c5}
+      KIBAN_TOOLJET_SECRET_KEY: ${KIBAN_TOOLJET_SECRET_KEY:-development_secret_key_base_that_is_at_least_64_bytes_long_for_tooljet_to_work_correctly_in_development_mode_ok}
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
       start_period: 120s
 volumes:
   tooljet_db_data:
+  tooljet_redis_data:

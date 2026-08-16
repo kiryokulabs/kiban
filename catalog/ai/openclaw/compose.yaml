@@ -2,8 +2,20 @@ services:
   openclaw:
     image: ghcr.io/openclaw/openclaw:latest
     restart: unless-stopped
+    command: ["node", "openclaw.mjs", "gateway", "--allow-unconfigured"]
+    environment:
+      OPENCLAW_GATEWAY_TOKEN: ${KIBAN_OPENCLAW_GATEWAY_TOKEN:-kiban-openclaw-token}
+      OPENCLAW_GATEWAY_PORT: ${KIBAN_OPENCLAW_PORT:-3000}
+      KIBAN_OPENCLAW_PORT: ${KIBAN_OPENCLAW_PORT:-3000}
+      KIBAN_OPENCLAW_GATEWAY_TOKEN: ${KIBAN_OPENCLAW_GATEWAY_TOKEN:-kiban-openclaw-token}
     ports:
       - "${KIBAN_OPENCLAW_PORT:-3000}:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"require('http').get('http://127.0.0.1:3000/healthz', r => { process.exit(r.statusCode === 200 ? 0 : 1) }).on('error', () => process.exit(1))\""]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
     volumes:
       - openclaw_data:/app/data
 volumes:

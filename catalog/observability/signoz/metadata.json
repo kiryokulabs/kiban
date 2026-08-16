@@ -10,13 +10,13 @@
     {
       "name": "Web UI",
       "kind": "web",
-      "service": "signoz-standalone",
+      "service": "signoz",
       "port": 8080
     },
     {
       "name": "OTLP gRPC",
       "kind": "network",
-      "service": "signoz-standalone",
+      "service": "otel-collector",
       "port": 4317
     }
   ]

@@ -2,5 +2,14 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "additionalProperties": false,
-  "properties": {}
+  "properties": {
+    "KIBAN_LANGFLOW_SUPERUSER": {
+      "type": "string",
+      "default": "${KIBAN_LANGFLOW_SUPERUSER:-admin}"
+    },
+    "KIBAN_LANGFLOW_SUPERUSER_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_LANGFLOW_SUPERUSER_PASSWORD:-kiban}"
+    }
+  }
 }

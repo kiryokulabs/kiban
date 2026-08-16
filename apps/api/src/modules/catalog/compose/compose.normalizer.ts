@@ -37,18 +37,21 @@ const parseDuration = (value: unknown): number | undefined => {
 };
 
 const ENV_TEMPLATE = /^\$\{([A-Za-z_][A-Za-z0-9_]*)(:-((?:[^}])*))?}$/;
+const ENV_REFERENCE = /\$\{([A-Za-z_][A-Za-z0-9_]*)(:-[^}]*)?}/g;
 
 /** Resolves a compose environment value into a typed entry. */
 const resolveEnvironmentValue = (key: string, raw: unknown): RuntimeEnvironmentEntry => {
   if (typeof raw === 'string') {
     const match = ENV_TEMPLATE.exec(raw);
     if (match) {
+      const sourceVariableName = match[1]!;
       if (match[2] !== undefined) {
-        return { key, value: match[2]!.slice(2), required: false };
+        return { key, value: match[2]!.slice(2), required: false, sourceVariableName };
       }
-      return { key, required: true };
+      return { key, required: true, sourceVariableName };
     }
-    return { key, value: raw, required: false };
+    const sourceVariableNames = [...raw.matchAll(ENV_REFERENCE)].map((entry) => entry[1]!).filter((name, index, names) => names.indexOf(name) === index);
+    return { key, value: raw, required: false, ...(sourceVariableNames.length > 0 ? { sourceVariableNames } : {}) };
   }
   if (raw === null || raw === undefined) {
     return { key, required: true };
@@ -177,6 +180,7 @@ export function normalizeComposeDocument(
     const volumes: RuntimeVolumeMount[] = [];
     if (Array.isArray(raw['volumes'])) {
       for (const entry of raw['volumes']) {
+        if (isObject(entry) && entry['type'] === 'bind') continue;
         const parsed = parseVolume(entry);
         if (!parsed) continue;
         if (parsed.name !== undefined && !(parsed.name in declaredVolumes)) {

@@ -3,21 +3,28 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "KIBAN_DIRECTUS_PORT": {
+    "ADMIN_EMAIL": {
       "type": "string",
-      "default": "${KIBAN_DIRECTUS_PORT:-8055}"
+      "title": "Admin Email",
+      "default": "admin@example.com"
     },
-    "KIBAN_DIRECTUS_SECRET": {
+    "SERVICE_BASE64_64_KEY": {
       "type": "string",
-      "default": "${KIBAN_DIRECTUS_SECRET:-change-me-to-a-random-string}"
+      "title": "Service Base64 64 Key",
+      "default": "kiban-kiban-kiban-kiban-kiban-kiban-kiban-kiban",
+      "x-kiban-secret": true
     },
-    "KIBAN_DIRECTUS_ADMIN_EMAIL": {
+    "SERVICE_BASE64_64_SECRET": {
       "type": "string",
-      "default": "${KIBAN_DIRECTUS_ADMIN_EMAIL:-admin@example.com}"
+      "title": "Service Base64 64 Secret",
+      "default": "kiban-kiban-kiban-kiban-kiban-kiban-kiban-kiban",
+      "x-kiban-secret": true
     },
-    "KIBAN_DIRECTUS_ADMIN_PASSWORD": {
+    "SERVICE_PASSWORD_ADMIN": {
       "type": "string",
-      "default": "${KIBAN_DIRECTUS_ADMIN_PASSWORD:-d1r3ctu5}"
+      "title": "Service Password Admin",
+      "default": "kiban",
+      "x-kiban-secret": true
     }
   }
 }
