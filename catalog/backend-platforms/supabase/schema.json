@@ -9,7 +9,111 @@
     },
     "JWT_SECRET": {
       "type": "string",
-      "default": "${KIBAN_SUPABASE_JWT_SECRET:-change-me-super-secret-token}"
+      "default": "${KIBAN_SUPABASE_JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}"
+    },
+    "POSTGRES_PORT": {
+      "type": "string",
+      "default": "${KIBAN_SUPABASE_POSTGRES_PORT:-5432}"
+    },
+    "POSTGRES_DB": {
+      "type": "string",
+      "default": "${KIBAN_SUPABASE_POSTGRES_DB:-postgres}"
+    },
+    "DASHBOARD_USERNAME": {
+      "type": "string",
+      "default": "${KIBAN_SUPABASE_DASHBOARD_USERNAME:-supabase}"
+    },
+    "DASHBOARD_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_SUPABASE_DASHBOARD_PASSWORD:-this_password_is_insecure_and_should_be_updated}"
+    },
+    "POOLER_PROXY_PORT_TRANSACTION": {
+      "type": "string",
+      "default": "${KIBAN_SUPABASE_POOLER_PROXY_PORT_TRANSACTION:-6543}"
+    },
+    "POOLER_TENANT_ID": {
+      "type": "string",
+      "default": "${KIBAN_SUPABASE_POOLER_TENANT_ID:-default}"
+    },
+    "POOLER_DEFAULT_POOL_SIZE": {
+      "type": "string",
+      "default": "${KIBAN_SUPABASE_POOLER_DEFAULT_POOL_SIZE:-20}"
+    },
+    "POOLER_MAX_CLIENT_CONN": {
+      "type": "string",
+      "default": "${KIBAN_SUPABASE_POOLER_MAX_CLIENT_CONN:-100}"
+    },
+    "DB_POOL_SIZE": {
+      "type": "string",
+      "default": "${KIBAN_SUPABASE_DB_POOL_SIZE:-5}"
+    },
+    "SECRET_KEY_BASE": {
+      "type": "string",
+      "default": "${KIBAN_SUPABASE_SECRET_KEY_BASE:-UpNVntn3cDxHJpq99YMc1T1AQgQpc8kfYTuRgBiYa15BLrx8etQoXz3gZv1/u2oq}"
+    },
+    "VAULT_ENC_KEY": {
+      "type": "string",
+      "default": "${KIBAN_SUPABASE_VAULT_ENC_KEY:-your-32-character-encryption-key}"
+    },
+    "PG_META_CRYPTO_KEY": {
+      "type": "string",
+      "default": "${KIBAN_SUPABASE_PG_META_CRYPTO_KEY:-kiban-pg-meta-crypto-key-32-chars-min}"
+    },
+    "DB_ENC_KEY": {
+      "type": "string",
+      "default": "${KIBAN_SUPABASE_DB_ENC_KEY:-supabaserealtime}"
+    },
+    "JWT_EXP": {
+      "type": "string",
+      "default": "${KIBAN_SUPABASE_JWT_EXP:-3600}"
+    },
+    "GOTRUE_EXTERNAL_EMAIL_ENABLED": {
+      "type": "string",
+      "default": "${KIBAN_SUPABASE_GOTRUE_EXTERNAL_EMAIL_ENABLED:-true}"
+    },
+    "GOTRUE_MAILER_AUTOCONFIRM": {
+      "type": "string",
+      "default": "${KIBAN_SUPABASE_GOTRUE_MAILER_AUTOCONFIRM:-true}"
+    },
+    "GOTRUE_EXTERNAL_ANONYMOUS_USERS_ENABLED": {
+      "type": "string",
+      "default": "${KIBAN_SUPABASE_GOTRUE_EXTERNAL_ANONYMOUS_USERS_ENABLED:-false}"
+    },
+    "GOTRUE_EXTERNAL_PHONE_ENABLED": {
+      "type": "string",
+      "default": "${KIBAN_SUPABASE_GOTRUE_EXTERNAL_PHONE_ENABLED:-true}"
+    },
+    "GOTRUE_SMS_AUTOCONFIRM": {
+      "type": "string",
+      "default": "${KIBAN_SUPABASE_GOTRUE_SMS_AUTOCONFIRM:-true}"
+    },
+    "GOTRUE_DISABLE_SIGNUP": {
+      "type": "string",
+      "default": "${KIBAN_SUPABASE_GOTRUE_DISABLE_SIGNUP:-false}"
+    },
+    "SMTP_HOST": {
+      "type": "string",
+      "default": "${KIBAN_SUPABASE_SMTP_HOST:-supabase-mail}"
+    },
+    "SMTP_PORT": {
+      "type": "string",
+      "default": "${KIBAN_SUPABASE_SMTP_PORT:-2500}"
+    },
+    "SMTP_USER": {
+      "type": "string",
+      "default": "${KIBAN_SUPABASE_SMTP_USER:-}"
+    },
+    "SMTP_PASS": {
+      "type": "string",
+      "default": "${KIBAN_SUPABASE_SMTP_PASS:-}"
+    },
+    "SMTP_SENDER_NAME": {
+      "type": "string",
+      "default": "${KIBAN_SUPABASE_SMTP_SENDER_NAME:-}"
+    },
+    "SMTP_ADMIN_EMAIL": {
+      "type": "string",
+      "default": "${KIBAN_SUPABASE_SMTP_ADMIN_EMAIL:-admin@example.com}"
     }
   }
 }

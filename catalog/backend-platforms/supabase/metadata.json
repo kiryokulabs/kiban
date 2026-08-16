@@ -10,8 +10,8 @@
     {
       "name": "Web UI",
       "kind": "web",
-      "service": "supabase",
-      "port": 3000
+      "service": "api-gw",
+      "port": 8000
     }
   ]
 }
