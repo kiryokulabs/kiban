@@ -38,11 +38,12 @@ services:
       REDIS_URL: redis://flagsmith-redis:6379
       SECRET_KEY: ${KIBAN_FLAGSMITH_SECRET_KEY:-change-me-in-production}
       ENCRYPTION_KEY: ${KIBAN_FLAGSMITH_ENCRYPTION_KEY:-}
+      DJANGO_ALLOWED_HOSTS: ${KIBAN_FLAGSMITH_ALLOWED_HOSTS:-*}
       KIBAN_FLAGSMITH_PORT: ${KIBAN_FLAGSMITH_PORT:-8000}
       KIBAN_FLAGSMITH_DB_PASSWORD: ${KIBAN_FLAGSMITH_DB_PASSWORD:-flagsmith}
       KIBAN_FLAGSMITH_SECRET_KEY: ${KIBAN_FLAGSMITH_SECRET_KEY:-change-me-in-production}
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health/')\""]
       interval: 30s
       timeout: 10s
       retries: 5
