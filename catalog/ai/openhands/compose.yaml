@@ -1,6 +1,6 @@
 services:
   openhands:
-    image: ghcr.io/All-Hands-AI/OpenHands:latest
+    image: ghcr.io/all-hands-ai/openhands:latest
     restart: unless-stopped
     ports:
       - "${KIBAN_OPENHANDS_PORT:-3000}:3000"
@@ -16,7 +16,7 @@ services:
       KIBAN_OPENHANDS_LLM_MODEL: ${KIBAN_OPENHANDS_LLM_MODEL:-claude-3-5-sonnet-20241022}
       KIBAN_OPENHANDS_LLM_API_KEY: ${KIBAN_OPENHANDS_LLM_API_KEY:-}
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      test: ["CMD-SHELL", "curl -sf http://localhost:3000 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
