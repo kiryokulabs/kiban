@@ -2,5 +2,14 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "additionalProperties": false,
-  "properties": {}
+  "properties": {
+    "KIBAN_OPENCLAW_PORT": {
+      "type": "string",
+      "default": "${KIBAN_OPENCLAW_PORT:-3000}"
+    },
+    "KIBAN_OPENCLAW_GATEWAY_TOKEN": {
+      "type": "string",
+      "default": "${KIBAN_OPENCLAW_GATEWAY_TOKEN:-kiban-openclaw-token}"
+    }
+  }
 }
