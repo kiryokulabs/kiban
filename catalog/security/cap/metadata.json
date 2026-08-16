@@ -11,7 +11,7 @@
       "name": "Web UI",
       "kind": "web",
       "service": "cap",
-      "port": 8080
+      "port": 3000
     }
   ]
 }
