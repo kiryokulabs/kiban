@@ -19,7 +19,8 @@ const SERVICE_KEYS = new Set([
   'restart',
   'depends_on',
   'healthcheck',
-  'labels'
+  'labels',
+  'platform'
 ]);
 
 /** Long-form port keys Kiban understands. */
