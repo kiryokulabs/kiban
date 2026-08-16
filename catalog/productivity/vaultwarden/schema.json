@@ -3,9 +3,22 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "KIBAN_VAULTWARDEN_ADMIN_TOKEN": {
+    "PUSH_SERVICE_ID": {
       "type": "string",
-      "default": "${KIBAN_VAULTWARDEN_ADMIN_TOKEN:-}"
+      "title": "Push Service Id",
+      "default": "kiban"
+    },
+    "PUSH_SERVICE_KEY": {
+      "type": "string",
+      "title": "Push Service Key",
+      "default": "kiban-secret",
+      "x-kiban-secret": true
+    },
+    "SERVICE_PASSWORD_64_ADMIN": {
+      "type": "string",
+      "title": "Service Password 64 Admin",
+      "default": "kiban-kiban-kiban-kiban-kiban-kiban-kiban-kiban",
+      "x-kiban-secret": true
     }
   }
 }

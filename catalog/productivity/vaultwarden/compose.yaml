@@ -1,15 +1,29 @@
 services:
   vaultwarden:
     image: vaultwarden/server:latest
-    restart: unless-stopped
     environment:
-      ADMIN_TOKEN: ${KIBAN_VAULTWARDEN_ADMIN_TOKEN:-}
-      KIBAN_VAULTWARDEN_ADMIN_TOKEN: ${KIBAN_VAULTWARDEN_ADMIN_TOKEN:-}
-      WEBSOCKET_ENABLED: "true"
-      SIGNUPS_ALLOWED: "true"
-    ports:
-      - "${KIBAN_VAULTWARDEN_PORT:-8080}:80"
+      SERVICE_URL_VAULTWARDEN: ${SERVICE_URL_VAULTWARDEN:-http://localhost}
+      DOMAIN: ${SERVICE_URL_VAULTWARDEN}
+      DATABASE_URL: ${VAULTWARDEN_DB_URL:-sqlite:///data/db.sqlite3}
+      SIGNUPS_ALLOWED: ${SIGNUP_ALLOWED:-true}
+      ADMIN_TOKEN: ${SERVICE_PASSWORD_64_ADMIN}
+      IP_HEADER: X-Forwarded-For
+      PUSH_ENABLED: ${PUSH_ENABLED:-false}
+      PUSH_INSTALLATION_ID: ${PUSH_SERVICE_ID}
+      PUSH_INSTALLATION_KEY: ${PUSH_SERVICE_KEY}
     volumes:
-      - vaultwarden_data:/data
+      - vaultwarden-data:/data
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -f
+        - http://127.0.0.1:80
+      interval: 2s
+      timeout: 10s
+      retries: 15
+    restart: unless-stopped
+    ports:
+      - "80"
 volumes:
-  vaultwarden_data:
+  vaultwarden-data: {}
