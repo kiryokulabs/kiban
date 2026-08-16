@@ -3,17 +3,17 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "N8N_HOST": {
+    "SERVICE_PASSWORD_N8N": {
       "type": "string",
-      "default": "${KIBAN_N8N_HOST:-localhost}"
+      "title": "Service Password N8n",
+      "default": "kiban",
+      "x-kiban-secret": true
     },
-    "N8N_PORT": {
+    "N8N_SECURE_COOKIE": {
       "type": "string",
-      "default": "5678"
-    },
-    "N8N_PROTOCOL": {
-      "type": "string",
-      "default": "http"
+      "title": "Secure Cookie",
+      "description": "Set to false when behind a reverse proxy without TLS. Set to true when n8n is exposed over HTTPS.",
+      "default": "false"
     }
   }
 }
