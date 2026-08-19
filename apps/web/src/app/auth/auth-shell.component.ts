@@ -37,7 +37,11 @@ import { IconsComponent } from '../shared/icons.component';
           <div class="card p-6">
             <!-- Logo -->
             <div class="flex flex-col items-center mb-6">
-              <div class="mx-auto mb-3 grid h-10 w-10 place-items-center rounded-xl kb-logo text-sm font-bold">K</div>
+              <span
+                class="h-7 w-7 shrink-0 bg-current mb-4"
+                style="mask: url(assets/logo.svg) center / contain no-repeat; -webkit-mask: url(assets/logo.svg) center / contain no-repeat;"
+                aria-hidden="true"
+              ></span>
               <p class="text-xs c-subtle uppercase tracking-wider">{{ eyebrow() }}</p>
               <h1 class="mt-1 text-lg font-semibold kb-text text-center">{{ title() }}</h1>
               <p class="mt-1 text-xs c-muted text-center max-w-xs">{{ description() }}</p>
