@@ -5,4 +5,5 @@
 - [Projects & Environments](./projects.md)
 - [Testing](./testing.md)
 - [Terminal](./terminal.md)
+- [CLI](./cli.md)
 - [Roadmap](./roadmap.md)
