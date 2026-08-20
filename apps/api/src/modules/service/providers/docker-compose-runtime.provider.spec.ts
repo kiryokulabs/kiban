@@ -93,6 +93,15 @@ class StoppedAfterStopRunner extends FakeRunner {
   }
 }
 
+class UnknownPsHealthyInspectRunner extends FakeRunner {
+  public override async run(command: string, args: readonly string[], options: { readonly cwd: string }): Promise<{ readonly stdout: string; readonly stderr: string }> {
+    this.calls.push({ command, args, cwd: options.cwd });
+    if (args.includes('ps')) return { stdout: JSON.stringify([{ ID: 'container-1', Name: 'kiban-env-1-app-1', Service: 'app', State: 'running', Health: '', Publishers: [] }]), stderr: '' };
+    if (command === 'docker' && args[0] === 'inspect') return { stdout: JSON.stringify([{ Id: 'container-1', State: { Health: { Status: 'healthy' } } }]), stderr: '' };
+    return super.run(command, args, options);
+  }
+}
+
 class FakePortAllocator implements HostPortAllocator {
   public constructor(private readonly replacements: Readonly<Record<number, number>> = {}) {}
 
@@ -384,15 +393,30 @@ describe('DockerComposeRuntimeProvider', () => {
     expect(result.runtime?.['health']).toBe('unknown');
   });
 
-  it('marks web services unhealthy when their public endpoint is not reachable through the reverse proxy', async () => {
+  it('keeps Docker health authoritative when public endpoint checks fail from the API runtime', async () => {
     const healthChecker = new FakeWebHealthChecker(false);
     const provider = DockerComposeRuntimeProvider.withRunner(new FakeRunner(), await mkdtemp(join(tmpdir(), 'kiban-compose-runtime-')), new FakePortAllocator(), healthChecker);
 
     const result = await provider.install(routedPlan);
 
     expect(healthChecker.checkedUrls).toEqual(['http://mongo-express.development.crossmetrics.localhost']);
-    expect(result.status).toBe('failed');
-    expect(result.runtime?.['health']).toBe('unhealthy');
+    expect(result.status).toBe('running');
+    expect(result.runtime?.['health']).toBe('healthy');
+    expect(result.runtime?.['healthSource']).toBe('container');
+  });
+
+  it('falls back to docker inspect when compose ps omits container health', async () => {
+    const runner = new UnknownPsHealthyInspectRunner();
+    const provider = DockerComposeRuntimeProvider.withRunner(runner, await mkdtemp(join(tmpdir(), 'kiban-compose-runtime-')), new FakePortAllocator());
+
+    const result = await provider.install(plan);
+
+    expect(result.status).toBe('running');
+    expect(result.runtime?.['health']).toBe('healthy');
+    expect(result.runtime?.['containers']).toEqual([
+      { id: 'container-1', name: 'app', status: 'running', health: 'healthy', image: '', restartCount: 0, assignedPorts: [] }
+    ]);
+    expect(runner.calls.some((call) => call.args.join(' ') === 'inspect container-1')).toBe(true);
   });
 
   it('removes the service runtime workspace after uninstalling the compose project', async () => {
@@ -419,5 +443,24 @@ describe('DockerComposeRuntimeProvider', () => {
 
   it('reports Docker Compose diagnostics', async () => {
     await expect(DockerComposeRuntimeProvider.withRunner(new FakeRunner(), await mkdtemp(join(tmpdir(), 'kiban-compose-runtime-')), new FakePortAllocator()).diagnostics()).resolves.toMatchObject({ dockerInstalled: true, dockerRunning: true, availableRuntimes: ['docker-compose'] });
+  });
+
+  it('reads Kiban core runtime logs from the installed compose workspace', async () => {
+    const root = join(await mkdtemp(join(tmpdir(), 'kiban-compose-runtime-')), 'services');
+    const kibanRoot = join(root, '..', 'kiban');
+    await mkdir(kibanRoot, { recursive: true });
+    await writeFile(join(kibanRoot, 'compose.yaml'), 'services:\n  kiban-api:\n    image: api\n  kiban-web:\n    image: web\n', 'utf8');
+    await writeFile(join(kibanRoot, '.env'), 'KIBAN_VERSION=0.1.0-local\n', 'utf8');
+    const runner = new FakeRunner();
+    const provider = DockerComposeRuntimeProvider.withRunner(runner, root, new FakePortAllocator());
+
+    await expect(provider.platformLogs()).resolves.toEqual({ available: true, logs: 'ready', message: null });
+    expect(runner.calls.some((call) => call.args.join(' ') === 'compose --env-file ' + join(kibanRoot, '.env') + ' -f ' + join(kibanRoot, 'compose.yaml') + ' logs --tail=300 kiban-api kiban-web')).toBe(true);
+  });
+
+  it('reports Kiban core runtime logs unavailable when Kiban is not Docker-installed', async () => {
+    const provider = DockerComposeRuntimeProvider.withRunner(new FakeRunner(), join(await mkdtemp(join(tmpdir(), 'kiban-compose-runtime-')), 'services'), new FakePortAllocator());
+
+    await expect(provider.platformLogs()).resolves.toEqual({ available: false, logs: '', message: 'Kiban core runtime logs are only available for Docker-installed Kiban.' });
   });
 });

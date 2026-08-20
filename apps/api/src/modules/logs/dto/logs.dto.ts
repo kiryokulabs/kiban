@@ -1,2 +1,2 @@
-/** Data-transfer object placeholder for the logs module. */
-export interface LogsDto { readonly id: string; }
+/** Kiban platform logs response. */
+export interface LogsDto { readonly available: boolean; readonly logs: string; readonly message: string | null; }
