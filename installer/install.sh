@@ -1,10 +1,13 @@
 #!/usr/bin/env sh
 set -eu
 
-KIBAN_VERSION="${KIBAN_VERSION:-0.1.0}"
 KIBAN_HTTP_PORT="${KIBAN_HTTP_PORT:-8080}"
-KIBAN_RELEASE_BASE="${KIBAN_RELEASE_BASE:-https://releases.kibanos.com/${KIBAN_VERSION}}"
+KIBAN_RELEASE_CHANNEL="${KIBAN_RELEASE_CHANNEL:-latest}"
+KIBAN_RELEASE_BASE="${KIBAN_RELEASE_BASE:-https://releases.kibanos.com/${KIBAN_RELEASE_CHANNEL}}"
+KIBAN_VERSION="${KIBAN_VERSION:-}"
+KIBAN_VERSION_URL="${KIBAN_VERSION_URL:-${KIBAN_RELEASE_BASE}/VERSION}"
 KIBAN_COMPOSE_URL="${KIBAN_COMPOSE_URL:-${KIBAN_RELEASE_BASE}/compose.yaml}"
+KIBAN_CLI_URL="${KIBAN_CLI_URL:-${KIBAN_RELEASE_BASE}/kiban}"
 KIBAN_HOME="${KIBAN_HOME:-$HOME/.kiban}"
 KIBAN_USER_HOME="${KIBAN_USER_HOME:-$HOME}"
 KIBAN_RUNTIME_DIR="${KIBAN_HOME}/runtime/kiban"
@@ -14,6 +17,7 @@ KIBAN_OS="$(uname -s)"
 
 info() { printf '%s\n' "[kiban] $*"; }
 fail() { printf '%s\n' "[kiban] Error: $*" >&2; exit 1; }
+warn() { printf '%s\n' "[kiban] Warning: $*"; }
 command_exists() { command -v "$1" >/dev/null 2>&1; }
 
 sudo_cmd() {
@@ -107,6 +111,7 @@ ensure_port_available() {
 
 create_kiban_directories() {
   mkdir -p \
+    "${KIBAN_HOME}/bin" \
     "${KIBAN_HOME}/config" \
     "${KIBAN_HOME}/database" \
     "${KIBAN_HOME}/plugins" \
@@ -147,6 +152,17 @@ download_core_compose() {
   curl -fsSL "${KIBAN_COMPOSE_URL}" -o "${KIBAN_COMPOSE_FILE}"
 }
 
+resolve_kiban_version() {
+  if [ -n "${KIBAN_VERSION}" ]; then
+    return
+  fi
+
+  ensure_curl
+  info "Resolving Kiban version from ${KIBAN_VERSION_URL}..."
+  KIBAN_VERSION="$(curl -fsSL "${KIBAN_VERSION_URL}" | tr -d '\r\n' | sed 's/^v//')"
+  [ -n "${KIBAN_VERSION}" ] || fail "Could not resolve Kiban version from ${KIBAN_VERSION_URL}."
+}
+
 start_kiban() {
   info "Starting Kiban v${KIBAN_VERSION}..."
   docker compose --env-file "${KIBAN_ENV_FILE}" -f "${KIBAN_COMPOSE_FILE}" up -d
@@ -164,6 +180,69 @@ host_address() {
   printf '%s' "localhost"
 }
 
+install_cli() {
+  cli_dest="${KIBAN_HOME}/bin/kiban"
+
+  mkdir -p "${KIBAN_HOME}/bin"
+
+  ensure_curl
+  info "Downloading Kiban CLI from ${KIBAN_CLI_URL}..."
+  curl -fsSL "${KIBAN_CLI_URL}" -o "${cli_dest}"
+
+  chmod +x "${cli_dest}"
+  info "CLI installed at ${cli_dest}"
+
+  # Ensure ~/.kiban/bin is in PATH
+  ensure_path
+}
+
+ensure_path() {
+  if [ "${KIBAN_HOME}" != "${HOME}/.kiban" ]; then
+    warn "Custom KIBAN_HOME detected. Add ${KIBAN_HOME}/bin to PATH manually if needed."
+    return
+  fi
+
+  shell_name="$(basename "${SHELL:-/bin/sh}")"
+  rc_file=""
+
+  case "${shell_name}" in
+    bash)
+      if [ -r "${HOME}/.bashrc" ]; then
+        rc_file="${HOME}/.bashrc"
+      elif [ -r "${HOME}/.bash_profile" ]; then
+        rc_file="${HOME}/.bash_profile"
+      fi
+      ;;
+    zsh)
+      rc_file="${HOME}/.zshrc"
+      ;;
+    *)
+      if [ -r "${HOME}/.profile" ]; then
+        rc_file="${HOME}/.profile"
+      fi
+      ;;
+  esac
+
+  if [ -z "${rc_file}" ]; then
+    warn "Could not detect shell profile. Add ${KIBAN_HOME}/bin to your PATH manually."
+    return
+  fi
+
+  # Check if already in PATH
+  case ":${PATH}:" in
+    *":${KIBAN_HOME}/bin:"*) return ;;
+  esac
+
+  # Check if already in rc_file
+  if grep -qF "${KIBAN_HOME}/bin" "${rc_file}" 2>/dev/null; then
+    return
+  fi
+
+  printf '\n# Kiban CLI\nexport PATH="%s/bin:$PATH"\n' "${KIBAN_HOME}" >> "${rc_file}"
+  info "Added ${KIBAN_HOME}/bin to PATH in ${rc_file}"
+  info "Run 'source ${rc_file}' or open a new terminal to use 'kiban'."
+}
+
 print_success() {
   cat <<MSG
 
@@ -172,8 +251,11 @@ Kiban v${KIBAN_VERSION} installed successfully.
 Open Kiban:
 http://$(host_address):${KIBAN_HTTP_PORT}
 
+CLI:
+  kiban --help
+
 Local data directory:
-~/.kiban
+${KIBAN_HOME}
 MSG
 }
 
@@ -184,8 +266,10 @@ main() {
   ensure_docker_compose
   ensure_port_available "${KIBAN_HTTP_PORT}"
   create_kiban_directories
+  resolve_kiban_version
   write_runtime_environment
   download_core_compose
+  install_cli
   start_kiban
   print_success
 }

@@ -11,7 +11,7 @@ on:
         type: string
 
 permissions:
-  contents: read
+  contents: write
   packages: write
 
 jobs:
@@ -63,3 +63,26 @@ jobs:
           tags: |
             ${{ env.WEB_IMAGE }}:${{ steps.version.outputs.version }}
             ${{ env.WEB_IMAGE }}:latest
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p dist/release
+          printf '%s\n' "${{ steps.version.outputs.version }}" > dist/release/VERSION
+          cp installer/templates/compose.yaml dist/release/compose.yaml
+          cp apps/cli/kiban dist/release/kiban
+          chmod +x dist/release/kiban
+
+      - name: Upload release assets artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kiban-release-assets-${{ steps.version.outputs.version }}
+          path: dist/release/*
+
+      - name: Attach release assets
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/release/VERSION
+            dist/release/compose.yaml
+            dist/release/kiban

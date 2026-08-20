@@ -2,12 +2,12 @@ name: kiban
 
 services:
   kiban-api:
-    image: ghcr.io/kibanos/kiban-api:${KIBAN_VERSION:-0.1.0}
+    image: ghcr.io/kibanos/kiban-api:${KIBAN_VERSION}
     restart: unless-stopped
     environment:
       NODE_ENV: production
       HOME: ${KIBAN_USER_HOME}
-      KIBAN_VERSION: ${KIBAN_VERSION:-0.1.0}
+      KIBAN_VERSION: ${KIBAN_VERSION}
       KIBAN_DOMAIN_PROTOCOL: ${KIBAN_DOMAIN_PROTOCOL:-http}
       KIBAN_DOMAIN_DEFAULT: ${KIBAN_DOMAIN_DEFAULT:-localhost}
     volumes:
@@ -19,7 +19,7 @@ services:
       - kiban-core
 
   kiban-web:
-    image: ghcr.io/kibanos/kiban-web:${KIBAN_VERSION:-0.1.0}
+    image: ghcr.io/kibanos/kiban-web:${KIBAN_VERSION}
     restart: unless-stopped
     depends_on:
       - kiban-api
