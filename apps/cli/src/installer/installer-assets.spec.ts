@@ -63,6 +63,10 @@ describe('Kiban installer assets', () => {
     expect(workflow).toContain('ghcr.io/kiryokulabs/kiban-web');
     expect(workflow).toContain('docker/build-push-action');
     expect(workflow).toContain('github.event.release.tag_name');
+    expect(workflow).toContain('dist/release/install.sh');
+    expect(workflow).toContain('dist/release/VERSION');
+    expect(workflow).toContain('dist/release/compose.yaml');
+    expect(workflow).toContain('dist/release/kiban');
   });
 
   it('keeps local Angular development on the same /api and Socket.IO contract', () => {

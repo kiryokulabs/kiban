@@ -68,8 +68,10 @@ jobs:
         run: |
           mkdir -p dist/release
           printf '%s\n' "${{ steps.version.outputs.version }}" > dist/release/VERSION
+          cp installer/install.sh dist/release/install.sh
           cp installer/templates/compose.yaml dist/release/compose.yaml
           cp apps/cli/kiban dist/release/kiban
+          chmod +x dist/release/install.sh
           chmod +x dist/release/kiban
 
       - name: Upload release assets artifact
@@ -84,5 +86,6 @@ jobs:
         with:
           files: |
             dist/release/VERSION
+            dist/release/install.sh
             dist/release/compose.yaml
             dist/release/kiban
