@@ -15,7 +15,7 @@ const socketFactory: TerminalSocketFactory = (url: string) => io(url, { withCred
 
 /** Browser-side terminal transport backed by the API Socket.IO gateway. */
 export class TerminalSocketSession {
-  private readonly apiUrl = 'http://localhost:3000/terminal';
+  private readonly apiUrl = '/terminal';
   private socket: TerminalSocket | null = null;
   private readonly state = new BehaviorSubject<ConnectionState>('disconnected');
   private readonly errorMessage = new BehaviorSubject<string | null>(null);

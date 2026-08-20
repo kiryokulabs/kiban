@@ -1,11 +1,10 @@
 import { Component } from '@angular/core';
 import { SkeletonComponent } from './skeleton.component';
-import { SkeletonCardComponent } from './skeleton-card.component';
 
 @Component({
   selector: 'kiban-skeleton-project-detail',
   standalone: true,
-  imports: [SkeletonComponent, SkeletonCardComponent],
+  imports: [SkeletonComponent],
   template: `
     <div class="space-y-6">
       <!-- Back button -->

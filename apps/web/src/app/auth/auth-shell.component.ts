@@ -13,7 +13,11 @@ import { IconsComponent } from '../shared/icons.component';
         @if (requiresAdminSetup() === null && !bootstrapError()) {
           <!-- Loading -->
           <div class="card p-8 text-center">
-            <div class="mx-auto mb-4 grid h-10 w-10 place-items-center rounded-xl kb-logo text-sm font-bold">K</div>
+            <span
+              class="h-7 w-7 shrink-0 bg-current"
+              style="mask: url(assets/logo.svg) center / contain no-repeat; -webkit-mask: url(assets/logo.svg) center / contain no-repeat;"
+              aria-hidden="true"
+            ></span>
             <p class="text-sm c-muted">Checking Kiban API…</p>
           </div>
         } @else if (requiresAdminSetup() === null && bootstrapError()) {
@@ -44,7 +48,6 @@ import { IconsComponent } from '../shared/icons.component';
               ></span>
               <p class="text-xs c-subtle uppercase tracking-wider">{{ eyebrow() }}</p>
               <h1 class="mt-1 text-lg font-semibold kb-text text-center">{{ title() }}</h1>
-              <p class="mt-1 text-xs c-muted text-center max-w-xs">{{ description() }}</p>
             </div>
 
             <form class="space-y-3" (ngSubmit)="submit()">
@@ -79,6 +82,7 @@ import { IconsComponent } from '../shared/icons.component';
                 }
               </button>
             </form>
+            <p class="text-xs c-muted text-center max-w-xs mt-4">{{ description() }}</p>
           </div>
         }
       </section>
@@ -97,7 +101,7 @@ export class AuthShellComponent {
 
   protected readonly eyebrow = computed(() => (this.requiresAdminSetup() === true ? 'First run setup' : 'Welcome back'));
   protected readonly title = computed(() => (this.requiresAdminSetup() === true ? 'Create admin account' : 'Log in to Kiban'));
-  protected readonly description = computed(() => (this.requiresAdminSetup() === true ? 'This account will become the only initial administrator for this Kiban installation.' : 'An admin account already exists. Public registration is disabled.'));
+  protected readonly description = computed(() => (this.requiresAdminSetup() === true ? 'This account will become the only initial administrator for this Kiban installation.' : 'Public registration is disabled.'));
   protected readonly actionLabel = computed(() => (this.requiresAdminSetup() === true ? 'Create admin account' : 'Log in'));
 
   public constructor() {
