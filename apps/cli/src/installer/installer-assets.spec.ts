@@ -35,8 +35,8 @@ describe('Kiban installer assets', () => {
 
     expect(compose).toContain('kiban-api:');
     expect(compose).toContain('kiban-web:');
-    expect(compose).toContain('ghcr.io/kibanos/kiban-api:${KIBAN_VERSION}');
-    expect(compose).toContain('ghcr.io/kibanos/kiban-web:${KIBAN_VERSION}');
+    expect(compose).toContain('ghcr.io/kiryokulabs/kiban-api:${KIBAN_VERSION}');
+    expect(compose).toContain('ghcr.io/kiryokulabs/kiban-web:${KIBAN_VERSION}');
     expect(compose).toContain('${KIBAN_HTTP_PORT:-8080}:80');
     expect(compose).toContain('${KIBAN_HOME}:${KIBAN_HOME}');
     expect(compose).toContain('/var/run/docker.sock:/var/run/docker.sock:ro');
@@ -59,8 +59,8 @@ describe('Kiban installer assets', () => {
     expect(nginxConfig).toContain('location /socket.io/');
     expect(nginxConfig).toContain('proxy_pass http://kiban-api:3000');
     expect(nginxConfig).not.toContain('location /projects');
-    expect(workflow).toContain('ghcr.io/kibanos/kiban-api');
-    expect(workflow).toContain('ghcr.io/kibanos/kiban-web');
+    expect(workflow).toContain('ghcr.io/kiryokulabs/kiban-api');
+    expect(workflow).toContain('ghcr.io/kiryokulabs/kiban-web');
     expect(workflow).toContain('docker/build-push-action');
     expect(workflow).toContain('github.event.release.tag_name');
   });

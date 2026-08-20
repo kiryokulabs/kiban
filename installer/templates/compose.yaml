@@ -2,7 +2,7 @@ name: kiban
 
 services:
   kiban-api:
-    image: ghcr.io/kibanos/kiban-api:${KIBAN_VERSION}
+    image: ghcr.io/kiryokulabs/kiban-api:${KIBAN_VERSION}
     restart: unless-stopped
     environment:
       NODE_ENV: production
@@ -19,7 +19,7 @@ services:
       - kiban-core
 
   kiban-web:
-    image: ghcr.io/kibanos/kiban-web:${KIBAN_VERSION}
+    image: ghcr.io/kiryokulabs/kiban-web:${KIBAN_VERSION}
     restart: unless-stopped
     depends_on:
       - kiban-api

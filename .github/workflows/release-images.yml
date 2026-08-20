@@ -19,8 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       RELEASE_TAG: ${{ github.event.release.tag_name || inputs.version }}
-      API_IMAGE: ghcr.io/kibanos/kiban-api
-      WEB_IMAGE: ghcr.io/kibanos/kiban-web
+      API_IMAGE: ghcr.io/kiryokulabs/kiban-api
+      WEB_IMAGE: ghcr.io/kiryokulabs/kiban-web
     steps:
       - name: Checkout
         uses: actions/checkout@v4
