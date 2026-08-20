@@ -5,7 +5,7 @@ import type { CreateEnvironmentRequest, CreateProjectRequest, EnvironmentItem, P
 
 @Injectable({ providedIn: 'root' })
 export class ProjectsService {
-  private readonly apiUrl = 'http://localhost:3000';
+  private readonly apiUrl = '/api';
 
   public constructor(private readonly http: HttpClient) {}
 

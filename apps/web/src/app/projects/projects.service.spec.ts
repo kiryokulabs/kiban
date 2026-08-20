@@ -21,7 +21,7 @@ describe('Web ProjectsService', () => {
     const { http, calls } = createHttpClient([]);
     const service = new ProjectsService(http);
     service.listProjects().subscribe();
-    expect(calls).toEqual([{ method: 'GET', url: 'http://localhost:3000/projects', options: { withCredentials: true } }]);
+    expect(calls).toEqual([{ method: 'GET', url: '/api/projects', options: { withCredentials: true } }]);
   });
 
   it('creates a project with credentials', () => {
@@ -29,14 +29,14 @@ describe('Web ProjectsService', () => {
     const { http, calls } = createHttpClient({ id: 'project-1' });
     const service = new ProjectsService(http);
     service.createProject(payload).subscribe();
-    expect(calls).toEqual([{ method: 'POST', url: 'http://localhost:3000/projects', body: payload, options: { withCredentials: true } }]);
+    expect(calls).toEqual([{ method: 'POST', url: '/api/projects', body: payload, options: { withCredentials: true } }]);
   });
 
   it('gets project details with credentials', () => {
     const { http, calls } = createHttpClient({ id: 'project-1' });
     const service = new ProjectsService(http);
     service.getProject('project-1').subscribe();
-    expect(calls).toEqual([{ method: 'GET', url: 'http://localhost:3000/projects/project-1', options: { withCredentials: true } }]);
+    expect(calls).toEqual([{ method: 'GET', url: '/api/projects/project-1', options: { withCredentials: true } }]);
   });
 
   it('updates a project with credentials', () => {
@@ -44,21 +44,21 @@ describe('Web ProjectsService', () => {
     const { http, calls } = createHttpClient({ id: 'project-1' });
     const service = new ProjectsService(http);
     service.updateProject('project-1', payload).subscribe();
-    expect(calls).toEqual([{ method: 'PATCH', url: 'http://localhost:3000/projects/project-1', body: payload, options: { withCredentials: true } }]);
+    expect(calls).toEqual([{ method: 'PATCH', url: '/api/projects/project-1', body: payload, options: { withCredentials: true } }]);
   });
 
   it('deletes a project with credentials', () => {
     const { http, calls } = createHttpClient(null);
     const service = new ProjectsService(http);
     service.deleteProject('project-1').subscribe();
-    expect(calls).toEqual([{ method: 'DELETE', url: 'http://localhost:3000/projects/project-1', options: { withCredentials: true } }]);
+    expect(calls).toEqual([{ method: 'DELETE', url: '/api/projects/project-1', options: { withCredentials: true } }]);
   });
 
   it('lists environments for a project with credentials', () => {
     const { http, calls } = createHttpClient([]);
     const service = new ProjectsService(http);
     service.listEnvironments('project-1').subscribe();
-    expect(calls).toEqual([{ method: 'GET', url: 'http://localhost:3000/projects/project-1/environments', options: { withCredentials: true } }]);
+    expect(calls).toEqual([{ method: 'GET', url: '/api/projects/project-1/environments', options: { withCredentials: true } }]);
   });
 });
 
@@ -68,13 +68,13 @@ describe('Web ProjectsService environments', () => {
     const { http, calls } = createHttpClient({ id: 'environment-1' });
     const service = new ProjectsService(http);
     service.createEnvironment('project-1', payload).subscribe();
-    expect(calls).toEqual([{ method: 'POST', url: 'http://localhost:3000/projects/project-1/environments', body: payload, options: { withCredentials: true } }]);
+    expect(calls).toEqual([{ method: 'POST', url: '/api/projects/project-1/environments', body: payload, options: { withCredentials: true } }]);
   });
 
   it('deletes an environment with credentials', () => {
     const { http, calls } = createHttpClient(null);
     const service = new ProjectsService(http);
     service.deleteEnvironment('project-1', 'environment-1').subscribe();
-    expect(calls).toEqual([{ method: 'DELETE', url: 'http://localhost:3000/projects/project-1/environments/environment-1', options: { withCredentials: true } }]);
+    expect(calls).toEqual([{ method: 'DELETE', url: '/api/projects/project-1/environments/environment-1', options: { withCredentials: true } }]);
   });
 });

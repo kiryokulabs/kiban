@@ -5,7 +5,7 @@ import type { CatalogResponse } from './catalog.models';
 
 @Injectable({ providedIn: 'root' })
 export class CatalogService {
-  private readonly apiUrl = 'http://localhost:3000';
+  private readonly apiUrl = '/api';
 
   public constructor(private readonly http: HttpClient) {}
 

@@ -5,7 +5,7 @@ import type { AuthResponse, AuthUser, BootstrapStatus, ChangePasswordRequest, Cr
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly apiUrl = 'http://localhost:3000';
+  private readonly apiUrl = '/api';
   private readonly currentUser = signal<AuthUser | null>(null);
 
   public constructor(private readonly http: HttpClient) {}

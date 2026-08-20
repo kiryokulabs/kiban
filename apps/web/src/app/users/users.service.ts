@@ -5,7 +5,7 @@ import type { CreateOperatorRequest, UserListItem } from './users.models';
 
 @Injectable({ providedIn: 'root' })
 export class UsersService {
-  private readonly apiUrl = 'http://localhost:3000';
+  private readonly apiUrl = '/api';
 
   public constructor(private readonly http: HttpClient) {}
 
