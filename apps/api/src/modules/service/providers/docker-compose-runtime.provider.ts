@@ -22,6 +22,8 @@ export interface WebHealthChecker {
   isReachable(url: string): Promise<boolean>;
 }
 
+export interface KibanPlatformLogs { readonly available: boolean; readonly logs: string; readonly message: string | null; }
+
 class SpawnComposeCommandRunner implements ComposeCommandRunner {
   public run(command: string, args: readonly string[], options: { readonly cwd: string }): Promise<{ readonly stdout: string; readonly stderr: string }> {
     return new Promise((resolve, reject) => {
@@ -143,6 +145,17 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
     } catch {
       return { dockerInstalled: false, dockerRunning: false, dockerVersion: null, engineVersion: null, socketReachable: false, compatibleApiVersion: false, availableRuntimes: [] };
     }
+  }
+
+  /** Reads logs for the installed Kiban core runtime. */
+  public async platformLogs(): Promise<KibanPlatformLogs> {
+    const runtimeDir = join(resolve(this.runtimeRoot), '..', 'kiban');
+    const composeFile = join(runtimeDir, 'compose.yaml');
+    const envFile = join(runtimeDir, '.env');
+    if (!(await this.fileExists(composeFile)) || !(await this.fileExists(envFile))) return { available: false, logs: '', message: 'Kiban core runtime logs are only available for Docker-installed Kiban.' };
+
+    const result = await this.runner.run('docker', ['compose', '--env-file', envFile, '-f', composeFile, 'logs', '--tail=300', 'kiban-api', 'kiban-web'], { cwd: runtimeDir });
+    return { available: true, logs: `${result.stdout}${result.stderr}`.trim(), message: null };
   }
 
   /** Attempts to prepare Kiban's shared reverse proxy during API startup. */
@@ -555,12 +568,14 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
     const containerHealth = this.containerHealth(containers);
     const checkedAt = new Date().toISOString();
     if (containerHealth === 'unhealthy') return { status: 'unhealthy', source: 'container', checkedAt, message: 'One or more runtime units are not running or reported unhealthy.' };
+    let publicEndpointsReachable = true;
     if (publicEndpoints.length > 0) {
       const reachable = await Promise.all(publicEndpoints.map((endpoint) => this.webHealthChecker.isReachable(endpoint.url)));
-      if (reachable.some((value) => !value)) return { status: 'unhealthy', source: 'reverse-proxy', checkedAt, message: 'One or more web access URLs are not reachable.' };
+      publicEndpointsReachable = reachable.every(Boolean);
     }
     if (containerHealth === 'unknown') return { status: 'unknown', source: 'runtime', checkedAt, message: 'Runtime units are running but no healthcheck information is available.' };
-    return { status: 'healthy', source: publicEndpoints.length > 0 ? 'reverse-proxy' : 'container', checkedAt, message: publicEndpoints.length > 0 ? 'Runtime units are healthy and web access URLs are reachable.' : 'Runtime units reported healthy.' };
+    if (publicEndpoints.length > 0 && !publicEndpointsReachable) return { status: 'healthy', source: 'container', checkedAt, message: 'Runtime units reported healthy. Public URLs could not be verified from this Kiban instance.' };
+    return { status: 'healthy', source: 'container', checkedAt, message: publicEndpoints.length > 0 ? 'Runtime units reported healthy and web access URLs are reachable.' : 'Runtime units reported healthy.' };
   }
 
   private containerHealth(containers: readonly ComposeContainerInfo[]): 'healthy' | 'unhealthy' | 'unknown' {
@@ -596,7 +611,36 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
 
   private async ps(cwd: string, projectName: string): Promise<readonly ComposeContainerInfo[]> {
     const { stdout } = await this.compose(cwd, projectName, ['ps', '-a', '--format', 'json']);
-    return this.parsePs(stdout);
+    return this.withInspectedHealth(cwd, this.parsePs(stdout));
+  }
+
+  private async withInspectedHealth(cwd: string, containers: readonly ComposeContainerInfo[]): Promise<readonly ComposeContainerInfo[]> {
+    const unknown = containers.filter((container) => container.health === 'unknown' && container.id.length > 0);
+    if (unknown.length === 0) return containers;
+    try {
+      const { stdout } = await this.runner.run('docker', ['inspect', ...unknown.map((container) => container.id)], { cwd });
+      const healthById = this.parseInspectHealth(stdout);
+      return containers.map((container) => ({ ...container, health: healthById[container.id] ?? container.health }));
+    } catch {
+      return containers;
+    }
+  }
+
+  private parseInspectHealth(stdout: string): Readonly<Record<string, string>> {
+    const trimmed = stdout.trim();
+    if (!trimmed) return {};
+    const parsed = JSON.parse(trimmed) as unknown;
+    const rows = Array.isArray(parsed) ? parsed : [parsed];
+    const result: Record<string, string> = {};
+    for (const row of rows) {
+      const record = this.recordValue(row);
+      const state = this.recordValue(record?.['State']);
+      const health = this.recordValue(state?.['Health']);
+      const id = typeof record?.['Id'] === 'string' ? record['Id'] : '';
+      const status = typeof health?.['Status'] === 'string' ? health['Status'] : '';
+      if (id.length > 0 && status.length > 0) result[id] = status;
+    }
+    return result;
   }
 
   private parsePs(stdout: string): readonly ComposeContainerInfo[] {

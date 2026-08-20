@@ -5,7 +5,7 @@ import type { InstallServiceRequest, InstalledService, InstalledServiceDetails }
 
 @Injectable({ providedIn: 'root' })
 export class InstalledServicesService {
-  private readonly apiUrl = 'http://localhost:3000';
+  private readonly apiUrl = '/api';
   public constructor(private readonly http: HttpClient) {}
 
   /** Lists every installed service. */

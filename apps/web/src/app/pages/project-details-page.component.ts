@@ -77,10 +77,10 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
                   </div>
                   <p class="mt-1 text-xs c-muted leading-relaxed">{{ environmentCardDescription(environment) }}</p>
                 </div>
-                <div class="flex items-center gap-2 shrink-0">
+                <!--<div class="flex items-center gap-2 shrink-0">
                   <span class="status-dot status-dot-muted"></span>
                   <span class="text-xs c-subtle">{{ environment.status }}</span>
-                </div>
+                </div>-->
               </div>
 
               <!-- Services -->
@@ -199,7 +199,7 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
 
         <!-- Install modal -->
         @if (installEnvironment()) {
-          <kiban-modal title="Install Service" (close)="closeInstallDialog()">
+          <kiban-modal title="Install Service" [wide]="true" (close)="closeInstallDialog()">
             <div class="mb-5">
               <div class="flex items-center gap-2 text-xs c-muted">
                 <span [class.c-text]="installStep() === 1" [class.c-muted]="installStep() !== 1" class="flex items-center gap-1.5 font-medium">
@@ -252,7 +252,7 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
                   </button>
                 }
               </div>
-              <div class="mt-3 max-h-72 space-y-1 overflow-auto">
+              <div class="grid grid-cols-2 p-3 gap-1.5 mt-3 max-h-96 space-y-1 overflow-auto">
                 @for (item of selectableServices(); track item.id) {
                   <button type="button" class="flex w-full items-start gap-3 rounded-lg border kb-border p-3 text-left transition hover:border-brand/50 hover:bg-hover" (click)="selectService(item)">
                     <div class="grid h-8 w-8 shrink-0 place-items-center rounded-lg border kb-border bg-surface py-1"><kiban-svg-icon [svg]="item.icon" /></div>

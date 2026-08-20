@@ -18,7 +18,7 @@ describe('Web CatalogService', () => {
 
     service.list().subscribe();
 
-    expect(calls).toEqual([{ url: 'http://localhost:3000/catalog', options: { withCredentials: true } }]);
+    expect(calls).toEqual([{ url: '/api/catalog', options: { withCredentials: true } }]);
   });
 
   it('passes search query to the generic catalog endpoint', () => {
@@ -27,6 +27,6 @@ describe('Web CatalogService', () => {
 
     service.list('postgres sql').subscribe();
 
-    expect(calls).toEqual([{ url: 'http://localhost:3000/catalog?q=postgres%20sql', options: { withCredentials: true } }]);
+    expect(calls).toEqual([{ url: '/api/catalog?q=postgres%20sql', options: { withCredentials: true } }]);
   });
 });

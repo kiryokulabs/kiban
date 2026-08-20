@@ -25,7 +25,7 @@ describe('Web UsersService', () => {
     service.listUsers().subscribe((value) => { result = value; });
 
     expect(result).toEqual(users);
-    expect(calls).toEqual([{ method: 'GET', url: 'http://localhost:3000/users', options: { withCredentials: true } }]);
+    expect(calls).toEqual([{ method: 'GET', url: '/api/users', options: { withCredentials: true } }]);
   });
 
   it('creates an operator with credentials', () => {
@@ -38,7 +38,7 @@ describe('Web UsersService', () => {
     service.createOperator(payload).subscribe((value) => { result = value; });
 
     expect(result).toEqual(operator);
-    expect(calls).toEqual([{ method: 'POST', url: 'http://localhost:3000/users/operators', body: payload, options: { withCredentials: true } }]);
+    expect(calls).toEqual([{ method: 'POST', url: '/api/users/operators', body: payload, options: { withCredentials: true } }]);
   });
 
   it('deletes a user with credentials', () => {
@@ -47,6 +47,6 @@ describe('Web UsersService', () => {
 
     service.deleteUser('operator-1').subscribe();
 
-    expect(calls).toEqual([{ method: 'DELETE', url: 'http://localhost:3000/users/operator-1', options: { withCredentials: true } }]);
+    expect(calls).toEqual([{ method: 'DELETE', url: '/api/users/operator-1', options: { withCredentials: true } }]);
   });
 });

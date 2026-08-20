@@ -9,7 +9,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
-    "dev": "nest start --watch",
+    "dev": "KIBAN_API_PORT=3100 nest start --watch",
     "test:watch": "vitest"
   },
   "dependencies": {
@@ -31,6 +31,7 @@
     "yaml": "^2.8.0"
   },
   "devDependencies": {
-    "@nestjs/cli": "^10.4.8"
+    "@nestjs/cli": "^10.4.8",
+    "vitest": "^3.2.4"
   }
 }

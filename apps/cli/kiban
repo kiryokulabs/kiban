@@ -1,0 +1,269 @@
+#!/usr/bin/env sh
+# Kiban CLI — POSIX shell interface for local Kiban management.
+# Requires: Docker, Docker Compose v2. No other dependencies.
+set -eu
+
+installed_home() {
+  script_path="$0"
+
+  case "${script_path}" in
+    */*) ;;
+    *) script_path="$(command -v "${script_path}" 2>/dev/null || printf '%s' "${script_path}")" ;;
+  esac
+
+  script_dir="$(cd -P "$(dirname "${script_path}")" >/dev/null 2>&1 && pwd || printf '%s' "${HOME}/.kiban/bin")"
+  case "${script_dir}" in
+    */bin) dirname "${script_dir}" ;;
+    *) printf '%s' "${HOME}/.kiban" ;;
+  esac
+}
+
+KIBAN_HOME="${KIBAN_HOME:-$(installed_home)}"
+KIBAN_RUNTIME_DIR="${KIBAN_HOME}/runtime/kiban"
+KIBAN_COMPOSE_FILE="${KIBAN_RUNTIME_DIR}/compose.yaml"
+KIBAN_ENV_FILE="${KIBAN_RUNTIME_DIR}/.env"
+KIBAN_SERVICES_DIR="${KIBAN_HOME}/runtime/services"
+
+info()  { printf '%s\n' "[kiban] $*"; }
+fail()  { printf '%s\n' "[kiban] Error: $*" >&2; exit 1; }
+warn()  { printf '%s\n' "[kiban] Warning: $*"; }
+
+command_exists() { command -v "$1" >/dev/null 2>&1; }
+
+# ---------------------------------------------------------------------------
+# version
+# ---------------------------------------------------------------------------
+cmd_version() {
+  if [ -r "${KIBAN_ENV_FILE}" ]; then
+    version="$(grep '^KIBAN_VERSION=' "${KIBAN_ENV_FILE}" | head -1 | cut -d= -f2- || true)"
+    if [ -n "${version}" ]; then
+      printf 'kiban %s\n' "${version}"
+      return 0
+    fi
+  fi
+  printf 'kiban (version unknown)\n'
+}
+
+# ---------------------------------------------------------------------------
+# doctor
+# ---------------------------------------------------------------------------
+cmd_doctor() {
+  errors=0
+
+  # Docker
+  if command_exists docker; then
+    info "✓ Docker installed"
+  else
+    warn "✗ Docker not found"
+    errors=$((errors + 1))
+  fi
+
+  # Docker daemon
+  if docker info >/dev/null 2>&1; then
+    info "✓ Docker is running"
+  else
+    warn "✗ Docker is not running"
+    errors=$((errors + 1))
+  fi
+
+  # Docker Compose v2
+  if docker compose version >/dev/null 2>&1; then
+    info "✓ Docker Compose v2 available"
+  else
+    warn "✗ Docker Compose v2 not available"
+    errors=$((errors + 1))
+  fi
+
+  # Kiban home directory
+  if [ -d "${KIBAN_HOME}" ]; then
+    info "✓ Kiban directory exists (${KIBAN_HOME})"
+  else
+    warn "✗ Kiban directory not found (${KIBAN_HOME})"
+    errors=$((errors + 1))
+  fi
+
+  # Kiban runtime
+  if [ -r "${KIBAN_COMPOSE_FILE}" ] && [ -r "${KIBAN_ENV_FILE}" ]; then
+    info "✓ Kiban runtime found"
+  else
+    warn "✗ Kiban runtime not found (${KIBAN_RUNTIME_DIR})"
+    errors=$((errors + 1))
+  fi
+
+  if [ "${errors}" -gt 0 ]; then
+    fail "${errors} check(s) failed. Run the installer to fix: curl -fsSL https://get.kibanos.com | sh"
+  fi
+
+  info "All checks passed."
+}
+
+# ---------------------------------------------------------------------------
+# status
+# ---------------------------------------------------------------------------
+cmd_status() {
+  ensure_runtime
+
+  info "Kiban core runtime:"
+  docker compose --env-file "${KIBAN_ENV_FILE}" -f "${KIBAN_COMPOSE_FILE}" ps --format "table {{.Name}}\t{{.Status}}"
+
+  # Installed services
+  if [ -d "${KIBAN_SERVICES_DIR}" ]; then
+    count=0
+    for dir in "${KIBAN_SERVICES_DIR}"/*/; do
+      [ -d "${dir}" ] || continue
+      count=$((count + 1))
+    done
+
+    if [ "${count}" -gt 0 ]; then
+      printf '\n'
+      info "Installed services: ${count}"
+      for dir in "${KIBAN_SERVICES_DIR}"/*/; do
+        [ -d "${dir}" ] || continue
+        svc_env="${dir}.env"
+        svc_compose="${dir}compose.yaml"
+        if [ -r "${svc_env}" ] && [ -r "${svc_compose}" ]; then
+          svc_name="$(basename "${dir}")"
+          status="$(docker compose --env-file "${svc_env}" -f "${svc_compose}" ps --format "{{.Status}}" 2>/dev/null | head -1)"
+          if [ -z "${status}" ]; then
+            status="unknown"
+          fi
+          info "  ${svc_name}: ${status}"
+        fi
+      done
+    fi
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# start
+# ---------------------------------------------------------------------------
+cmd_start() {
+  ensure_runtime
+  info "Starting Kiban..."
+  docker compose --env-file "${KIBAN_ENV_FILE}" -f "${KIBAN_COMPOSE_FILE}" up -d
+  http_port="$(env_value KIBAN_HTTP_PORT 8080)"
+  info "Kiban is running at http://localhost:${http_port}"
+}
+
+# ---------------------------------------------------------------------------
+# stop
+# ---------------------------------------------------------------------------
+cmd_stop() {
+  ensure_runtime
+  info "Stopping Kiban..."
+  docker compose --env-file "${KIBAN_ENV_FILE}" -f "${KIBAN_COMPOSE_FILE}" down
+  info "Kiban stopped."
+}
+
+# ---------------------------------------------------------------------------
+# restart
+# ---------------------------------------------------------------------------
+cmd_restart() {
+  ensure_runtime
+  info "Restarting Kiban..."
+  docker compose --env-file "${KIBAN_ENV_FILE}" -f "${KIBAN_COMPOSE_FILE}" restart
+  info "Kiban restarted."
+}
+
+# ---------------------------------------------------------------------------
+# logs
+# ---------------------------------------------------------------------------
+cmd_logs() {
+  ensure_runtime
+
+  tail_lines=300
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --tail)
+        shift
+        [ $# -gt 0 ] || fail "--tail requires a number"
+        tail_lines="$1"
+        ;;
+      --tail=*)
+        tail_lines="${1#--tail=}"
+        ;;
+      *)
+        fail "Unknown option: $1"
+        ;;
+    esac
+    shift
+  done
+
+  docker compose --env-file "${KIBAN_ENV_FILE}" -f "${KIBAN_COMPOSE_FILE}" logs --tail="${tail_lines}" kiban-api kiban-web
+}
+
+# ---------------------------------------------------------------------------
+# helpers
+# ---------------------------------------------------------------------------
+ensure_runtime() {
+  if [ ! -r "${KIBAN_COMPOSE_FILE}" ] || [ ! -r "${KIBAN_ENV_FILE}" ]; then
+    fail "Kiban is not installed. Run the installer: curl -fsSL https://get.kibanos.com | sh"
+  fi
+}
+
+env_value() {
+  key="$1"
+  default="$2"
+
+  if [ -r "${KIBAN_ENV_FILE}" ]; then
+    value="$(grep "^${key}=" "${KIBAN_ENV_FILE}" | head -1 | cut -d= -f2- || true)"
+    if [ -n "${value}" ]; then
+      printf '%s' "${value}"
+      return 0
+    fi
+  fi
+
+  printf '%s' "${default}"
+}
+
+# ---------------------------------------------------------------------------
+# main
+# ---------------------------------------------------------------------------
+usage() {
+  cat <<USAGE
+Usage: kiban <command>
+
+Commands:
+  version       Show Kiban version
+  doctor        Check installation prerequisites
+  status        Show runtime and installed services status
+  start         Start Kiban core runtime
+  stop          Stop Kiban core runtime
+  restart       Restart Kiban core runtime
+  logs          Show Kiban core runtime logs (--tail N)
+
+Usage:
+  kiban version
+  kiban doctor
+  kiban status
+  kiban start
+  kiban stop
+  kiban restart
+  kiban logs
+  kiban logs --tail 50
+USAGE
+}
+
+main() {
+  if [ $# -eq 0 ]; then
+    usage
+    exit 0
+  fi
+
+  cmd="$1"
+  shift
+
+  case "${cmd}" in
+    version)  cmd_version ;;
+    doctor)   cmd_doctor ;;
+    status)   cmd_status ;;
+    start)    cmd_start ;;
+    stop)     cmd_stop ;;
+    restart)  cmd_restart ;;
+    logs)     cmd_logs "$@" ;;
+    -h|--help|help) usage ;;
+    *) fail "Unknown command: ${cmd}. Run 'kiban --help' for usage." ;;
+  esac
+}
+
+main "$@"

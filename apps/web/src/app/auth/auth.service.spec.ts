@@ -25,7 +25,7 @@ describe('Web AuthService', () => {
     service.bootstrapStatus().subscribe((value) => { result = value; });
 
     expect(result).toEqual({ requiresAdminSetup: true });
-    expect(calls).toEqual([{ method: 'GET', url: 'http://localhost:3000/auth/bootstrap-status', options: { withCredentials: true } }]);
+    expect(calls).toEqual([{ method: 'GET', url: '/api/auth/bootstrap-status', options: { withCredentials: true } }]);
   });
 
   it('registers admin by calling register endpoint and then login endpoint', () => {
@@ -41,8 +41,8 @@ describe('Web AuthService', () => {
     expect(service.user()).toEqual(user);
     expect(service.isAuthenticated()).toBe(true);
     expect(calls).toEqual([
-      { method: 'POST', url: 'http://localhost:3000/auth/register-admin', body: credentials, options: { withCredentials: true } },
-      { method: 'POST', url: 'http://localhost:3000/auth/login', body: credentials, options: { withCredentials: true } }
+      { method: 'POST', url: '/api/auth/register-admin', body: credentials, options: { withCredentials: true } },
+      { method: 'POST', url: '/api/auth/login', body: credentials, options: { withCredentials: true } }
     ]);
   });
 
@@ -65,7 +65,7 @@ describe('Web AuthService', () => {
     service.me().subscribe();
 
     expect(service.user()).toEqual(user);
-    expect(calls[0]).toEqual({ method: 'GET', url: 'http://localhost:3000/auth/me', options: { withCredentials: true } });
+    expect(calls[0]).toEqual({ method: 'GET', url: '/api/auth/me', options: { withCredentials: true } });
   });
 
   it('clears auth state after password change', () => {
@@ -78,7 +78,7 @@ describe('Web AuthService', () => {
 
     expect(service.user()).toBeNull();
     expect(service.isAuthenticated()).toBe(false);
-    expect(calls[1]).toEqual({ method: 'POST', url: 'http://localhost:3000/auth/change-password', body: { currentPassword: 'password123', newPassword: 'new-password' }, options: { withCredentials: true } });
+    expect(calls[1]).toEqual({ method: 'POST', url: '/api/auth/change-password', body: { currentPassword: 'password123', newPassword: 'new-password' }, options: { withCredentials: true } });
   });
 
   it('clears auth state after logout', () => {
@@ -90,6 +90,6 @@ describe('Web AuthService', () => {
     service.logout().subscribe();
 
     expect(service.user()).toBeNull();
-    expect(calls[1]).toEqual({ method: 'POST', url: 'http://localhost:3000/auth/logout', body: {}, options: { withCredentials: true } });
+    expect(calls[1]).toEqual({ method: 'POST', url: '/api/auth/logout', body: {}, options: { withCredentials: true } });
   });
 });

@@ -1,158 +1,161 @@
 # Kiban Roadmap
 
-The roadmap describes the planned evolution of Kiban.
+The roadmap describes the evolution of Kiban.
 
 It is intentionally incremental.
 
-Every milestone should leave the project in a releasable state.
+Every milestone leaves the project in a releasable state.
 
 ---
 
-# Phase 0
-
-Foundation
+# Phase 0 — Foundation
 
 ## Completed
 
-- Repository
-- CI/CD
+- Repository structure
+- CI/CD pipeline
 - Authentication
 - Users
 - Projects
 - Environments
+- Clean Architecture backend (NestJS + Fastify)
+- Angular frontend with TailwindCSS
+- SQLite with Drizzle ORM
+- Plugin-style catalog system
 
 ---
 
-# Phase 1
+# Phase 1 — Infrastructure Platform
 
-Infrastructure Foundation
+## Completed
 
-## Goals
+### Service Catalog
 
-- Service Catalog
-- Installed Services
-- Runtime abstraction
+127 services across 30 categories:
+
+- **Databases** (20): PostgreSQL, MySQL, MariaDB, Redis, Valkey, MongoDB, ClickHouse, Elasticsearch, InfluxDB, Neo4j, and 10 more
+- **AI** (12): Ollama, Open WebUI, LiteLLM, Flowise, Langflow, and 7 more
+- **Productivity** (11): Nextcloud, Vaultwarden, Odoo, ERPNext, and 7 more
+- **Monitoring** (9): Grafana, Prometheus, Loki, Tempo, Uptime Kuma, and 4 more
+- **CMS** (7): WordPress, Strapi, Ghost, Directus, and 3 more
+- **Observability** (7): Jaeger, Kibana, OpenObserve, SigNoz, and 3 more
+- **Security** (7): Vault, Infisical, Passbolt, and 4 more
+- **Messaging** (4): RabbitMQ, Kafka, NATS, Mosquitto
+- **Automation** (4): n8n, Activepieces, Temporal, Windmill
+- **And 17 more categories**: Analytics, Authentication, Backend Platforms, Browsers, DevOps, Email, File Management, Git, Home, Media, Networking, Passwords, Search, Self-Hosted, Storage, Web Servers, Backup, Misc
+
+### Runtime
+
 - Docker Compose Runtime Provider
-- Service lifecycle
-- Default Traefik reverse proxy
-- Automatic local URLs for HTTP services
-- **Interactive Terminal for Installed Services**
-
-Supported services:
-
-- PostgreSQL
-- MySQL
-- MariaDB
-- Redis
-- Valkey
-- MongoDB
-- ClickHouse
-- MinIO
-- Nginx
-- Traefik
-- Caddy
-
----
-
-# Phase 2
-
-Infrastructure Expansion
-
-Additional services:
-
-Messaging
-
-- RabbitMQ
-- Kafka
-- NATS
-- Mosquitto
-
-Monitoring
-
-- Grafana
-- Prometheus
-- Loki
-- Tempo
-
-Automation
-
-- n8n
-- Activepieces
-
-AI
-
-- Ollama
-- Open WebUI
-- LiteLLM
-- Flowise
-- Langflow
-
-Analytics
-
-- Umami
-- Plausible
-- Matomo
-
-Authentication
-
-- Authentik
-- Keycloak
-
-Storage
-
-- SeaweedFS
-
-Backend Platforms
-
-- Supabase
-
----
-
-# Phase 3
-
-Docker Compose Runtime Hardening
-
-Features
-
+- RuntimeProvider interface abstraction
+- Service lifecycle: install, start, stop, restart, delete
+- Automatic port assignment (avoids collisions)
+- Environment-isolated Docker networks
+- Safe `.env` generation from catalog schemas
 - Compose workspace management
-- Compose project naming
-- Container lifecycle through RuntimeProvider
-- Logs through Compose
-- Status through Compose ps
-- Volumes through Compose down/up semantics
-- Health/status mapping
-- Safer .env generation
-- Automatic host port assignment when preferred catalog ports are unavailable
-- Shared Traefik network for proxied HTTP services
-- Generated Traefik labels without modifying catalog compose templates
-- **Terminal: Docker Engine API integration (replaces CLI exec)**
-- **Terminal: Session management with timeouts**
-- **Terminal: WebSocket gateway with Socket.IO**
+
+### Reverse Proxy
+
+- Default Traefik reverse proxy
+- Shared `kiban` network
+- Automatic local URLs for HTTP services (`{service}.{project}.localhost`)
+- Traefik label injection without modifying catalog compose templates
+- Configurable base domains
+
+### Terminal
+
+- Interactive terminal for installed service containers
+- Docker Engine API integration (Unix socket)
+- Socket.IO WebSocket gateway
+- Session management with timeouts
+- Multi-container selection per service
+
+### Logs
+
+- Service logs per installed service (container selector, auto-refresh, copy, clear)
+- Kiban platform logs (core runtime: `kiban-api`, `kiban-web`)
+- Health check display (Docker Health authoritative, public URL diagnostic-only)
+
+### Web UI
+
+- Project management (CRUD)
+- Environment management
+- Service catalog browsing and search
+- Installed service details (configuration, access points, credentials, terminal, logs)
+- Danger zone (recreate, delete)
+- Dark theme
+- Responsive layout
+
+### Health
+
+- Docker Health as authoritative signal
+- `docker inspect` fallback when `compose ps` omits health
+- Public endpoint checks as diagnostic-only (never degrade healthy to unhealthy)
 
 ---
 
-# Phase 4
+# Phase 2 — Release v0.1
 
-Platform
+The first public release.
 
-Features
+### Goals
 
-- Variables
-- Secrets
-- Custom domains
-- Managed HTTPS
-- Logs
-- Backups
-- Monitoring
-- Notifications
+- POSIX shell CLI (`~/.kiban/bin/kiban`)
+  - `version`, `doctor`, `status`, `start`, `stop`, `restart`, `logs`
+  - Zero dependencies beyond Docker
+  - POSIX-compatible (Linux + macOS)
+- Installer improvements
+  - GHCR image pull (replace local build)
+  - `curl -fsSL https://get.kibanos.com | sh`
+- GitHub release v0.1.0
+- GHCR image publishing (`ghcr.io/kibanos/kiban-api`, `ghcr.io/kibanos/kiban-web`)
+- Cloudflare DNS + Worker for `get.kibanos.com`
 
 ---
 
-# Phase 5
+# Phase 3 — Variables & Secrets
 
-Applications
+- Project-level variables
+- Environment-level variables
+- Secret management (encrypted at rest)
+- Variable interpolation in service configuration
+- Secret injection into compose `.env` files
 
-Application management
+---
+
+# Phase 4 — Custom Domains & HTTPS
+
+- Custom domain configuration per service
+- Automatic SSL/TLS via Let's Encrypt
+- DNS challenge support
+- Wildcard certificate support
+- Domain verification
+
+---
+
+# Phase 5 — Backups
+
+- Volume backup and restore
+- Scheduled backups
+- Backup to local filesystem
+- Backup to S3-compatible storage
+- Restore from backup
+
+---
+
+# Phase 6 — Notifications
+
+- Email notifications
+- Webhook notifications
+- Slack/Discord integration
+- Service health change alerts
+- Backup status alerts
+
+---
+
+# Phase 7 — Applications
+
+Application management as first-class resources.
 
 Supported runtimes:
 
@@ -165,46 +168,46 @@ Supported runtimes:
 - Go
 - Java
 
-Applications become first-class resources.
+Features:
+
+- Source code from local filesystem
+- Build and deploy
+- Environment variables
+- Custom domains
 
 ---
 
-# Phase 6
+# Phase 8 — Git Integration
 
-Git Integration
-
-Providers
+Providers:
 
 - GitHub
 - GitLab
 - Forgejo
 - Gitea
 
-Features
+Features:
 
 - Clone
 - Build
 - Deploy
 - Rollback
 - Webhooks
+- Automatic deployments on push
 
 ---
 
-# Phase 7
+# Phase 9 — Plugins
 
-Plugins
-
-Plugin SDK
-
-Plugin API
-
-Plugin Marketplace
+- Plugin SDK
+- Plugin API
+- Plugin Marketplace
 
 Example plugins:
 
-- Cloudflare
-- AWS
-- Azure
+- Cloudflare (DNS management)
+- AWS (ECS, RDS)
+- Azure (Container Apps)
 - Terraform
 - Slack
 - Discord
