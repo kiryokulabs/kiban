@@ -1,0 +1,35 @@
+name: kiban
+
+services:
+  kiban-api:
+    image: ghcr.io/kibanos/kiban-api:${KIBAN_VERSION:-0.1.0}
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      HOME: ${KIBAN_USER_HOME}
+      KIBAN_VERSION: ${KIBAN_VERSION:-0.1.0}
+      KIBAN_DOMAIN_PROTOCOL: ${KIBAN_DOMAIN_PROTOCOL:-http}
+      KIBAN_DOMAIN_DEFAULT: ${KIBAN_DOMAIN_DEFAULT:-localhost}
+    volumes:
+      - ${KIBAN_HOME}:${KIBAN_HOME}
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    expose:
+      - "3000"
+    networks:
+      - kiban-core
+
+  kiban-web:
+    image: ghcr.io/kibanos/kiban-web:${KIBAN_VERSION:-0.1.0}
+    restart: unless-stopped
+    depends_on:
+      - kiban-api
+    environment:
+      KIBAN_API_URL: http://kiban-api:3000
+    ports:
+      - "${KIBAN_HTTP_PORT:-8080}:80"
+    networks:
+      - kiban-core
+
+networks:
+  kiban-core:
+    name: kiban-core
