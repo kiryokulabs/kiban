@@ -13,7 +13,7 @@ describe('Kiban installer assets', () => {
 
     expect(installer.startsWith('#!/usr/bin/env sh')).toBe(true);
     expect(mode & 0o111).not.toBe(0);
-    expect(installer).toContain('KIBAN_VERSION="${KIBAN_VERSION:-0.1.0}"');
+    expect(installer).toContain('KIBAN_RELEASE_CHANNEL="${KIBAN_RELEASE_CHANNEL:-latest}"');
     expect(installer).toContain('KIBAN_HTTP_PORT="${KIBAN_HTTP_PORT:-8080}"');
     expect(installer).toContain('check_supported_os');
     expect(installer).toContain('Darwin');
@@ -24,6 +24,7 @@ describe('Kiban installer assets', () => {
     expect(installer).toContain('ensure_port_available');
     expect(installer).toContain('write_runtime_environment');
     expect(installer).toContain('download_core_compose');
+    expect(installer).toContain('resolve_kiban_version');
     expect(installer).toContain('start_kiban');
     expect(installer).toContain('docker compose');
     expect(installer).toContain('~/.kiban');
@@ -34,8 +35,8 @@ describe('Kiban installer assets', () => {
 
     expect(compose).toContain('kiban-api:');
     expect(compose).toContain('kiban-web:');
-    expect(compose).toContain('ghcr.io/kibanos/kiban-api:${KIBAN_VERSION:-0.1.0}');
-    expect(compose).toContain('ghcr.io/kibanos/kiban-web:${KIBAN_VERSION:-0.1.0}');
+    expect(compose).toContain('ghcr.io/kibanos/kiban-api:${KIBAN_VERSION}');
+    expect(compose).toContain('ghcr.io/kibanos/kiban-web:${KIBAN_VERSION}');
     expect(compose).toContain('${KIBAN_HTTP_PORT:-8080}:80');
     expect(compose).toContain('${KIBAN_HOME}:${KIBAN_HOME}');
     expect(compose).toContain('/var/run/docker.sock:/var/run/docker.sock:ro');
