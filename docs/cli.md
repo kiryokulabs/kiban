@@ -16,7 +16,7 @@ curl -fsSL https://get.kibanos.com | sh
 
 This installs the CLI at `~/.kiban/bin/kiban` and adds it to `PATH`.
 
-By default, the installer uses the `latest` release channel. The actual installed version is resolved from the release `VERSION` asset and written to `~/.kiban/runtime/kiban/.env`.
+By default, the installer uses the `latest` release channel from `https://get.kibanos.com/latest`. The actual installed version is resolved from the release `VERSION` asset and written to `~/.kiban/runtime/kiban/.env`.
 
 ## Commands
 
