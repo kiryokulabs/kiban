@@ -1,23 +1,105 @@
-# Kiban
+# Kiban OS
 
-Kiban is an open-source infrastructure platform. Developers build software; Kiban builds infrastructure.
+> [!NOTE]
+> KibanOS is still in beta. We are actively developing the platform and welcome contributions.
 
-This repository contains the v0.1 foundation: a strict clean-architecture monorepo prepared for API, web, CLI, core domain packages, Docker abstraction, and future plugins.
+![KibanOS](docs/screenshots/all-previews.png)
 
-## Principles
+KibanOS is an open-source infrastructure platform. Developers build software; Kiban builds infrastructure.
 
-- Users work with projects, services and stacks; runtime details are hidden.
-- Domain and application layers depend only on interfaces.
-- Docker, SQLite, NestJS and Angular are implementation details at the edges.
-- No plugins are implemented in v0.1.
+The user never has to think about containers, images, networks or volumes. They interact with projects, environments, services and stacks. Everything else is an implementation detail.
 
-## License
+## What Kiban is not
 
-Apache-2.0
+- A Docker UI
+- A Docker Compose editor
+- A PaaS
+- A Kubernetes dashboard
+
+Docker is only the runtime. Kiban abstracts it away completely.
+
+## Features
+
+- **Service catalog** with 100+ services across 30 categories (databases, AI, monitoring, CMS, productivity, messaging, and more)
+- **Project and environment management** with isolated networks per environment
+- **Automatic reverse proxy** via Traefik with local URLs (`{service}.{project}.localhost`)
+- **Interactive terminal** for debugging installed service containers
+- **Service logs** with auto-refresh, copy and clear
+- **Health monitoring** with Docker Health as the authoritative signal
+- **Automatic port assignment** to avoid collisions
+- **Zero-code extensibility** -- adding a new service only requires a catalog folder, no TypeScript changes
+- **Clean Architecture** backend (NestJS + Fastify) and Angular frontend with TailwindCSS
+- **SQLite** with Drizzle ORM
+- **Dark theme** and responsive layout
+
+## How it works
+
+```
+Projects
+  └── Environments (Development, Staging, Production)
+        └── Installed Services (PostgreSQL, Redis, Grafana, etc.)
+```
+
+Each project groups related infrastructure. Each environment is fully isolated. Services are installed from a read-only catalog and managed through a single web UI.
+
+Kiban owns HTTP routing. The user never configures Traefik labels or Docker networks manually. Everything is generated from the service catalog and the project configuration.
+
+## Quick start
+
+Requirements: Docker and Docker Compose.
+
+```bash
+curl -fsSL https://get.kibanos.com | sh
+```
+
+Then open the web UI and create your first project.
+
+## Tech stack
+
+| Layer | Technology |
+|-------|-----------|
+| Backend | NestJS + Fastify |
+| Frontend | Angular + TailwindCSS |
+| Database | SQLite + Drizzle ORM |
+| Runtime | Docker Compose |
+| Reverse proxy | Traefik |
+| Language | TypeScript (strict mode) |
+
+## Architecture
+
+The project follows Clean Architecture with strict dependency inversion:
+
+```
+UI (Angular)
+    │
+    ▼
+Application Layer (NestJS)
+    │
+    ▼
+Domain / Business Logic
+    │
+    ▼
+Infrastructure Layer (Docker Compose, SQLite, etc.)
+```
+
+Dependencies always point inward. Business logic never depends on infrastructure. Docker, SQLite, NestJS and Angular are implementation details at the edges.
+
+Full architecture documentation: [docs/architecture.md](./docs/architecture.md)
 
 ## Local configuration
 
-Runtime data is expected under `~/.kiban/` with `config/`, `database/`, `plugins/`, `logs/` and `cache/`. The repository includes `.kiban-template/` to document that layout without writing outside the project during development.
+Runtime data lives under `~/.kiban/`:
+
+```
+~/.kiban/
+  config/
+  database/
+  plugins/
+  logs/
+  cache/
+```
+
+The repository includes `.kiban-template/` to document that layout without writing outside the project during development.
 
 ## Documentation
 
@@ -27,3 +109,19 @@ Runtime data is expected under `~/.kiban/` with `config/`, `database/`, `plugins
 - [Testing](./docs/testing.md)
 - [Terminal](./docs/terminal.md)
 - [Roadmap](./docs/roadmap.md)
+
+## Contributing
+
+Contributions are welcome. Please read the development guidelines in [AGENTS.md](./AGENTS.md) before submitting a pull request.
+
+All contributions must follow:
+
+- Test-driven development (tests first, then implementation)
+- Clean Architecture (dependencies point inward)
+- SOLID principles
+- TypeScript strict mode
+- No business logic in controllers or UI components
+
+## License
+
+Apache-2.0
