@@ -1,4 +1,4 @@
-import { access, mkdir, rm, writeFile } from 'node:fs/promises';
+import { access, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { dirname, join, resolve, sep } from 'node:path';
 import { spawn } from 'node:child_process';
@@ -158,6 +158,22 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
     return { available: true, logs: `${result.stdout}${result.stderr}`.trim(), message: null };
   }
 
+  /** Applies or removes the instance domain routing on the Kiban core compose. */
+  public async applyInstanceDomain(domain: string): Promise<boolean> {
+    const runtimeDir = join(resolve(this.runtimeRoot), '..', 'kiban');
+    const composeFile = join(runtimeDir, 'compose.yaml');
+    const envFile = join(runtimeDir, '.env');
+    if (!(await this.fileExists(composeFile)) || !(await this.fileExists(envFile))) return false;
+
+    await this.ensureReverseProxy();
+
+    const composeContent = await readFile(composeFile, 'utf8');
+    const updated = this.withInstanceDomainRouting(composeContent, domain.trim());
+    await writeFile(composeFile, updated, 'utf8');
+    await this.runner.run('docker', ['compose', '--env-file', envFile, '-f', 'compose.yaml', 'up', '-d', '--force-recreate'], { cwd: runtimeDir });
+    return true;
+  }
+
   /** Attempts to prepare Kiban's shared reverse proxy during API startup. */
   public async onApplicationBootstrap(): Promise<void> {
     try {
@@ -311,6 +327,39 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
     ].join('\n');
   }
 
+  /** Adds or removes Traefik routing labels on kiban-web for the instance domain. */
+  private withInstanceDomainRouting(composeYaml: string, domain: string): string {
+    const document = this.composeDocument(composeYaml);
+    const services = this.recordValue(document['services']);
+    if (!services) return composeYaml;
+    const webService = this.recordValue(services['kiban-web']);
+    if (!webService) return composeYaml;
+
+    if (domain.length === 0) {
+      delete webService['labels'];
+      this.removeServiceNetwork(webService, SHARED_REVERSE_PROXY_NETWORK);
+      if (!('ports' in webService)) webService['ports'] = ['8080:80'];
+      return stringify(document);
+    }
+
+    delete webService['ports'];
+    this.addExpose(webService, 80);
+    this.addServiceNetwork(webService, SHARED_REVERSE_PROXY_NETWORK);
+    const labels = this.ensureRecord(webService, 'labels');
+    labels['traefik.enable'] = 'true';
+    labels['traefik.http.routers.kiban-web.rule'] = `Host(\`${domain}\`)`;
+    labels['traefik.http.routers.kiban-web.entrypoints'] = 'web';
+    labels['traefik.http.services.kiban-web.loadbalancer.server.port'] = '80';
+    labels['traefik.docker.network'] = SHARED_REVERSE_PROXY_NETWORK;
+
+    const networks = this.ensureRecord(document, 'networks');
+    if (!networks[SHARED_REVERSE_PROXY_NETWORK]) {
+      networks[SHARED_REVERSE_PROXY_NETWORK] = { name: SHARED_REVERSE_PROXY_NETWORK, external: true };
+    }
+
+    return stringify(document);
+  }
+
   private composeYamlForRuntime(composeYaml: string, environmentNetworkName: string, publicEndpoints: readonly RuntimePublicEndpoint[]): string {
     const document = this.composeDocument(composeYaml);
     const services = this.recordValue(document['services']);
@@ -412,6 +461,20 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
       return;
     }
     service['networks'] = [networkName];
+  }
+
+  private removeServiceNetwork(service: Record<string, unknown>, networkName: string): void {
+    const networks = service['networks'];
+    if (Array.isArray(networks)) {
+      service['networks'] = networks.filter((n) => n !== networkName);
+      if ((service['networks'] as string[]).length === 0) delete service['networks'];
+      return;
+    }
+    if (networks && typeof networks === 'object') {
+      const record = networks as Record<string, unknown>;
+      delete record[networkName];
+      if (Object.keys(record).length === 0) delete service['networks'];
+    }
   }
 
   private addTraefikLabels(service: Record<string, unknown>, endpoint: RuntimePublicEndpoint): void {
