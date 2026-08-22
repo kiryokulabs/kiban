@@ -1,5 +1,6 @@
 import { Body, Controller, Get, HttpCode, Put } from '@nestjs/common';
 import { SettingsService } from '../services/settings.service';
+import type { TraefikInfo } from '../../service/providers/docker-compose-runtime.provider';
 
 interface InstanceDomainDto {
   readonly domain: string;
@@ -25,5 +26,11 @@ export class SettingsController {
   @HttpCode(204)
   public async setDomain(@Body() body: InstanceDomainDto): Promise<void> {
     await this.service.setInstanceDomain(body.domain);
+  }
+
+  /** Returns Traefik reverse proxy information and active routers. */
+  @Get('traefik')
+  public async getTraefik(): Promise<TraefikInfo> {
+    return this.service.getTraefikInfo();
   }
 }

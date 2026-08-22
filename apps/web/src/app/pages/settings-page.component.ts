@@ -2,7 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { IconsComponent } from '../shared/icons.component';
-import { SettingsApiService } from '../settings/settings-api.service';
+import { SettingsApiService, type TraefikInfo } from '../settings/settings-api.service';
 
 @Component({
   selector: 'kiban-settings-page',
@@ -19,22 +19,7 @@ import { SettingsApiService } from '../settings/settings-api.service';
         </div>
       </div>
 
-      <!--<div class="card p-5">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <div class="grid h-8 w-8 place-items-center rounded-lg bg-brand/10 text-brand-light">
-              <kiban-icon name="info" [size]="16" />
-            </div>
-            <div>
-              <p class="text-sm font-medium kb-text">Application version</p>
-              <p class="text-xs c-muted">Kiban Foundation</p>
-            </div>
-          </div>
-          <span class="badge">0.1.0</span>
-        </div>
-      </div>
-      -->
-
+      <!-- Instance Domain -->
       <div class="card p-5">
         <div class="flex items-center gap-3 mb-4">
           <div class="grid h-8 w-8 place-items-center rounded-lg bg-brand/10 text-brand-light">
@@ -60,7 +45,7 @@ import { SettingsApiService } from '../settings/settings-api.service';
             />
 
             @if (domain()) {
-              <div class="rounded-lg bg-brand/5 border border-brand/10 p-3">
+              <div class="badge-warning rounded-lg bg-brand/5 border border-brand/10 p-3">
                 <p class="text-xs c-muted mb-1">DNS configuration required:</p>
                 <code class="text-xs kb-text">A&nbsp;&nbsp;&nbsp;{{ domain() }}&nbsp;&nbsp;&nbsp;→&nbsp;&nbsp;&nbsp;your server IP</code>
               </div>
@@ -93,7 +78,106 @@ import { SettingsApiService } from '../settings/settings-api.service';
                 </button>
               }
             </div>
+
+            <p class="text-xs c-muted">
+              Kiban remains accessible at IP:8080 until you close that port manually.
+            </p>
           </div>
+        }
+      </div>
+
+      <!-- Reverse Proxy (Traefik) -->
+      <div class="card p-5">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="grid h-8 w-8 place-items-center rounded-lg bg-brand/10 text-brand-light">
+            <kiban-icon name="box" [size]="16" />
+          </div>
+          <div>
+            <p class="text-sm font-medium kb-text">Reverse proxy</p>
+            <p class="text-xs c-muted">Traefik routes traffic to Kiban and installed services</p>
+          </div>
+        </div>
+
+        @if (traefikLoading()) {
+          <p class="text-sm c-muted">Loading...</p>
+        } @else if (traefikInfo(); as info) {
+          <!-- Status badge -->
+          <div class="flex items-center gap-2 mb-4">
+            @switch (info.status) {
+              @case ('running') {
+                <span class="badge text-[10px] px-1.5 py-0.5 leading-none badge-success">Running</span>
+              }
+              @case ('stopped') {
+                <span class="badge text-[10px] px-1.5 py-0.5 leading-none badge-danger">Stopped</span>
+              }
+              @case ('not-installed') {
+                <span class="badge text-[10px] px-1.5 py-0.5 leading-none badge-danger">Not installed</span>
+              }
+            }
+            @if (info.version) {
+              <span class="text-xs c-muted">{{ info.version }}</span>
+            }
+          </div>
+
+          @if (info.status !== 'not-installed') {
+            <!-- Configuration -->
+            <div class="space-y-3 mb-4">
+              <div>
+                <p class="text-xs c-muted mb-1">Ports</p>
+                <div class="flex flex-wrap gap-2">
+                  @for (port of info.ports; track port.published) {
+                    <span class="badge">{{ port.published }}:{{ port.target }}</span>
+                  }
+                </div>
+              </div>
+
+              <div>
+                <p class="text-xs c-muted mb-1">Entrypoints</p>
+                <div class="flex flex-wrap gap-2">
+                  @for (ep of info.entrypoints; track ep.name) {
+                    <span class="badge">{{ ep.name }} ({{ ep.address }})</span>
+                  }
+                </div>
+              </div>
+
+              <div class="flex items-center gap-4">
+                @if (info.dockerNetwork) {
+                  <div>
+                    <p class="text-xs c-muted mb-1">Docker network</p>
+                    <code class="text-xs kb-text">{{ info.dockerNetwork }}</code>
+                  </div>
+                }
+                <div>
+                  <p class="text-xs c-muted mb-1">Dashboard</p>
+                  <span class="text-xs kb-text">{{ info.dashboard ? 'Enabled' : 'Disabled' }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Active Routers -->
+            <div>
+              <p class="text-xs c-muted mb-2">Active routers ({{ info.routers.length }})</p>
+              @if (info.routers.length === 0) {
+                <p class="text-xs c-muted">No routers configured.</p>
+              } @else {
+                <div class="space-y-2">
+                  @for (router of info.routers; track router.name) {
+                    <div class="rounded-lg border border-white/5 p-3">
+                      <div class="flex items-center justify-between mb-1">
+                        <span class="text-xs font-medium kb-text">{{ router.name }}</span>
+                        <span class="text-xs c-muted">{{ router.entrypoint }}</span>
+                      </div>
+                      <code class="text-xs kb-text block mb-1">{{ router.rule }}</code>
+                      <div class="flex items-center gap-3 text-xs c-muted">
+                        <span>port: {{ router.port }}</span>
+                        <span>container: {{ router.container }}</span>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
         }
       </div>
     </div>
@@ -109,12 +193,16 @@ export class SettingsPageComponent implements OnInit {
   public readonly error = signal('');
   private originalDomain = '';
 
+  public readonly traefikInfo = signal<TraefikInfo | null>(null);
+  public readonly traefikLoading = signal(true);
+
   public constructor(http: HttpClient) {
     this.api = new SettingsApiService(http);
   }
 
   public ngOnInit(): void {
     this.loadDomain();
+    this.loadTraefikInfo();
   }
 
   public onDomainInput(event: Event): void {
@@ -136,6 +224,7 @@ export class SettingsPageComponent implements OnInit {
       await this.api.setInstanceDomain(this.domain().trim()).toPromise();
       this.originalDomain = this.domain().trim();
       this.saved.set(true);
+      this.loadTraefikInfo();
     } catch (err: unknown) {
       this.error.set(err instanceof Error ? err.message : 'Failed to save domain.');
     } finally {
@@ -158,6 +247,17 @@ export class SettingsPageComponent implements OnInit {
       this.error.set('Failed to load current domain.');
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  private async loadTraefikInfo(): Promise<void> {
+    try {
+      const info = await this.api.getTraefikInfo().toPromise();
+      this.traefikInfo.set(info ?? null);
+    } catch {
+      this.traefikInfo.set(null);
+    } finally {
+      this.traefikLoading.set(false);
     }
   }
 }
