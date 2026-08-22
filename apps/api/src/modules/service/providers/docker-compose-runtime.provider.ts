@@ -24,6 +24,25 @@ export interface WebHealthChecker {
 
 export interface KibanPlatformLogs { readonly available: boolean; readonly logs: string; readonly message: string | null; }
 
+export interface TraefikRouter {
+  readonly name: string;
+  readonly rule: string;
+  readonly entrypoint: string;
+  readonly service: string;
+  readonly port: string;
+  readonly container: string;
+}
+
+export interface TraefikInfo {
+  readonly status: 'running' | 'stopped' | 'not-installed';
+  readonly version: string | null;
+  readonly ports: readonly { readonly published: number; readonly target: number }[];
+  readonly entrypoints: readonly { readonly name: string; readonly address: string }[];
+  readonly dockerNetwork: string | null;
+  readonly dashboard: boolean;
+  readonly routers: readonly TraefikRouter[];
+}
+
 class SpawnComposeCommandRunner implements ComposeCommandRunner {
   public run(command: string, args: readonly string[], options: { readonly cwd: string }): Promise<{ readonly stdout: string; readonly stderr: string }> {
     return new Promise((resolve, reject) => {
@@ -172,6 +191,31 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
     await writeFile(composeFile, updated, 'utf8');
     await this.runner.run('docker', ['compose', '--env-file', envFile, '-f', 'compose.yaml', 'up', '-d', '--force-recreate'], { cwd: runtimeDir });
     return true;
+  }
+
+  /** Returns information about the Kiban Traefik reverse proxy and its active routers. */
+  public async getTraefikInfo(): Promise<TraefikInfo> {
+    const traefikDir = join(resolve(this.runtimeRoot), '..', 'traefik');
+    const composeFile = join(traefikDir, 'compose.yaml');
+    if (!(await this.fileExists(composeFile))) {
+      return { status: 'not-installed', version: null, ports: [], entrypoints: [], dockerNetwork: null, dashboard: false, routers: [] };
+    }
+
+    const composeContent = await readFile(composeFile, 'utf8');
+    const config = this.parseTraefikCompose(composeContent);
+
+    let status: 'running' | 'stopped' = 'stopped';
+    try {
+      const { stdout } = await this.runner.run('docker', ['compose', '--project-name', TRAEFIK_PROJECT_NAME, '-f', 'compose.yaml', 'ps', '-a', '--format', 'json'], { cwd: traefikDir });
+      const containers = this.parsePs(stdout);
+      status = containers.some((c) => c.status === 'running') ? 'running' : 'stopped';
+    } catch {
+      status = 'stopped';
+    }
+
+    const routers = await this.collectTraefikRouters(traefikDir);
+
+    return { status, ...config, routers };
   }
 
   /** Attempts to prepare Kiban's shared reverse proxy during API startup. */
@@ -325,6 +369,119 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
       '    external: true',
       ''
     ].join('\n');
+  }
+
+  /** Parses the Traefik compose file to extract static configuration. */
+  private parseTraefikCompose(composeYaml: string): { readonly version: string | null; readonly ports: readonly { readonly published: number; readonly target: number }[]; readonly entrypoints: readonly { readonly name: string; readonly address: string }[]; readonly dockerNetwork: string | null; readonly dashboard: boolean } {
+    const document = this.composeDocument(composeYaml);
+    const services = this.recordValue(document['services']);
+    const traefik = services ? this.recordValue(services['traefik']) : null;
+    if (!traefik) return { version: null, ports: [], entrypoints: [], dockerNetwork: null, dashboard: false };
+
+    const version = typeof traefik['image'] === 'string' ? traefik['image'] : null;
+    const ports = this.parseTraefikPorts(traefik['ports']);
+    const command = Array.isArray(traefik['command']) ? traefik['command'] : [];
+    const entrypoints = this.parseTraefikEntrypoints(command);
+    const dockerNetwork = this.parseTraefikDockerNetwork(command);
+    const dashboard = command.some((arg) => typeof arg === 'string' && arg.startsWith('--api.dashboard=true'));
+
+    return { version, ports, entrypoints, dockerNetwork, dashboard };
+  }
+
+  private parseTraefikPorts(ports: unknown): readonly { readonly published: number; readonly target: number }[] {
+    if (!Array.isArray(ports)) return [];
+    return ports.flatMap((entry) => {
+      if (typeof entry !== 'string') return [];
+      const match = /(\d+):(\d+)/.exec(entry);
+      if (!match || match[1] === undefined || match[2] === undefined) return [];
+      return [{ published: Number(match[1]), target: Number(match[2]) }];
+    });
+  }
+
+  private parseTraefikEntrypoints(command: readonly unknown[]): readonly { readonly name: string; readonly address: string }[] {
+    const result: { readonly name: string; readonly address: string }[] = [];
+    for (const arg of command) {
+      if (typeof arg !== 'string') continue;
+      const match = /--entrypoints\.([^.]+)\.address=(.+)/.exec(arg);
+      if (match && match[1] !== undefined && match[2] !== undefined) result.push({ name: match[1], address: match[2] });
+    }
+    return result;
+  }
+
+  private parseTraefikDockerNetwork(command: readonly unknown[]): string | null {
+    for (const arg of command) {
+      if (typeof arg !== 'string') continue;
+      const match = /--providers\.docker\.network=(.+)/.exec(arg);
+      if (match && match[1] !== undefined) return match[1];
+    }
+    return null;
+  }
+
+  /** Collects active Traefik routers by inspecting containers on the shared network. */
+  private async collectTraefikRouters(cwd: string): Promise<readonly TraefikRouter[]> {
+    try {
+      const { stdout: networkStdout } = await this.runner.run('docker', ['network', 'inspect', SHARED_REVERSE_PROXY_NETWORK], { cwd });
+      const containerIds = this.parseNetworkContainerIds(networkStdout);
+      if (containerIds.length === 0) return [];
+
+      const { stdout: inspectStdout } = await this.runner.run('docker', ['inspect', ...containerIds], { cwd });
+      return this.parseRoutersFromInspect(inspectStdout);
+    } catch {
+      return [];
+    }
+  }
+
+  private parseNetworkContainerIds(stdout: string): readonly string[] {
+    const trimmed = stdout.trim();
+    if (!trimmed) return [];
+    const parsed = JSON.parse(trimmed) as unknown;
+    const rows = Array.isArray(parsed) ? parsed : [parsed];
+    const result: string[] = [];
+    for (const row of rows) {
+      const record = this.recordValue(row);
+      const containers = this.recordValue(record?.['Containers']);
+      if (!containers) continue;
+      for (const value of Object.values(containers)) {
+        const container = this.recordValue(value);
+        const name = container?.['Name'];
+        if (typeof name === 'string') result.push(name.replace(/^\//, ''));
+      }
+    }
+    return result;
+  }
+
+  private parseRoutersFromInspect(stdout: string): readonly TraefikRouter[] {
+    const trimmed = stdout.trim();
+    if (!trimmed) return [];
+    const parsed = JSON.parse(trimmed) as unknown;
+    const rows = Array.isArray(parsed) ? parsed : [parsed];
+    const routers: TraefikRouter[] = [];
+    for (const row of rows) {
+      const record = this.recordValue(row);
+      const name = typeof record?.['Name'] === 'string' ? record['Name'].replace(/^\//, '') : '';
+      const config = this.recordValue(record?.['Config']);
+      const labels = this.recordValue(config?.['Labels']);
+      if (!labels) continue;
+      const routerNames = this.extractRouterNames(labels);
+      for (const routerName of routerNames) {
+        const rule = labels[`traefik.http.routers.${routerName}.rule`];
+        const entrypoint = labels[`traefik.http.routers.${routerName}.entrypoints`];
+        const port = labels[`traefik.http.services.${routerName}.loadbalancer.server.port`];
+        if (typeof rule === 'string') {
+          routers.push({ name: routerName, rule, entrypoint: typeof entrypoint === 'string' ? entrypoint : '', service: routerName, port: typeof port === 'string' ? port : '', container: name });
+        }
+      }
+    }
+    return routers;
+  }
+
+  private extractRouterNames(labels: Record<string, unknown>): readonly string[] {
+    const names = new Set<string>();
+    for (const key of Object.keys(labels)) {
+      const match = /traefik\.http\.routers\.([^.]+)\.rule/.exec(key);
+      if (match && match[1] !== undefined) names.add(match[1]);
+    }
+    return [...names];
   }
 
   /** Adds or removes Traefik routing labels on kiban-web for the instance domain. */
