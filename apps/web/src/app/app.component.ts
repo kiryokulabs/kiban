@@ -16,7 +16,11 @@ import { ProgressBarComponent } from './shared/progress-bar.component';
       <!-- Loading state -->
       <main class="grid min-h-screen place-items-center surface-base">
         <div class="flex flex-col items-center gap-4">
-          <div class="grid h-10 w-10 place-items-center rounded-xl kb-logo text-sm font-bold">K</div>
+          <span
+            class="h-7 w-7 shrink-0 bg-current"
+            style="mask: url(assets/logo.svg) center / contain no-repeat; -webkit-mask: url(assets/logo.svg) center / contain no-repeat;"
+            aria-hidden="true"
+          ></span>
           <p class="text-sm c-muted animate-pulse">Loading Kiban…</p>
         </div>
       </main>
