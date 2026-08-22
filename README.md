@@ -1,9 +1,9 @@
 # Kiban OS
 
 > [!NOTE]
-> KibanOS is still in beta. We are actively developing the platform and welcome contributions.
+> Kiban OS is still in beta. We are actively developing the platform and welcome contributions.
 
-![KibanOS](docs/screenshots/all-previews.png)
+![Kiban OS](docs/screenshots/all-previews.png)
 
 KibanOS is an open-source infrastructure platform. Developers build software; Kiban builds infrastructure.
 
@@ -53,6 +53,54 @@ curl -fsSL https://get.kibanos.com | sh
 ```
 
 Then open the web UI and create your first project.
+
+## Development
+
+### Requirements
+
+- Node.js 22+
+- pnpm 9.15+
+- Docker and Docker Compose
+
+### Clone and install
+
+```bash
+git clone https://github.com/kiryokulabs/kiban.git
+cd kiban
+pnpm install
+```
+
+### Run in development
+
+```bash
+pnpm dev
+```
+
+This starts both the API and the web UI:
+
+- API: http://localhost:3100
+- Web UI: http://localhost:4200
+
+### Run individually
+
+```bash
+# API only
+cd apps/api
+pnpm dev
+
+# Web only
+cd apps/web
+pnpm dev
+```
+
+### Other commands
+
+```bash
+pnpm build         # Build all packages and apps
+pnpm test          # Run all tests
+pnpm lint          # Type-check all packages
+pnpm format        # Format with Prettier
+```
 
 ## Tech stack
 
