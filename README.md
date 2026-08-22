@@ -160,7 +160,7 @@ The repository includes `.kiban-template/` to document that layout without writi
 
 ## Contributing
 
-Contributions are welcome. Please read the development guidelines in [AGENTS.md](./AGENTS.md) before submitting a pull request.
+Contributions are welcome. Please read the development guidelines in [AGENTS.md](./AGENTS.md) and the [Code of Conduct](./CODE_OF_CONDUCT.md) before submitting a pull request.
 
 All contributions must follow:
 
