@@ -31,7 +31,7 @@ export interface NavItem {
         ></span>
         @if (!collapsed()) {
           <div class="flex min-w-0 flex-1 items-center justify-between">
-            <span class="text-sm font-semibold kb-text">Kiban OS</span>
+            <span class="text-sm font-semibold kb-text">KibanOS</span>
           </div>
         }
         <button
