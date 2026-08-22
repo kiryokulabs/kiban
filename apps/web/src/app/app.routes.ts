@@ -11,6 +11,7 @@ import { SettingsPageComponent } from './pages/settings-page.component';
 import { UsersPageComponent } from './pages/users-page.component';
 
 export const routes: Routes = [
+  { path: '*', redirectTo: '', pathMatch: 'full' },
   { path: '', component: HomePageComponent, title: 'Kiban' },
   { path: 'projects', component: ProjectsPageComponent, title: 'Projects · Kiban' },
   { path: 'projects/:id', component: ProjectDetailsPageComponent, title: 'Project · Kiban' },

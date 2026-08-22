@@ -108,7 +108,7 @@ The first public release.
   - GHCR image pull (replace local build)
   - `curl -fsSL https://get.kibanos.com | sh`
 - GitHub release v0.1.0
-- GHCR image publishing (`ghcr.io/kibanos/kiban-api`, `ghcr.io/kibanos/kiban-web`)
+- GHCR image publishing (`ghcr.io/kiryokulabs/kiban-api`, `ghcr.io/kiryokulabs/kiban-web`)
 - Cloudflare DNS + Worker for `get.kibanos.com`
 
 ---
