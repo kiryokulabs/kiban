@@ -1,5 +1,12 @@
 # Kiban OS
 
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![GitHub release](https://img.shields.io/github/v/release/kiryokulabs/kiban)](https://github.com/kiryokulabs/kiban/releases)
+[![GitHub stars](https://img.shields.io/github/stars/kiryokulabs/kiban)](https://github.com/kiryokulabs/kiban/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/kiryokulabs/kiban)](https://github.com/kiryokulabs/kiban/network/members)
+[![GitHub issues](https://img.shields.io/github/issues/kiryokulabs/kiban)](https://github.com/kiryokulabs/kiban/issues)
+[![GitHub last commit](https://img.shields.io/github/last-commit/kiryokulabs/kiban)](https://github.com/kiryokulabs/kiban/commits)
+
 > [!NOTE]
 > Kiban OS is still in beta. We are actively developing the platform and welcome contributions.  
 > The current version is not production-ready yet. Please report any issues or feature requests on GitHub.
@@ -161,7 +168,7 @@ The repository includes `.kiban-template/` to document that layout without writi
 
 ## Contributing
 
-Contributions are welcome. Please read the development guidelines in [AGENTS.md](./AGENTS.md) and the [Code of Conduct](./CODE_OF_CONDUCT.md) before submitting a pull request.
+Contributions are welcome. Please read the [Contributing Guide](./CONTRIBUTING.md), the development guidelines in [AGENTS.md](./AGENTS.md), and the [Code of Conduct](./CODE_OF_CONDUCT.md) before submitting a pull request.
 
 All contributions must follow:
 
