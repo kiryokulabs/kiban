@@ -1,7 +1,8 @@
 # Kiban OS
 
 > [!NOTE]
-> Kiban OS is still in beta. We are actively developing the platform and welcome contributions.
+> Kiban OS is still in beta. We are actively developing the platform and welcome contributions.  
+> The current version is not production-ready yet. Please report any issues or feature requests on GitHub.
 
 ![Kiban OS](docs/screenshots/all-previews.png)
 
