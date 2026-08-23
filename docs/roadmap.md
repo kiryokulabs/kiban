@@ -58,9 +58,13 @@ Every milestone leaves the project in a releasable state.
 
 - Default Traefik reverse proxy
 - Shared `kiban` network
-- Automatic local URLs for HTTP services (`{service}.{project}.localhost`)
+- Automatic local URLs for HTTP services (`{service}.{environment}.{project}.localhost`)
 - Traefik label injection without modifying catalog compose templates
 - Configurable base domains
+- Instance Domain for dashboard access
+- Wildcard Domain for service URLs
+- Per-service domain override
+- Domain routing documentation ([`docs/domain.md`](./domain.md))
 
 ### Terminal
 
