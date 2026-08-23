@@ -14,19 +14,19 @@ export class RoutedRuntimeProvider implements RuntimeProvider {
   public async install(plan: InstallationPlan): Promise<RuntimeResult> {
     const project = await this.projects.findById(plan.environment.projectId);
     if (!project) throw new ProjectNotFoundError();
-    const publicEndpoints = plan.serviceDefinition.metadata.accessPoints
+    const publicEndpoints = await Promise.all(plan.serviceDefinition.metadata.accessPoints
       .filter((accessPoint) => accessPoint.kind === 'web')
-      .map((accessPoint) => {
+      .map(async (accessPoint) => {
         const input = { project, environment: plan.environment, service: { id: plan.serviceDefinition.id, name: plan.serviceDefinition.metadata.name } };
         return {
           name: accessPoint.name,
           service: accessPoint.service,
           port: accessPoint.port,
-          host: this.domains.buildHost(input),
-          url: this.domains.buildUrl(input),
+          host: await this.domains.buildHost(input),
+          url: await this.domains.buildUrl(input),
           protocol: this.domains.protocol()
         };
-      });
+      }));
     return this.delegate.install({ ...plan, publicEndpoints });
   }
 

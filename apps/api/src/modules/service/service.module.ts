@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { InstalledServiceManager } from '@kiban/core';
 import type { CatalogRepository, RuntimeProvider } from '@kiban/core';
+import { toSettingKey } from '@kiban/shared';
 import { DatabaseModule } from '../../database/database.module';
 import { CatalogModule } from '../catalog/catalog.module';
 import { CATALOG_REPOSITORY } from '../catalog/interfaces/catalog.constants';
@@ -9,7 +10,8 @@ import { SqliteProjectRepository } from '../project/repositories/sqlite-project.
 import { RuntimeController } from './controllers/runtime.controller';
 import { ServiceController } from './controllers/service.controller';
 import { INSTALLED_SERVICE_MANAGER, RUNTIME_PROVIDER } from './interfaces/service.constants';
-import { DomainService } from '../runtime/domain/domain.service';
+import { DomainService, WILDCARD_DOMAIN_PROVIDER } from '../runtime/domain/domain.service';
+import { SqliteSettingsRepository } from '../settings/repositories/sqlite-settings.repository';
 import { DockerComposeTerminalProvider } from './providers/docker-compose-terminal.provider';
 import { DockerComposeRuntimeProvider } from './providers/docker-compose-runtime.provider';
 import { RoutedRuntimeProvider } from './providers/routed-runtime.provider';
@@ -27,6 +29,14 @@ import { TERMINAL_PROVIDER } from './terminal/terminal.types';
     SqliteInstalledServiceRepository,
     SqliteEnvironmentRepository,
     SqliteProjectRepository,
+    SqliteSettingsRepository,
+    {
+      provide: WILDCARD_DOMAIN_PROVIDER,
+      useFactory: (settings: SqliteSettingsRepository): { getWildcardDomain(): Promise<string | null> } => ({
+        getWildcardDomain: async (): Promise<string | null> => (await settings.get(toSettingKey('wildcard_domain')))?.value ?? null
+      }),
+      inject: [SqliteSettingsRepository]
+    },
     DomainService,
     TerminalGateway,
     TerminalSessionService,

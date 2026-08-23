@@ -34,4 +34,15 @@ export class SettingsService {
     }
     return this.applier.getTraefikInfo();
   }
+
+  /** Returns the configured wildcard domain for service URLs, or null when not set. */
+  public async getWildcardDomain(): Promise<string | null> {
+    const setting = await this.manager.getSetting(toSettingKey('wildcard_domain'));
+    return setting?.value ?? null;
+  }
+
+  /** Saves the wildcard domain used to generate service URLs. */
+  public async setWildcardDomain(domain: string): Promise<void> {
+    await this.manager.setSetting(toSettingKey('wildcard_domain'), domain);
+  }
 }

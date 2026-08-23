@@ -176,4 +176,55 @@ describe('SettingsService', () => {
       expect(info.routers[0]?.name).toBe('kiban-web');
     });
   });
+
+  describe('getWildcardDomain', () => {
+    it('returns null when no wildcard domain is configured', async () => {
+      const domain = await service.getWildcardDomain();
+
+      expect(domain).toBeNull();
+    });
+
+    it('returns the configured wildcard domain', async () => {
+      await service.setWildcardDomain('apps.example.com');
+
+      const domain = await service.getWildcardDomain();
+
+      expect(domain).toBe('apps.example.com');
+    });
+  });
+
+  describe('setWildcardDomain', () => {
+    it('saves the wildcard domain', async () => {
+      await service.setWildcardDomain('apps.example.com');
+
+      const setting = await manager.getSetting(toSettingKey('wildcard_domain'));
+
+      expect(setting?.value).toBe('apps.example.com');
+    });
+
+    it('overwrites an existing wildcard domain', async () => {
+      await service.setWildcardDomain('old.example.com');
+      await service.setWildcardDomain('new.example.com');
+
+      const domain = await service.getWildcardDomain();
+
+      expect(domain).toBe('new.example.com');
+    });
+
+    it('rejects empty wildcard domain', async () => {
+      await expect(service.setWildcardDomain('')).rejects.toThrow();
+    });
+
+    it('rejects whitespace-only wildcard domain', async () => {
+      await expect(service.setWildcardDomain('   ')).rejects.toThrow();
+    });
+
+    it('trims whitespace from wildcard domain', async () => {
+      await service.setWildcardDomain('  apps.example.com  ');
+
+      const domain = await service.getWildcardDomain();
+
+      expect(domain).toBe('apps.example.com');
+    });
+  });
 });
