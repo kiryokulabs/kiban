@@ -6,6 +6,10 @@ export interface InstanceDomainResponse {
   readonly domain: string | null;
 }
 
+export interface WildcardDomainResponse {
+  readonly domain: string | null;
+}
+
 export interface TraefikPort {
   readonly published: number;
   readonly target: number;
@@ -49,6 +53,16 @@ export class SettingsApiService {
   /** Saves the instance domain. */
   public setInstanceDomain(domain: string): Observable<void> {
     return this.http.put<void>(`${this.apiUrl}/settings/domain`, { domain }, { withCredentials: true });
+  }
+
+  /** Returns the configured wildcard domain for service URLs, or null when not set. */
+  public getWildcardDomain(): Observable<WildcardDomainResponse> {
+    return this.http.get<WildcardDomainResponse>(`${this.apiUrl}/settings/wildcard-domain`, { withCredentials: true });
+  }
+
+  /** Saves the wildcard domain used for generated service URLs. */
+  public setWildcardDomain(domain: string): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/settings/wildcard-domain`, { domain }, { withCredentials: true });
   }
 
   /** Returns Traefik reverse proxy information and active routers. */

@@ -9,7 +9,7 @@ import { SettingsApiService, type TraefikInfo } from '../settings/settings-api.s
   standalone: true,
   imports: [IconsComponent, FormsModule],
   template: `
-    <div class="space-y-6 max-w-2xl">
+    <div class="space-y-6 max-w-full">
       <div>
         <div class="flex items-center gap-2.5">
           <div class="grid h-7 w-7 place-items-center rounded-lg bg-brand/20 text-brand-light">
@@ -19,71 +19,132 @@ import { SettingsApiService, type TraefikInfo } from '../settings/settings-api.s
         </div>
       </div>
 
-      <!-- Instance Domain -->
-      <div class="card p-5">
-        <div class="flex items-center gap-3 mb-4">
-          <div class="grid h-8 w-8 place-items-center rounded-lg bg-brand/10 text-brand-light">
-            <kiban-icon name="server" [size]="16" />
+      <!-- Domains: two columns -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Instance Domain -->
+        <div class="card p-5">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="grid h-8 w-8 place-items-center rounded-lg bg-brand/10 text-brand-light">
+              <kiban-icon name="server" [size]="16" />
+            </div>
+            <div>
+              <p class="text-sm font-medium kb-text">Instance domain</p>
+              <p class="text-xs c-muted">Access Kiban without port 8080</p>
+            </div>
           </div>
-          <div>
-            <p class="text-sm font-medium kb-text">Instance domain</p>
-            <p class="text-xs c-muted">Assign a domain to access Kiban without exposing port 8080</p>
-          </div>
-        </div>
 
-        @if (loading()) {
-          <p class="text-sm c-muted">Loading...</p>
-        } @else {
-          <div class="space-y-3">
-            <input
-              type="text"
-              class="input"
-              placeholder="kiban.example.com"
-              [value]="domain()"
-              (input)="onDomainInput($event)"
-              [disabled]="saving()"
-            />
-
-            @if (domain()) {
-              <div class="badge-warning rounded-lg bg-brand/5 border border-brand/10 p-3">
-                <p class="text-xs c-muted mb-1">DNS configuration required:</p>
-                <code class="text-xs kb-text">A&nbsp;&nbsp;&nbsp;{{ domain() }}&nbsp;&nbsp;&nbsp;→&nbsp;&nbsp;&nbsp;your server IP</code>
-              </div>
-            }
-
-            @if (saved()) {
-              <p class="text-xs text-green-500">Domain saved. Kiban is now accessible at {{ domain() }}.</p>
-            }
-
-            @if (error()) {
-              <p class="text-xs text-red-500">{{ error() }}</p>
-            }
-
-            <div class="flex gap-2">
-              <button
-                class="btn btn-primary"
-                (click)="save()"
-                [disabled]="saving() || !hasChanges()"
-              >
-                {{ saving() ? 'Saving...' : 'Save domain' }}
-              </button>
+          @if (loading()) {
+            <p class="text-sm c-muted">Loading...</p>
+          } @else {
+            <div class="space-y-3">
+              <input
+                type="text"
+                class="input"
+                placeholder="kiban.example.com"
+                [value]="domain()"
+                (input)="onDomainInput($event)"
+                [disabled]="saving()"
+              />
 
               @if (domain()) {
-                <button
-                  class="btn btn-secondary"
-                  (click)="clear()"
-                  [disabled]="saving()"
-                >
-                  Clear
-                </button>
+                <div class="badge-warning rounded-lg bg-brand/5 border border-brand/10 p-3">
+                  <p class="text-xs c-muted mb-1">DNS configuration required:</p>
+                  <code class="text-xs kb-text">A&nbsp;&nbsp;&nbsp;{{ domain() }}&nbsp;&nbsp;&nbsp;→&nbsp;&nbsp;&nbsp;your server IP</code>
+                </div>
               }
-            </div>
 
-            <p class="text-xs c-muted">
-              Kiban remains accessible at IP:8080 until you close that port manually.
-            </p>
+              @if (saved()) {
+                <p class="text-xs text-green-500">Domain saved. Kiban is now accessible at {{ domain() }}.</p>
+              }
+
+              @if (error()) {
+                <p class="text-xs text-red-500">{{ error() }}</p>
+              }
+
+              <div class="flex gap-2">
+                <button
+                  class="btn btn-primary"
+                  (click)="save()"
+                  [disabled]="saving() || !hasChanges()"
+                >
+                  {{ saving() ? 'Saving...' : 'Save domain' }}
+                </button>
+
+                @if (domain()) {
+                  <button
+                    class="btn btn-secondary"
+                    (click)="clear()"
+                    [disabled]="saving()"
+                  >
+                    Clear
+                  </button>
+                }
+              </div>
+
+              <p class="text-xs c-muted">
+                Kiban remains accessible at IP:8080 until you close that port manually.
+              </p>
+            </div>
+          }
+        </div>
+
+        <!-- Services Wildcard Domain -->
+        <div class="card p-5">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="grid h-8 w-8 place-items-center rounded-lg bg-brand/10 text-brand-light">
+              <kiban-icon name="grid" [size]="16" />
+            </div>
+            <div>
+              <p class="text-sm font-medium kb-text">Services wildcard domain</p>
+              <p class="text-xs c-muted">Default domains for installed services</p>
+            </div>
           </div>
-        }
+
+          @if (wildcardLoading()) {
+            <p class="text-sm c-muted">Loading...</p>
+          } @else {
+            <div class="space-y-3">
+              <input
+                type="text"
+                class="input"
+                placeholder="apps.example.com"
+                [value]="wildcardDomain()"
+                (input)="onWildcardDomainInput($event)"
+                [disabled]="wildcardSaving()"
+              />
+
+              @if (wildcardDomain()) {
+                <div class="badge-warning rounded-lg bg-brand/5 border border-brand/10 p-3">
+                  <p class="text-xs c-muted mb-1">DNS configuration required:</p>
+                  <code class="text-xs kb-text">A&nbsp;&nbsp;&nbsp;*.{{ wildcardDomain() }}&nbsp;&nbsp;&nbsp;→&nbsp;&nbsp;&nbsp;your server IP</code>
+                  <p class="text-xs c-muted mt-2">Example: plausible.production.project.{{ wildcardDomain() }}</p>
+                </div>
+              }
+
+              @if (wildcardSaved()) {
+                <p class="text-xs text-green-500">Wildcard domain saved. New services will use {{ wildcardDomain() }}.</p>
+              }
+
+              @if (wildcardError()) {
+                <p class="text-xs text-red-500">{{ wildcardError() }}</p>
+              }
+
+              <div class="flex gap-2">
+                <button
+                  class="btn btn-primary"
+                  (click)="saveWildcardDomain()"
+                  [disabled]="wildcardSaving() || !hasWildcardChanges()"
+                >
+                  {{ wildcardSaving() ? 'Saving...' : 'Save wildcard domain' }}
+                </button>
+              </div>
+
+              <p class="text-xs c-muted">
+                Affects newly installed services only. Existing service domains remain unchanged.
+              </p>
+            </div>
+          }
+        </div>
       </div>
 
       <!-- Reverse Proxy (Traefik) -->
@@ -193,6 +254,13 @@ export class SettingsPageComponent implements OnInit {
   public readonly error = signal('');
   private originalDomain = '';
 
+  public readonly wildcardDomain = signal('');
+  public readonly wildcardLoading = signal(true);
+  public readonly wildcardSaving = signal(false);
+  public readonly wildcardSaved = signal(false);
+  public readonly wildcardError = signal('');
+  private originalWildcardDomain = '';
+
   public readonly traefikInfo = signal<TraefikInfo | null>(null);
   public readonly traefikLoading = signal(true);
 
@@ -202,6 +270,7 @@ export class SettingsPageComponent implements OnInit {
 
   public ngOnInit(): void {
     this.loadDomain();
+    this.loadWildcardDomain();
     this.loadTraefikInfo();
   }
 
@@ -214,6 +283,17 @@ export class SettingsPageComponent implements OnInit {
 
   public hasChanges(): boolean {
     return this.domain().trim() !== this.originalDomain;
+  }
+
+  public onWildcardDomainInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.wildcardDomain.set(input.value);
+    this.wildcardSaved.set(false);
+    this.wildcardError.set('');
+  }
+
+  public hasWildcardChanges(): boolean {
+    return this.wildcardDomain().trim() !== this.originalWildcardDomain;
   }
 
   public async save(): Promise<void> {
@@ -237,6 +317,21 @@ export class SettingsPageComponent implements OnInit {
     await this.save();
   }
 
+  public async saveWildcardDomain(): Promise<void> {
+    this.wildcardSaving.set(true);
+    this.wildcardError.set('');
+    this.wildcardSaved.set(false);
+    try {
+      await this.api.setWildcardDomain(this.wildcardDomain().trim()).toPromise();
+      this.originalWildcardDomain = this.wildcardDomain().trim();
+      this.wildcardSaved.set(true);
+    } catch (err: unknown) {
+      this.wildcardError.set(err instanceof Error ? err.message : 'Failed to save wildcard domain.');
+    } finally {
+      this.wildcardSaving.set(false);
+    }
+  }
+
   private async loadDomain(): Promise<void> {
     try {
       const response = await this.api.getInstanceDomain().toPromise();
@@ -247,6 +342,19 @@ export class SettingsPageComponent implements OnInit {
       this.error.set('Failed to load current domain.');
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  private async loadWildcardDomain(): Promise<void> {
+    try {
+      const response = await this.api.getWildcardDomain().toPromise();
+      const domain = response?.domain ?? '';
+      this.wildcardDomain.set(domain);
+      this.originalWildcardDomain = domain;
+    } catch {
+      this.wildcardError.set('Failed to load wildcard domain.');
+    } finally {
+      this.wildcardLoading.set(false);
     }
   }
 
