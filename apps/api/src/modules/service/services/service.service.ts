@@ -1,6 +1,6 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InstalledServiceManager, ProjectNotFoundError, ProjectValidationError } from '@kiban/core';
-import type { InstalledService, RuntimeProvider, ServiceDefinition } from '@kiban/core';
+import type { InstalledService, RuntimeProvider, RuntimePublicEndpoint, ServiceDefinition } from '@kiban/core';
 import { CatalogService } from '../../catalog/services/catalog.service';
 import { SqliteEnvironmentRepository } from '../../project/repositories/sqlite-environment.repository';
 import { SqliteProjectRepository } from '../../project/repositories/sqlite-project.repository';
@@ -74,6 +74,21 @@ export class ServiceService {
   public async updateConfiguration(id: string, payload: unknown): Promise<InstalledServiceDto> {
     const configuration = this.parseConfigurationPayload(payload);
     try { return await this.enrichOne(await this.services.updateConfiguration(id, configuration)); } catch (error: unknown) { this.mapError(error); }
+  }
+
+  /** Updates the public domain used to access one installed service. */
+  public async updateDomain(id: string, payload: unknown): Promise<InstalledServiceDto> {
+    const host = this.parseDomainPayload(payload);
+    try {
+      const service = await this.services.get(id);
+      const endpoints = this.runtimePublicEndpoints(service.runtime);
+      if (endpoints.length === 0) throw new ProjectValidationError('This service does not expose a web endpoint.');
+      if (!this.runtime.updatePublicEndpoints) throw new ProjectValidationError('The current runtime cannot update service domains.');
+      const updatedEndpoints = endpoints.map((endpoint) => ({ ...endpoint, host, url: `${endpoint.protocol}://${host}` }));
+      const result = await this.runtime.updatePublicEndpoints(service, updatedEndpoints);
+      const updated = await this.services.updateRuntime(id, result.runtime ?? { ...(service.runtime ?? {}), publicEndpoints: updatedEndpoints });
+      return await this.enrichOne(updated);
+    } catch (error: unknown) { this.mapError(error); }
   }
 
   /** Recreates runtime resources using current configuration. */
@@ -204,6 +219,40 @@ export class ServiceService {
     const configuration = record['configuration'];
     if (!configuration || typeof configuration !== 'object' || Array.isArray(configuration)) throw new BadRequestException('Invalid configuration payload.');
     return configuration as Readonly<Record<string, unknown>>;
+  }
+
+  private parseDomainPayload(payload: unknown): string {
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) throw new BadRequestException('Invalid service domain payload.');
+    const record = payload as Readonly<Record<string, unknown>>;
+    const keys = Object.keys(record);
+    if (keys.length !== 1 || keys[0] !== 'host' || typeof record['host'] !== 'string') throw new BadRequestException('Invalid service domain payload.');
+    const host = record['host'].trim();
+    if (host.length === 0) throw new BadRequestException('Service domain is required.');
+    if (host.includes('://') || host.includes('/') || /\s/.test(host)) throw new BadRequestException('Service domain must be a hostname without protocol or path.');
+    return host;
+  }
+
+  private runtimePublicEndpoints(runtime: Readonly<Record<string, unknown>> | null): readonly RuntimePublicEndpoint[] {
+    const publicEndpoints = runtime?.['publicEndpoints'];
+    if (!Array.isArray(publicEndpoints)) return [];
+    return publicEndpoints.flatMap((endpoint) => {
+      if (!endpoint || typeof endpoint !== 'object' || Array.isArray(endpoint)) return [];
+      const record = endpoint as Readonly<Record<string, unknown>>;
+      const name = record['name'];
+      const service = record['service'];
+      const port = record['port'];
+      const host = record['host'];
+      const url = record['url'];
+      const protocol = this.endpointProtocol(record['protocol'], url);
+      if (typeof name !== 'string' || typeof service !== 'string' || typeof port !== 'number' || typeof host !== 'string' || typeof url !== 'string') return [];
+      return [{ name, service, port, host, url, protocol }];
+    });
+  }
+
+  private endpointProtocol(protocol: unknown, url: unknown): 'http' | 'https' {
+    if (protocol === 'http' || protocol === 'https') return protocol;
+    if (typeof url === 'string' && url.startsWith('https://')) return 'https';
+    return 'http';
   }
 
   private parseInstallPayload(payload: unknown): InstallServiceDto {

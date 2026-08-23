@@ -293,6 +293,17 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
     return stdout;
   }
 
+  /** Updates public routing metadata and recreates runtime units without deleting persistent data. */
+  public async updatePublicEndpoints(service: InstalledService, publicEndpoints: readonly RuntimePublicEndpoint[]): Promise<RuntimeResult> {
+    const composeFile = this.runtimeString(service, 'composeFile');
+    const composeYaml = await readFile(composeFile, 'utf8');
+    const updatedComposeYaml = this.composeYamlWithPublicEndpoints(composeYaml, publicEndpoints);
+    await writeFile(composeFile, updatedComposeYaml, 'utf8');
+    await this.composeFromService(service, ['up', '-d', '--force-recreate']);
+    const runtime = await this.refreshRuntime({ ...service, runtime: { ...(service.runtime ?? {}), publicEndpoints } });
+    return { status: runtime['status'] === 'running' ? (runtime['health'] === 'unhealthy' ? 'failed' : 'running') : 'stopped', runtime: { ...runtime, publicEndpoints } };
+  }
+
   private workspaceFor(environmentId: string, serviceId: string): string {
     return join(this.runtimeRoot, sanitize(`${environmentId}-${serviceId}`));
   }
@@ -539,6 +550,28 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
     return stringify(document);
   }
 
+  private composeYamlWithPublicEndpoints(composeYaml: string, publicEndpoints: readonly RuntimePublicEndpoint[]): string {
+    const document = this.composeDocument(composeYaml);
+    const services = this.recordValue(document['services']);
+    if (services) {
+      for (const rawService of Object.values(services)) {
+        const service = this.recordValue(rawService);
+        if (service) this.removeTraefikLabels(service);
+      }
+      for (const endpoint of publicEndpoints) {
+        const service = this.recordValue(services[endpoint.service]);
+        if (!service) continue;
+        this.removePublishedPort(service, endpoint.port);
+        this.addExpose(service, endpoint.port);
+        this.addServiceNetwork(service, SHARED_REVERSE_PROXY_NETWORK);
+        this.addTraefikLabels(service, endpoint);
+      }
+    }
+    const networks = this.ensureRecord(document, 'networks');
+    if (publicEndpoints.length > 0) networks[SHARED_REVERSE_PROXY_NETWORK] = { name: SHARED_REVERSE_PROXY_NETWORK, external: true };
+    return stringify(document);
+  }
+
   private async materializeGeneratedBindFiles(workspace: string, composeYaml: string): Promise<string> {
     const document = this.composeDocument(composeYaml);
     const services = this.recordValue(document['services']);
@@ -643,6 +676,15 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
     if (endpoint.protocol === 'https') labels[`traefik.http.routers.${routerName}.tls`] = 'true';
     labels[`traefik.http.services.${routerName}.loadbalancer.server.port`] = String(endpoint.port);
     labels['traefik.docker.network'] = SHARED_REVERSE_PROXY_NETWORK;
+  }
+
+  private removeTraefikLabels(service: Record<string, unknown>): void {
+    const labels = this.recordValue(service['labels']);
+    if (!labels) return;
+    for (const key of Object.keys(labels)) {
+      if (key.startsWith('traefik.')) delete labels[key];
+    }
+    if (Object.keys(labels).length === 0) delete service['labels'];
   }
 
   private envFile(variables: Readonly<Record<string, unknown>>): string {

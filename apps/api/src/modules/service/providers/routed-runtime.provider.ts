@@ -1,4 +1,4 @@
-import type { InstallationPlan, ProjectRepository, RuntimeProvider, RuntimeResult, RuntimeHealth, InstalledService } from '@kiban/core';
+import type { InstallationPlan, ProjectRepository, RuntimeProvider, RuntimeResult, RuntimeHealth, InstalledService, RuntimePublicEndpoint } from '@kiban/core';
 import { ProjectNotFoundError } from '@kiban/core';
 import { DomainService } from '../../runtime/domain/domain.service';
 
@@ -42,6 +42,8 @@ export class RoutedRuntimeProvider implements RuntimeProvider {
   public health(service: InstalledService): Promise<RuntimeHealth> { return this.delegate.health(service); }
   /** Delegates runtime metadata refresh. */
   public refresh(service: InstalledService): Promise<RuntimeResult> { return this.delegate.refresh ? this.delegate.refresh(service) : Promise.resolve({ status: service.status, runtime: service.runtime }); }
+  /** Delegates public endpoint updates when the concrete runtime supports mutable routing. */
+  public updatePublicEndpoints(service: InstalledService, publicEndpoints: readonly RuntimePublicEndpoint[]): Promise<RuntimeResult> { return this.delegate.updatePublicEndpoints ? this.delegate.updatePublicEndpoints(service, publicEndpoints) : Promise.resolve({ status: service.status, runtime: service.runtime }); }
   /** Delegates runtime log reads. */
   public getLogs(service: InstalledService): Promise<string> { return this.delegate.getLogs ? this.delegate.getLogs(service) : Promise.resolve(''); }
 }

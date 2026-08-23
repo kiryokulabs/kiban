@@ -169,6 +169,23 @@ describe('DockerComposeRuntimeProvider', () => {
     expect(result.runtime?.['publicEndpoints']).toEqual(routedPlan.publicEndpoints);
   });
 
+  it('updates public endpoint Traefik labels without deleting service data', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'kiban-compose-runtime-'));
+    const runner = new FakeRunner();
+    const provider = DockerComposeRuntimeProvider.withRunner(runner, root, new FakePortAllocator(), new FakeWebHealthChecker(true));
+    const installedResult = await provider.install(routedPlan);
+    const service = installed(installedResult.runtime!);
+
+    const result = await provider.updatePublicEndpoints!(service, [{ name: 'Web UI', service: 'mongo-express', port: 8081, host: 'mongo.example.com', url: 'http://mongo.example.com', protocol: 'http' }]);
+
+    const composeYaml = await readFile(join(String(installedResult.runtime?.['workingDirectory']), 'compose.yaml'), 'utf8');
+    expect(composeYaml).toContain('Host(`mongo.example.com`)');
+    expect(composeYaml).not.toContain('Host(`mongo-express.development.crossmetrics.localhost`)');
+    expect(result.runtime?.['publicEndpoints']).toEqual([{ name: 'Web UI', service: 'mongo-express', port: 8081, host: 'mongo.example.com', url: 'http://mongo.example.com', protocol: 'http' }]);
+    expect(runner.calls.some((call) => call.args.includes('up') && call.args.includes('-d') && call.args.includes('--force-recreate'))).toBe(true);
+    expect(runner.calls.some((call) => call.args.includes('down') || call.args.includes('-v'))).toBe(false);
+  });
+
   it('keeps non-web host ports untouched for services that intentionally expose TCP access', async () => {
     const root = await mkdtemp(join(tmpdir(), 'kiban-compose-runtime-'));
     const runner = new FakeRunner();
