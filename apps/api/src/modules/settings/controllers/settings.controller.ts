@@ -10,6 +10,14 @@ interface InstanceDomainResponseDto {
   readonly domain: string | null;
 }
 
+interface WildcardDomainDto {
+  readonly domain: string;
+}
+
+interface WildcardDomainResponseDto {
+  readonly domain: string | null;
+}
+
 @Controller('settings')
 export class SettingsController {
   public constructor(private readonly service: SettingsService) {}
@@ -32,5 +40,19 @@ export class SettingsController {
   @Get('traefik')
   public async getTraefik(): Promise<TraefikInfo> {
     return this.service.getTraefikInfo();
+  }
+
+  /** Returns the configured wildcard domain for service URLs, or null when not set. */
+  @Get('wildcard-domain')
+  public async getWildcardDomain(): Promise<WildcardDomainResponseDto> {
+    const domain = await this.service.getWildcardDomain();
+    return { domain };
+  }
+
+  /** Saves the wildcard domain used to generate service URLs. */
+  @Put('wildcard-domain')
+  @HttpCode(204)
+  public async setWildcardDomain(@Body() body: WildcardDomainDto): Promise<void> {
+    await this.service.setWildcardDomain(body.domain);
   }
 }
