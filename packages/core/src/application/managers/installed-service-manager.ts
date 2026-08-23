@@ -125,6 +125,12 @@ export class InstalledServiceManager {
     return this.updateStatus(id, result.status, result.runtime);
   }
 
+  /** Persists refreshed runtime metadata without changing service configuration. */
+  public async updateRuntime(id: string, runtime: Readonly<Record<string, unknown>> | null): Promise<InstalledService> {
+    const service = await this.get(id);
+    return this.updateStatus(id, service.status, runtime);
+  }
+
   private async validateEnvironment(projectId: string, environmentId: string): Promise<Environment> {
     const environment = await this.environments.findById(environmentId);
     if (!environment || environment.projectId !== projectId) {
