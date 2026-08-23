@@ -19,7 +19,6 @@ import { SettingsApiService, type TraefikInfo } from '../settings/settings-api.s
         </div>
       </div>
 
-      <!-- Domains: two columns -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Instance Domain -->
         <div class="card p-5">

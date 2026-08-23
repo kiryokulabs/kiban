@@ -38,6 +38,11 @@ export class InstalledServicesService {
     return this.http.patch<InstalledService>(`${this.apiUrl}/services/${id}/configuration`, { configuration }, { withCredentials: true });
   }
 
+  /** Updates the public domain for an installed service. */
+  public updateDomain(id: string, host: string): Observable<InstalledService> {
+    return this.http.patch<InstalledService>(`${this.apiUrl}/services/${id}/domain`, { host }, { withCredentials: true });
+  }
+
   /** Recreates an installed service through the runtime provider. */
   public recreate(id: string): Observable<InstalledService> {
     return this.http.patch<InstalledService>(`${this.apiUrl}/services/${id}/recreate`, {}, { withCredentials: true });
