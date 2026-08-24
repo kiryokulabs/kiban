@@ -124,18 +124,8 @@ import { SettingsApiService, type TraefikInfo } from '../settings/settings-api.s
                   (click)="save()"
                   [disabled]="saving() || !hasChanges()"
                 >
-                  {{ saving() ? 'Saving...' : 'Save domain' }}
+                  {{ saving() ? 'Saving...' : 'Save instance domain' }}
                 </button>
-
-                @if (domain()) {
-                  <button
-                    class="btn btn-secondary"
-                    (click)="clear()"
-                    [disabled]="saving()"
-                  >
-                    Clear
-                  </button>
-                }
               </div>
 
               <p class="text-xs c-muted">
@@ -393,10 +383,6 @@ export class SettingsPageComponent implements OnInit {
     }
   }
 
-  public async clear(): Promise<void> {
-    this.domain.set('');
-    await this.save();
-  }
 
   public async saveWildcardDomain(): Promise<void> {
     this.wildcardSaving.set(true);
