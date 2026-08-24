@@ -10,6 +10,10 @@ export interface WildcardDomainResponse {
   readonly domain: string | null;
 }
 
+export interface InstallationTypeResponse {
+  readonly type: 'local' | 'remote';
+}
+
 export interface TraefikPort {
   readonly published: number;
   readonly target: number;
@@ -63,6 +67,16 @@ export class SettingsApiService {
   /** Saves the wildcard domain used for generated service URLs. */
   public setWildcardDomain(domain: string): Observable<void> {
     return this.http.put<void>(`${this.apiUrl}/settings/wildcard-domain`, { domain }, { withCredentials: true });
+  }
+
+  /** Returns the installation type (local or remote). */
+  public getInstallationType(): Observable<InstallationTypeResponse> {
+    return this.http.get<InstallationTypeResponse>(`${this.apiUrl}/settings/installation-type`, { withCredentials: true });
+  }
+
+  /** Saves the installation type. */
+  public setInstallationType(type: 'local' | 'remote'): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/settings/installation-type`, { type }, { withCredentials: true });
   }
 
   /** Returns Traefik reverse proxy information and active routers. */

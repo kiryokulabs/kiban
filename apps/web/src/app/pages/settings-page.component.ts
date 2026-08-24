@@ -19,6 +19,58 @@ import { SettingsApiService, type TraefikInfo } from '../settings/settings-api.s
         </div>
       </div>
 
+      <!-- Installation Type -->
+      <div class="card p-5">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="grid h-8 w-8 place-items-center rounded-lg bg-brand/10 text-brand-light">
+            <kiban-icon name="server" [size]="16" />
+          </div>
+          <div>
+            <p class="text-sm font-medium kb-text">Installation type</p>
+            <p class="text-xs c-muted">Determines how Kiban shows access information</p>
+          </div>
+        </div>
+
+        @if (installationTypeLoading()) {
+          <p class="text-sm c-muted">Loading...</p>
+        } @else {
+          <div class="flex items-center gap-4">
+            <button
+              type="button"
+              class="btn gap-1.5"
+              [class.btn-primary]="installationType() === 'local'"
+              [class.btn-secondary]="installationType() !== 'local'"
+              (click)="setInstallationType('local')"
+              [disabled]="installationTypeSaving()"
+            >
+              <kiban-icon name="home" [size]="14" />
+              Local
+            </button>
+            <button
+              type="button"
+              class="btn gap-1.5"
+              [class.btn-primary]="installationType() === 'remote'"
+              [class.btn-secondary]="installationType() !== 'remote'"
+              (click)="setInstallationType('remote')"
+              [disabled]="installationTypeSaving()"
+            >
+              <kiban-icon name="external-link" [size]="14" />
+              Remote
+            </button>
+            @if (installationTypeSaving()) {
+              <span class="text-xs c-muted">Saving...</span>
+            }
+          </div>
+          <p class="text-xs c-muted mt-2">
+            @if (installationType() === 'local') {
+              Running locally. Services use .localhost domains that only work on this machine.
+            } @else {
+              Running on a remote server. Configure DNS records for service access.
+            }
+          </p>
+        }
+      </div>
+
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Instance Domain -->
         <div class="card p-5">
@@ -45,10 +97,16 @@ import { SettingsApiService, type TraefikInfo } from '../settings/settings-api.s
                 [disabled]="saving()"
               />
 
-              @if (domain()) {
+              @if (domain() && installationType() === 'remote') {
                 <div class="badge-warning rounded-lg bg-brand/5 border border-brand/10 p-3">
                   <p class="text-xs c-muted mb-1">DNS configuration required:</p>
                   <code class="text-xs kb-text">A&nbsp;&nbsp;&nbsp;{{ domain() }}&nbsp;&nbsp;&nbsp;→&nbsp;&nbsp;&nbsp;your server IP</code>
+                </div>
+              }
+
+              @if (domain() && installationType() === 'local') {
+                <div class="rounded-lg bg-green-500/5 border border-green-500/10 p-3">
+                  <p class="text-xs c-muted">Accessible locally at <code class="kb-text">{{ domain() }}</code>. No DNS needed.</p>
                 </div>
               }
 
@@ -112,11 +170,17 @@ import { SettingsApiService, type TraefikInfo } from '../settings/settings-api.s
                 [disabled]="wildcardSaving()"
               />
 
-              @if (wildcardDomain()) {
+              @if (wildcardDomain() && installationType() === 'remote') {
                 <div class="badge-warning rounded-lg bg-brand/5 border border-brand/10 p-3">
                   <p class="text-xs c-muted mb-1">DNS configuration required:</p>
                   <code class="text-xs kb-text">A&nbsp;&nbsp;&nbsp;*.{{ wildcardDomain() }}&nbsp;&nbsp;&nbsp;→&nbsp;&nbsp;&nbsp;your server IP</code>
                   <p class="text-xs c-muted mt-2">Example: plausible.production.project.{{ wildcardDomain() }}</p>
+                </div>
+              }
+
+              @if (wildcardDomain() && installationType() === 'local') {
+                <div class="rounded-lg bg-green-500/5 border border-green-500/10 p-3">
+                  <p class="text-xs c-muted">Services will use <code class="kb-text">.localhost</code> domains. No DNS needed.</p>
                 </div>
               }
 
@@ -246,6 +310,10 @@ import { SettingsApiService, type TraefikInfo } from '../settings/settings-api.s
 export class SettingsPageComponent implements OnInit {
   private readonly api: SettingsApiService;
 
+  public readonly installationType = signal<'local' | 'remote'>('local');
+  public readonly installationTypeLoading = signal(true);
+  public readonly installationTypeSaving = signal(false);
+
   public readonly domain = signal('');
   public readonly loading = signal(true);
   public readonly saving = signal(false);
@@ -268,9 +336,23 @@ export class SettingsPageComponent implements OnInit {
   }
 
   public ngOnInit(): void {
+    this.loadInstallationType();
     this.loadDomain();
     this.loadWildcardDomain();
     this.loadTraefikInfo();
+  }
+
+  public async setInstallationType(type: 'local' | 'remote'): Promise<void> {
+    if (type === this.installationType()) return;
+    this.installationTypeSaving.set(true);
+    try {
+      await this.api.setInstallationType(type).toPromise();
+      this.installationType.set(type);
+    } catch {
+      // Silently fail — keep previous value
+    } finally {
+      this.installationTypeSaving.set(false);
+    }
   }
 
   public onDomainInput(event: Event): void {
@@ -328,6 +410,17 @@ export class SettingsPageComponent implements OnInit {
       this.wildcardError.set(err instanceof Error ? err.message : 'Failed to save wildcard domain.');
     } finally {
       this.wildcardSaving.set(false);
+    }
+  }
+
+  private async loadInstallationType(): Promise<void> {
+    try {
+      const response = await this.api.getInstallationType().toPromise();
+      this.installationType.set(response?.type ?? 'local');
+    } catch {
+      this.installationType.set('local');
+    } finally {
+      this.installationTypeLoading.set(false);
     }
   }
 

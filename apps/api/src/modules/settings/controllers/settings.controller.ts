@@ -18,6 +18,14 @@ interface WildcardDomainResponseDto {
   readonly domain: string | null;
 }
 
+interface InstallationTypeDto {
+  readonly type: 'local' | 'remote';
+}
+
+interface InstallationTypeResponseDto {
+  readonly type: 'local' | 'remote';
+}
+
 @Controller('settings')
 export class SettingsController {
   public constructor(private readonly service: SettingsService) {}
@@ -54,5 +62,19 @@ export class SettingsController {
   @HttpCode(204)
   public async setWildcardDomain(@Body() body: WildcardDomainDto): Promise<void> {
     await this.service.setWildcardDomain(body.domain);
+  }
+
+  /** Returns the installation type (local or remote). */
+  @Get('installation-type')
+  public async getInstallationType(): Promise<InstallationTypeResponseDto> {
+    const type = await this.service.getInstallationType();
+    return { type };
+  }
+
+  /** Saves the installation type. */
+  @Put('installation-type')
+  @HttpCode(204)
+  public async setInstallationType(@Body() body: InstallationTypeDto): Promise<void> {
+    await this.service.setInstallationType(body.type);
   }
 }

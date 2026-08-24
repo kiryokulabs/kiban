@@ -45,4 +45,15 @@ export class SettingsService {
   public async setWildcardDomain(domain: string): Promise<void> {
     await this.manager.setSetting(toSettingKey('wildcard_domain'), domain);
   }
+
+  /** Returns the installation type: 'local' or 'remote'. Defaults to 'local'. */
+  public async getInstallationType(): Promise<'local' | 'remote'> {
+    const setting = await this.manager.getSetting(toSettingKey('installation_type'));
+    return setting?.value === 'remote' ? 'remote' : 'local';
+  }
+
+  /** Saves the installation type. */
+  public async setInstallationType(type: 'local' | 'remote'): Promise<void> {
+    await this.manager.setSetting(toSettingKey('installation_type'), type);
+  }
 }
