@@ -4,7 +4,7 @@ import { AuthShellComponent } from './auth/auth-shell.component';
 import { AuthService } from './auth/auth.service';
 import { ThemeService } from './theme/theme.service';
 import { IconsComponent } from './shared/icons.component';
-import { SidebarComponent, type NavItem } from './shared/sidebar.component';
+import { SidebarComponent, type NavItem, type LearnItem } from './shared/sidebar.component';
 import { ProgressBarComponent } from './shared/progress-bar.component';
 
 @Component({
@@ -32,7 +32,7 @@ import { ProgressBarComponent } from './shared/progress-bar.component';
         <kiban-progress-bar />
 
         <!-- Sidebar -->
-        <kiban-sidebar [navItems]="navItems()" (collapseChange)="sidebarCollapsed.set($event)" />
+        <kiban-sidebar [navItems]="navItems()" [learnItems]="learnItems()" (collapseChange)="sidebarCollapsed.set($event)" />
 
         <!-- Main content -->
         <div
@@ -101,7 +101,7 @@ import { ProgressBarComponent } from './shared/progress-bar.component';
           (click)="mobileMenuOpen.set(false)"
         >
           <div class="h-full w-64 surface-elevated border-r kb-border" (click)="$event.stopPropagation()">
-            <kiban-sidebar [navItems]="navItems()" />
+            <kiban-sidebar [navItems]="navItems()" [learnItems]="learnItems()" />
           </div>
         </div>
       }
@@ -116,13 +116,21 @@ export class AppComponent {
   protected readonly mobileMenuOpen = signal(false);
 
   protected readonly navItems = signal<readonly NavItem[]>([
-    { label: 'Home', path: '/', icon: 'home' },
+    { label: 'Dashboard', path: '/', icon: 'home' },
     { label: 'Projects', path: '/projects', icon: 'projects' },
     { label: 'Catalog', path: '/catalog', icon: 'catalog' },
     { label: 'Installed', path: '/installed', icon: 'installed' },
     { label: 'Users', path: '/users', icon: 'users', adminOnly: true },
     { label: 'Logs', path: '/logs', icon: 'logs' },
     { label: 'Settings', path: '/settings', icon: 'settings' },
+  ]);
+
+  protected readonly learnItems = signal<readonly LearnItem[]>([
+    { label: 'Getting Started', path: '/learn/getting-started', icon: 'info' },
+    { label: 'Projects & Environments', path: '/learn/projects-environments', icon: 'projects' },
+    { label: 'Installing Services', path: '/learn/installing-services', icon: 'installed' },
+    { label: 'Domain Routing', path: '/learn/domain-routing', icon: 'server' },
+    { label: 'Remote Access', path: '/learn/remote-access', icon: 'external-link' },
   ]);
 
   public constructor() {
