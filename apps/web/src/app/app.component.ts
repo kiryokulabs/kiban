@@ -6,11 +6,12 @@ import { ThemeService } from './theme/theme.service';
 import { IconsComponent } from './shared/icons.component';
 import { SidebarComponent, type NavItem, type LearnItem } from './shared/sidebar.component';
 import { ProgressBarComponent } from './shared/progress-bar.component';
+import { SystemMetricsHeaderComponent } from './system/system-metrics-header.component';
 
 @Component({
   selector: 'kiban-root',
   standalone: true,
-  imports: [AuthShellComponent, RouterLink, RouterOutlet, SidebarComponent, IconsComponent, ProgressBarComponent],
+  imports: [AuthShellComponent, RouterLink, RouterOutlet, SidebarComponent, IconsComponent, ProgressBarComponent, SystemMetricsHeaderComponent],
   template: `
     @if (initializing()) {
       <!-- Loading state -->
@@ -50,7 +51,7 @@ import { ProgressBarComponent } from './shared/progress-bar.component';
               >
                 <kiban-icon name="menu" [size]="16" />
               </button>
-              <p class="text-xs c-subtle">Kiban <span class="c-muted">v0.1</span></p>
+              <kiban-system-metrics-header />
             </div>
             <div class="flex items-center gap-2">
               <button
