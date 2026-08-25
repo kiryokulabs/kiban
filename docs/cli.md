@@ -117,6 +117,28 @@ Supports `--tail` to control the number of lines (default: 300).
 $ kiban logs --tail 50
 ```
 
+### kiban uninstall
+
+Uninstalls Kiban itself without removing installed services.
+
+```sh
+$ kiban uninstall
+```
+
+For non-interactive usage:
+
+```sh
+$ kiban uninstall --yes
+```
+
+This command stops and removes the Kiban core runtime and Kiban routing layer, then removes the installed CLI script. It does **not** remove installed services or service runtime workspaces under `~/.kiban/runtime/services/`.
+
+After uninstalling, remove the Kiban `PATH` entry from your shell profile if it is still present:
+
+```sh
+export PATH="$HOME/.kiban/bin:$PATH"
+```
+
 ## File Layout
 
 ```
