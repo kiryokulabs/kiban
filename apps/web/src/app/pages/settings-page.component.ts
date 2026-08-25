@@ -106,12 +106,24 @@ import { SettingsApiService, type TraefikInfo } from '../settings/settings-api.s
 
               @if (domain() && installationType() === 'local') {
                 <div class="rounded-lg bg-green-500/5 border border-green-500/10 p-3">
-                  <p class="text-xs c-muted">Accessible locally at <code class="kb-text">{{ domain() }}</code>. No DNS needed.</p>
+                  <p class="text-xs c-muted">Kiban will be routed through <code class="kb-text">{{ domain() }}</code>. Localhost-style domains work only on this machine.</p>
+                </div>
+              }
+
+              @if (!domain() && installationType() === 'remote') {
+                <div class="rounded-lg bg-yellow-500/5 border border-yellow-500/10 p-3">
+                  <p class="text-xs text-yellow-500">Remote installations need an instance domain with DNS pointing to this server if you want to access Kiban without IP:8080.</p>
+                </div>
+              }
+
+              @if (!domain() && installationType() === 'local') {
+                <div class="rounded-lg bg-green-500/5 border border-green-500/10 p-3">
+                  <p class="text-xs c-muted">No instance domain configured. Kiban remains available through the local installation URL.</p>
                 </div>
               }
 
               @if (saved()) {
-                <p class="text-xs text-green-500">Domain saved. Kiban is now accessible at {{ domain() }}.</p>
+                <p class="text-xs text-green-500">{{ domain() ? 'Domain saved. Kiban is now accessible at ' + domain() + '.' : 'Instance domain cleared.' }}</p>
               }
 
               @if (error()) {
@@ -126,10 +138,21 @@ import { SettingsApiService, type TraefikInfo } from '../settings/settings-api.s
                 >
                   {{ saving() ? 'Saving...' : 'Save instance domain' }}
                 </button>
+
+                @if (originalDomain) {
+                  <button
+                    class="btn btn-secondary"
+                    type="button"
+                    (click)="clear()"
+                    [disabled]="saving()"
+                  >
+                    Clear
+                  </button>
+                }
               </div>
 
               <p class="text-xs c-muted">
-                Kiban remains accessible at IP:8080 until you close that port manually.
+                Instance Domain affects only the Kiban dashboard. Service URLs are controlled by the wildcard domain.
               </p>
             </div>
           }
@@ -154,7 +177,7 @@ import { SettingsApiService, type TraefikInfo } from '../settings/settings-api.s
               <input
                 type="text"
                 class="input"
-                placeholder="apps.example.com"
+                placeholder="services.example.com"
                 [value]="wildcardDomain()"
                 (input)="onWildcardDomainInput($event)"
                 [disabled]="wildcardSaving()"
@@ -170,12 +193,24 @@ import { SettingsApiService, type TraefikInfo } from '../settings/settings-api.s
 
               @if (wildcardDomain() && installationType() === 'local') {
                 <div class="rounded-lg bg-green-500/5 border border-green-500/10 p-3">
-                  <p class="text-xs c-muted">Services will use <code class="kb-text">.localhost</code> domains. No DNS needed.</p>
+                  <p class="text-xs c-muted">New services will use <code class="kb-text">{{ wildcardDomain() }}</code> as their base domain. Leave this empty to use <code class="kb-text">.localhost</code>.</p>
+                </div>
+              }
+
+              @if (!wildcardDomain() && installationType() === 'local') {
+                <div class="rounded-lg bg-green-500/5 border border-green-500/10 p-3">
+                  <p class="text-xs c-muted">New services will use <code class="kb-text">.localhost</code> domains. No DNS needed on this machine.</p>
+                </div>
+              }
+
+              @if (!wildcardDomain() && installationType() === 'remote') {
+                <div class="rounded-lg bg-yellow-500/5 border border-yellow-500/10 p-3">
+                  <p class="text-xs text-yellow-500">Remote service access needs a wildcard domain and DNS record. Without it, new services fall back to <code class="kb-text">.localhost</code> and will not work from other machines.</p>
                 </div>
               }
 
               @if (wildcardSaved()) {
-                <p class="text-xs text-green-500">Wildcard domain saved. New services will use {{ wildcardDomain() }}.</p>
+                <p class="text-xs text-green-500">{{ wildcardDomain() ? 'Wildcard domain saved. New services will use ' + wildcardDomain() + '.' : 'Wildcard domain cleared. New local services will use .localhost.' }}</p>
               }
 
               @if (wildcardError()) {
@@ -190,6 +225,17 @@ import { SettingsApiService, type TraefikInfo } from '../settings/settings-api.s
                 >
                   {{ wildcardSaving() ? 'Saving...' : 'Save wildcard domain' }}
                 </button>
+
+                @if (originalWildcardDomain) {
+                  <button
+                    class="btn btn-secondary"
+                    type="button"
+                    (click)="clearWildcardDomain()"
+                    [disabled]="wildcardSaving()"
+                  >
+                    Clear
+                  </button>
+                }
               </div>
 
               <p class="text-xs c-muted">
@@ -309,14 +355,14 @@ export class SettingsPageComponent implements OnInit {
   public readonly saving = signal(false);
   public readonly saved = signal(false);
   public readonly error = signal('');
-  private originalDomain = '';
+  protected originalDomain = '';
 
   public readonly wildcardDomain = signal('');
   public readonly wildcardLoading = signal(true);
   public readonly wildcardSaving = signal(false);
   public readonly wildcardSaved = signal(false);
   public readonly wildcardError = signal('');
-  private originalWildcardDomain = '';
+  protected originalWildcardDomain = '';
 
   public readonly traefikInfo = signal<TraefikInfo | null>(null);
   public readonly traefikLoading = signal(true);
@@ -384,6 +430,11 @@ export class SettingsPageComponent implements OnInit {
   }
 
 
+  public async clear(): Promise<void> {
+    this.domain.set('');
+    await this.save();
+  }
+
   public async saveWildcardDomain(): Promise<void> {
     this.wildcardSaving.set(true);
     this.wildcardError.set('');
@@ -397,6 +448,11 @@ export class SettingsPageComponent implements OnInit {
     } finally {
       this.wildcardSaving.set(false);
     }
+  }
+
+  public async clearWildcardDomain(): Promise<void> {
+    this.wildcardDomain.set('');
+    await this.saveWildcardDomain();
   }
 
   private async loadInstallationType(): Promise<void> {
