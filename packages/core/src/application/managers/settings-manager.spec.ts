@@ -21,6 +21,10 @@ class MemorySettingsRepository implements SettingsRepository {
   public async list(): Promise<readonly Setting[]> {
     return [...this.settings.values()];
   }
+
+  public async delete(key: SettingKey): Promise<void> {
+    this.settings.delete(key);
+  }
 }
 
 const createManager = () => {
@@ -79,6 +83,16 @@ describe('SettingsManager', () => {
     expect(settings).toHaveLength(2);
     expect(settings.map((s) => s.value)).toContain('kiban.example.com');
     expect(settings.map((s) => s.value)).toContain('apps.example.com');
+  });
+
+  it('clears a setting by key', async () => {
+    const { manager, repository } = createManager();
+    const key = toSettingKey('wildcard_domain');
+    repository.settings.set(key, { key, value: 'apps.example.com', updatedAt: now });
+
+    await manager.clearSetting(key);
+
+    expect(repository.settings.has(key)).toBe(false);
   });
 
   it('rejects empty values when writing', async () => {

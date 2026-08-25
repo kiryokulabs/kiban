@@ -4,7 +4,7 @@ import type { ServiceDefinition } from '../../domain/catalog/service-definition.
 import type { Environment } from '../../domain/projects/project.js';
 import { ProjectNotFoundError, ProjectValidationError } from '../../domain/projects/project-errors.js';
 import type { InstalledService } from '../../domain/services/installed-service.js';
-import type { InstalledServiceRepository, RuntimeProvider } from '../interfaces/installed-service-repository.js';
+import type { InstallationPlan, InstalledServiceRepository, RuntimeProvider } from '../interfaces/installed-service-repository.js';
 import type { CatalogRepository } from '../interfaces/catalog-repository.js';
 import type { EnvironmentRepository } from '../interfaces/project-repository.js';
 import { InstalledServiceManager } from './installed-service-manager.js';
@@ -181,6 +181,30 @@ describe('InstalledServiceManager', () => {
     expect(runtime.uninstall).toHaveBeenCalledWith(expect.objectContaining({ id: service.id }));
     expect(runtime.install).toHaveBeenCalledTimes(2);
     expect(runtime.install).toHaveBeenLastCalledWith(expect.objectContaining({ variables: { POSTGRES_PASSWORD: 'new' } }));
+  });
+
+  it('preserves existing public endpoints when saving configuration', async () => {
+    const { manager, installed, runtime } = createManager();
+    const service = await manager.install('project-1', 'env-1', { serviceId: 'postgresql', configuration: { POSTGRES_PASSWORD: 'old' } });
+    const publicEndpoints = [{ name: 'Web', service: 'postgresql', port: 5432, host: 'postgres.example.com', url: 'http://postgres.example.com', protocol: 'http' as const }];
+    installed.services.set(service.id, { ...service, runtime: { provider: 'test', publicEndpoints } });
+
+    await manager.updateConfiguration(service.id, { POSTGRES_PASSWORD: 'new' });
+
+    const lastPlan = vi.mocked(runtime.install).mock.calls.at(-1)?.[0] as InstallationPlan | undefined;
+    expect(lastPlan?.publicEndpoints).toEqual(publicEndpoints);
+  });
+
+  it('preserves existing public endpoints when recreating a service', async () => {
+    const { manager, installed, runtime } = createManager();
+    const service = await manager.install('project-1', 'env-1', { serviceId: 'postgresql', configuration: { POSTGRES_PASSWORD: 'secret' } });
+    const publicEndpoints = [{ name: 'Web', service: 'postgresql', port: 5432, host: 'custom.example.com', url: 'http://custom.example.com', protocol: 'http' as const }];
+    installed.services.set(service.id, { ...service, runtime: { provider: 'test', publicEndpoints } });
+
+    await manager.recreate(service.id);
+
+    const lastPlan = vi.mocked(runtime.install).mock.calls.at(-1)?.[0] as InstallationPlan | undefined;
+    expect(lastPlan?.publicEndpoints).toEqual(publicEndpoints);
   });
 
   it('recreates a service using the existing configuration', async () => {

@@ -12,6 +12,9 @@ export class SettingsManager {
   /** Lists all persisted settings. */
   public listSettings(): Promise<readonly Setting[]> { return this.settings.list(); }
 
+  /** Clears a setting by key. */
+  public clearSetting(key: SettingKey): Promise<void> { return this.settings.delete(key); }
+
   /** Writes a setting by key and value, rejecting empty values. */
   public async setSetting(key: SettingKey, value: string): Promise<void> {
     if (!value || value.trim().length === 0) {
