@@ -38,6 +38,7 @@ export interface LearnItem {
         @if (!collapsed()) {
           <div class="flex min-w-0 flex-1 items-center justify-between">
             <span class="text-sm font-semibold kb-text">KibanOS</span>
+            <span class="badge text-[10px] px-1.5 py-0.5 leading-none badge-danger">beta</span>
           </div>
         }
         <button
