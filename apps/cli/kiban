@@ -23,6 +23,8 @@ KIBAN_RUNTIME_DIR="${KIBAN_HOME}/runtime/kiban"
 KIBAN_COMPOSE_FILE="${KIBAN_RUNTIME_DIR}/compose.yaml"
 KIBAN_ENV_FILE="${KIBAN_RUNTIME_DIR}/.env"
 KIBAN_SERVICES_DIR="${KIBAN_HOME}/runtime/services"
+KIBAN_TRAEFIK_DIR="${KIBAN_HOME}/runtime/traefik"
+KIBAN_BIN_FILE="${KIBAN_HOME}/bin/kiban"
 
 info()  { printf '%s\n' "[kiban] $*"; }
 fail()  { printf '%s\n' "[kiban] Error: $*" >&2; exit 1; }
@@ -193,6 +195,61 @@ cmd_logs() {
 }
 
 # ---------------------------------------------------------------------------
+# uninstall
+# ---------------------------------------------------------------------------
+cmd_uninstall() {
+  assume_yes=0
+
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      -y|--yes)
+        assume_yes=1
+        ;;
+      *)
+        fail "Unknown option: $1"
+        ;;
+    esac
+    shift
+  done
+
+  if [ "${assume_yes}" -ne 1 ]; then
+    warn "This removes Kiban itself, but leaves installed services untouched."
+    warn "Kiban data under ${KIBAN_HOME} is preserved so services are not removed."
+    printf '%s' "Continue? [y/N] "
+    read answer || answer=""
+    case "${answer}" in
+      y|Y|yes|YES) ;;
+      *) info "Uninstall cancelled."; return 0 ;;
+    esac
+  fi
+
+  info "Uninstalling Kiban..."
+
+  if [ -r "${KIBAN_COMPOSE_FILE}" ] && [ -r "${KIBAN_ENV_FILE}" ]; then
+    info "Stopping Kiban..."
+    docker compose --env-file "${KIBAN_ENV_FILE}" -f "${KIBAN_COMPOSE_FILE}" down
+  else
+    warn "Kiban runtime not found. Skipping Kiban stop."
+  fi
+
+  if [ -r "${KIBAN_TRAEFIK_DIR}/compose.yaml" ]; then
+    info "Stopping Kiban routing layer..."
+    (cd "${KIBAN_TRAEFIK_DIR}" && docker compose --project-name kiban-traefik -f compose.yaml down)
+  fi
+
+  rm -rf -- "${KIBAN_RUNTIME_DIR}"
+  rm -rf -- "${KIBAN_TRAEFIK_DIR}"
+
+  if [ -f "${KIBAN_BIN_FILE}" ]; then
+    rm -f -- "${KIBAN_BIN_FILE}"
+  fi
+
+  info "Kiban uninstalled."
+  info "Installed services were not removed."
+  info "Remove Kiban from your shell PATH if your profile still references ${KIBAN_HOME}/bin."
+}
+
+# ---------------------------------------------------------------------------
 # helpers
 # ---------------------------------------------------------------------------
 ensure_runtime() {
@@ -231,6 +288,7 @@ Commands:
   stop          Stop Kiban core runtime
   restart       Restart Kiban core runtime
   logs          Show Kiban core runtime logs (--tail N)
+  uninstall     Uninstall Kiban without removing installed services
 
 Usage:
   kiban version
@@ -241,6 +299,8 @@ Usage:
   kiban restart
   kiban logs
   kiban logs --tail 50
+  kiban uninstall
+  kiban uninstall --yes
 USAGE
 }
 
@@ -261,6 +321,7 @@ main() {
     stop)     cmd_stop ;;
     restart)  cmd_restart ;;
     logs)     cmd_logs "$@" ;;
+    uninstall) cmd_uninstall "$@" ;;
     -h|--help|help) usage ;;
     *) fail "Unknown command: ${cmd}. Run 'kiban --help' for usage." ;;
   esac
