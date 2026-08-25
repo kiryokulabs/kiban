@@ -92,7 +92,7 @@ import { IconsComponent } from '../shared/icons.component';
               </div>
               <div class="flex items-center gap-2 text-xs c-muted">
                 <kiban-icon name="arrow-left" [size]="12" class="shrink-0" />
-                <span>Kiban pulls the image, creates the container, and configures networking</span>
+                <span>Kiban prepares the runtime, starts the service, and configures networking</span>
               </div>
               <div class="flex items-center gap-2 text-xs c-muted">
                 <kiban-icon name="arrow-left" [size]="12" class="shrink-0" />
@@ -124,7 +124,29 @@ import { IconsComponent } from '../shared/icons.component';
                 <span>Open it in your browser</span>
               </div>
             </div>
+            <div class="mt-3 rounded-lg border border-brand/20 bg-brand/5 p-3">
+              <p class="text-xs c-muted"><strong class="kb-text">Local install:</strong> service URLs usually end in <code class="kb-text">.localhost</code> and only work on the machine running Kiban.</p>
+              <p class="text-xs c-muted mt-1"><strong class="kb-text">Remote install:</strong> configure a Wildcard Domain with DNS before expecting service URLs to work from your laptop, phone, or team members' devices.</p>
+            </div>
           </div>
+        </div>
+      </div>
+
+      <!-- Remote URL requirements -->
+      <div class="card p-5">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="grid h-8 w-8 place-items-center rounded-lg bg-brand/10 text-brand-light">
+            <kiban-icon name="external-link" [size]="16" />
+          </div>
+          <div>
+            <p class="text-sm font-medium kb-text">Remote service URLs need a Wildcard Domain</p>
+            <p class="text-xs c-muted">The dashboard IP is not a service gateway.</p>
+          </div>
+        </div>
+        <div class="space-y-3 text-sm c-muted">
+          <p>You can open the Kiban dashboard at <code class="kb-text">IP:8080</code>, especially during first setup.</p>
+          <p>Installed services are opened through generated hostnames, not through paths such as <code class="kb-text">IP:8080/service-name</code>.</p>
+          <p>For remote access, set a Wildcard Domain you control, for example <code class="kb-text">services.example.com</code> or <code class="kb-text">example.com</code>, and create the matching wildcard DNS record pointing to the server.</p>
         </div>
       </div>
 

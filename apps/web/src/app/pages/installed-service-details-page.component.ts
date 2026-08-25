@@ -295,7 +295,7 @@ import { SkeletonInstalledDetailComponent } from '../shared/skeleton-installed-d
         </section>
 
         <section class="card border-danger/30 p-4">
-          <h2 class="flex items-center gap-2 text-sm font-semibold kb-text text-danger"><kiban-icon name="warning" [size]="14" /> Danger Zone</h2>
+          <h2 class="flex items-center gap-2 text-sm font-semibold" style="color: var(--color-danger);"><kiban-icon name="warning" [size]="14" style="color: var(--color-danger);" /> Danger Zone</h2>
           <div class="mt-3 space-y-3">
             <div class="flex items-center justify-between gap-3 rounded-lg border border-danger/30 p-3">
               <div>

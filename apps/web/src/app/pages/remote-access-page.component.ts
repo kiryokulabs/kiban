@@ -31,6 +31,7 @@ import { IconsComponent } from '../shared/icons.component';
         </div>
         <div class="space-y-3 text-sm c-muted">
           <p>When Kiban runs on your own machine, the dashboard is at <code class="kb-text">localhost:8080</code> and service URLs use <code class="kb-text">.localhost</code>. This works only on that machine.</p>
+          <p>When Kiban runs on a remote server, the dashboard is first opened through <code class="kb-text">server-ip:8080</code>. Services need a Wildcard Domain with DNS if you want to open them from other devices.</p>
           <p>You need remote access when:</p>
           <div class="space-y-2">
             <div class="flex items-start gap-2">
@@ -62,6 +63,7 @@ import { IconsComponent } from '../shared/icons.component';
                 <div class="rounded-lg border kb-border bg-surface p-3">
                   <code class="text-xs kb-text">curl -fsSL https://get.kibanos.com | sh</code>
                 </div>
+                <p class="text-xs c-muted">After installation, open the dashboard at <code class="kb-text">http://VPS_IP:8080</code>. This direct URL is required before domains are configured.</p>
               </div>
               <div class="space-y-2">
                 <p class="text-xs font-medium kb-text">Step 2: Create DNS records</p>
@@ -69,7 +71,7 @@ import { IconsComponent } from '../shared/icons.component';
                   <p class="text-xs c-muted">Dashboard:</p>
                   <p class="text-xs kb-text">A  kiban.example.com  →  VPS_IP</p>
                   <p class="text-xs c-muted mt-2">Services:</p>
-                  <p class="text-xs kb-text">A  *.apps.example.com  →  VPS_IP</p>
+                  <p class="text-xs kb-text">A  *.services.example.com  →  VPS_IP</p>
                 </div>
               </div>
               <div class="space-y-2">
@@ -77,19 +79,37 @@ import { IconsComponent } from '../shared/icons.component';
                 <div class="space-y-1">
                   <div class="flex items-center gap-2 text-xs c-muted">
                     <kiban-icon name="arrow-left" [size]="12" class="shrink-0" />
-                    <span>Instance Domain: <code class="kb-text">kiban.example.com</code></span>
+                    <span>Instance Domain: <code class="kb-text">kiban.example.com</code> for the dashboard. Optional, but recommended.</span>
                   </div>
                   <div class="flex items-center gap-2 text-xs c-muted">
                     <kiban-icon name="arrow-left" [size]="12" class="shrink-0" />
-                    <span>Wildcard Domain: <code class="kb-text">apps.example.com</code></span>
+                    <span>Wildcard Domain: <code class="kb-text">services.example.com</code>, <code class="kb-text">apps.example.com</code>, or any domain base you control. Required for remote service URLs.</span>
                   </div>
                 </div>
               </div>
             </div>
             <div class="mt-3 rounded-lg border border-brand/20 bg-brand/5 p-3">
-              <p class="text-xs c-muted">After this, the dashboard is at <code class="kb-text">https://kiban.example.com</code> and services are at <code class="kb-text">https://grafana.development.myapp.apps.example.com</code>.</p>
+              <p class="text-xs c-muted">After this, the dashboard is available at <code class="kb-text">kiban.example.com</code> and still available at <code class="kb-text">VPS_IP:8080</code>. Services are available at hostnames like <code class="kb-text">grafana.development.myapp.services.example.com</code>.</p>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- Domains required for services -->
+      <div class="card p-5">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="grid h-8 w-8 place-items-center rounded-lg bg-brand/10 text-brand-light">
+            <kiban-icon name="server" [size]="16" />
+          </div>
+          <div>
+            <p class="text-sm font-medium kb-text">What requires a domain?</p>
+            <p class="text-xs c-muted">Dashboard access and service access are different.</p>
+          </div>
+        </div>
+        <div class="space-y-3 text-sm c-muted">
+          <p><strong class="kb-text">Kiban dashboard:</strong> a domain is optional. You can always use <code class="kb-text">IP:8080</code> for first setup and fallback access.</p>
+          <p><strong class="kb-text">Installed services:</strong> a Wildcard Domain is required for remote access. Without it, Kiban generates <code class="kb-text">.localhost</code> URLs, which only work on the machine running Kiban.</p>
+          <p>Kiban does not expose services as <code class="kb-text">IP:8080/service-name</code>. Many services break under subpaths because assets, redirects, cookies, and WebSockets usually expect the root path <code class="kb-text">/</code>.</p>
         </div>
       </div>
 
@@ -128,11 +148,11 @@ import { IconsComponent } from '../shared/icons.component';
             <div class="mt-3 space-y-3">
               <div class="space-y-2">
                 <p class="text-xs font-medium kb-text">Same network access</p>
-                <p class="text-xs c-muted">Use your machine's local IP (e.g., <code class="kb-text">192.168.1.100:8080</code>). Service URLs with <code class="kb-text">.localhost</code> won't work from other devices.</p>
+                <p class="text-xs c-muted">Use your machine's local IP for the dashboard (e.g., <code class="kb-text">192.168.1.100:8080</code>). Service URLs with <code class="kb-text">.localhost</code> won't work from other devices.</p>
               </div>
               <div class="space-y-2">
                 <p class="text-xs font-medium kb-text">External access</p>
-                <p class="text-xs c-muted">For access from outside your home network, use a tunnel or configure a real domain with DNS pointing to your public IP.</p>
+                <p class="text-xs c-muted">For service access from outside your home network, use a tunnel with wildcard support or configure a real Wildcard Domain with DNS pointing to your public IP.</p>
               </div>
             </div>
           </div>
@@ -172,7 +192,7 @@ import { IconsComponent } from '../shared/icons.component';
       <!-- Summary -->
       <div class="card-subtle flex items-center gap-3 px-4 py-3">
         <kiban-icon name="check" [size]="14" class="shrink-0 text-green-500" />
-        <p class="text-sm c-muted">For most users: install on a VPS, configure DNS, set Wildcard Domain. That's all you need.</p>
+        <p class="text-sm c-muted">For most remote users: open Kiban first at IP:8080, configure wildcard DNS, then set the Wildcard Domain for services.</p>
       </div>
     </div>
   `
