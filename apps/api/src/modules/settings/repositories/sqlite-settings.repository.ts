@@ -29,6 +29,11 @@ export class SqliteSettingsRepository {
     );
   }
 
+  /** Deletes a setting by key. */
+  public async delete(key: SettingKey): Promise<void> {
+    await this.database.run('DELETE FROM settings WHERE key = ?', [key]);
+  }
+
   /** Lists all persisted settings. */
   public async list(): Promise<readonly Setting[]> {
     const rows = await this.database.all<SettingRow>('SELECT * FROM settings ORDER BY key ASC');

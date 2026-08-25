@@ -184,10 +184,11 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
     const envFile = join(runtimeDir, '.env');
     if (!(await this.fileExists(composeFile)) || !(await this.fileExists(envFile))) return false;
 
-    await this.ensureReverseProxy();
+    const normalizedDomain = domain.trim();
+    if (normalizedDomain.length > 0) await this.ensureReverseProxy();
 
     const composeContent = await readFile(composeFile, 'utf8');
-    const updated = this.withInstanceDomainRouting(composeContent, domain.trim());
+    const updated = this.withInstanceDomainRouting(composeContent, normalizedDomain);
     await writeFile(composeFile, updated, 'utf8');
     await this.runner.run('docker', ['compose', '--env-file', envFile, '-f', 'compose.yaml', 'up', '-d', '--force-recreate'], { cwd: runtimeDir });
     return true;
@@ -504,13 +505,13 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
     if (!webService) return composeYaml;
 
     if (domain.length === 0) {
-      delete webService['labels'];
+      this.removeTraefikLabels(webService);
       this.removeServiceNetwork(webService, SHARED_REVERSE_PROXY_NETWORK);
       if (!('ports' in webService)) webService['ports'] = ['8080:80'];
       return stringify(document);
     }
 
-    delete webService['ports'];
+    if (!('ports' in webService)) webService['ports'] = ['8080:80'];
     this.addExpose(webService, 80);
     this.addServiceNetwork(webService, SHARED_REVERSE_PROXY_NETWORK);
     const labels = this.ensureRecord(webService, 'labels');

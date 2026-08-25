@@ -84,6 +84,7 @@ describe('DockerComposeRuntimeProvider — applyInstanceDomain', () => {
     expect(labels['traefik.http.routers.kiban-web.entrypoints']).toBe('web');
     expect(labels['traefik.http.services.kiban-web.loadbalancer.server.port']).toBe('80');
     expect(labels['traefik.docker.network']).toBe('kiban');
+    expect(webService.ports).toEqual(['8080:80']);
 
     const networks = webService.networks as string[];
     expect(networks).toContain('kiban-core');

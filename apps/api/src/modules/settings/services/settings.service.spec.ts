@@ -24,9 +24,14 @@ class MockSettingsManager {
   public async listSettings(): Promise<readonly Setting[]> {
     return [...this.settings.values()];
   }
+
+  public async clearSetting(key: SettingKey): Promise<void> {
+    this.settings.delete(key);
+  }
 }
 
 class MockApplier implements InstanceDomainApplier {
+  public shouldThrow = false;
   public lastDomain: string | null = null;
   public calls = 0;
   public traefikInfo: TraefikInfo = {
@@ -40,6 +45,7 @@ class MockApplier implements InstanceDomainApplier {
   };
 
   public async applyInstanceDomain(domain: string): Promise<boolean> {
+    if (this.shouldThrow) throw new Error('runtime failed');
     this.lastDomain = domain;
     this.calls += 1;
     return true;
@@ -95,12 +101,37 @@ describe('SettingsService', () => {
       expect(domain).toBe('new.example.com');
     });
 
-    it('rejects empty domain', async () => {
-      await expect(service.setInstanceDomain('')).rejects.toThrow();
+    it('clears empty domain and removes runtime routing', async () => {
+      await service.setInstanceDomain('kiban.example.com');
+
+      await service.setInstanceDomain('');
+
+      expect(await service.getInstanceDomain()).toBeNull();
+      expect(applier.lastDomain).toBe('');
     });
 
-    it('rejects whitespace-only domain', async () => {
-      await expect(service.setInstanceDomain('   ')).rejects.toThrow();
+    it('clears whitespace-only domain and removes runtime routing', async () => {
+      await service.setInstanceDomain('kiban.example.com');
+
+      await service.setInstanceDomain('   ');
+
+      expect(await service.getInstanceDomain()).toBeNull();
+      expect(applier.lastDomain).toBe('');
+    });
+
+    it('rejects invalid instance domain hostnames', async () => {
+      await expect(service.setInstanceDomain('https://kiban.example.com')).rejects.toThrow('Instance domain must be a hostname without protocol, wildcard, port, or path.');
+      await expect(service.setInstanceDomain('kiban.example.com/path')).rejects.toThrow('Instance domain must be a hostname without protocol, wildcard, port, or path.');
+      await expect(service.setInstanceDomain('kiban example.com')).rejects.toThrow('Instance domain must be a valid hostname.');
+      await expect(service.setInstanceDomain('*.example.com')).rejects.toThrow('Instance domain must be a hostname without protocol, wildcard, port, or path.');
+    });
+
+    it('does not persist instance domain when runtime application fails', async () => {
+      applier.shouldThrow = true;
+
+      await expect(service.setInstanceDomain('kiban.example.com')).rejects.toThrow('runtime failed');
+
+      expect(await service.getInstanceDomain()).toBeNull();
     });
 
     it('trims whitespace from domain', async () => {
@@ -118,12 +149,10 @@ describe('SettingsService', () => {
       expect(applier.calls).toBe(1);
     });
 
-    it('applies empty string to the applier when clearing domain', async () => {
-      await service.setInstanceDomain('kiban.example.com');
-      // setInstanceDomain rejects empty values, so we test via manager directly
-      await manager.setSetting(toSettingKey('instance_domain'), 'placeholder');
-      // The applier should have been called with the domain
-      expect(applier.calls).toBe(1);
+    it('allows localhost instance domains', async () => {
+      await service.setInstanceDomain('kiban.localhost');
+
+      expect(await service.getInstanceDomain()).toBe('kiban.localhost');
     });
   });
 
@@ -211,12 +240,26 @@ describe('SettingsService', () => {
       expect(domain).toBe('new.example.com');
     });
 
-    it('rejects empty wildcard domain', async () => {
-      await expect(service.setWildcardDomain('')).rejects.toThrow();
+    it('clears empty wildcard domain', async () => {
+      await service.setWildcardDomain('apps.example.com');
+
+      await service.setWildcardDomain('');
+
+      expect(await service.getWildcardDomain()).toBeNull();
     });
 
-    it('rejects whitespace-only wildcard domain', async () => {
-      await expect(service.setWildcardDomain('   ')).rejects.toThrow();
+    it('clears whitespace-only wildcard domain', async () => {
+      await service.setWildcardDomain('apps.example.com');
+
+      await service.setWildcardDomain('   ');
+
+      expect(await service.getWildcardDomain()).toBeNull();
+    });
+
+    it('rejects invalid wildcard domain hostnames', async () => {
+      await expect(service.setWildcardDomain('https://apps.example.com')).rejects.toThrow('Wildcard domain must be a hostname without protocol, wildcard, port, or path.');
+      await expect(service.setWildcardDomain('*.apps.example.com')).rejects.toThrow('Wildcard domain must be a hostname without protocol, wildcard, port, or path.');
+      await expect(service.setWildcardDomain('apps.example.com/path')).rejects.toThrow('Wildcard domain must be a hostname without protocol, wildcard, port, or path.');
     });
 
     it('trims whitespace from wildcard domain', async () => {
