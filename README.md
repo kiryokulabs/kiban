@@ -7,12 +7,6 @@
 [![GitHub issues](https://img.shields.io/github/issues/kiryokulabs/kiban)](https://github.com/kiryokulabs/kiban/issues)
 [![GitHub last commit](https://img.shields.io/github/last-commit/kiryokulabs/kiban)](https://github.com/kiryokulabs/kiban/commits)
 
-[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![GitHub release](https://img.shields.io/github/v/release/kiryokulabs/kiban)](https://github.com/kiryokulabs/kiban/releases)
-[![GitHub stars](https://img.shields.io/github/stars/kiryokulabs/kiban)](https://github.com/kiryokulabs/kiban/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/kiryokulabs/kiban)](https://github.com/kiryokulabs/kiban/network/members)
-[![GitHub issues](https://img.shields.io/github/issues/kiryokulabs/kiban)](https://github.com/kiryokulabs/kiban/issues)
-[![GitHub last commit](https://img.shields.io/github/last-commit/kiryokulabs/kiban)](https://github.com/kiryokulabs/kiban/commits)
 
 > [!NOTE]
 > KibanOS is still in beta. We are actively developing the platform and welcome contributions.  
