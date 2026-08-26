@@ -19,6 +19,11 @@ installed_home() {
 }
 
 KIBAN_HOME="${KIBAN_HOME:-$(installed_home)}"
+KIBAN_RELEASE_CHANNEL="${KIBAN_RELEASE_CHANNEL:-latest}"
+KIBAN_RELEASE_BASE="${KIBAN_RELEASE_BASE:-https://get.kibanos.com/${KIBAN_RELEASE_CHANNEL}}"
+KIBAN_VERSION_URL="${KIBAN_VERSION_URL:-${KIBAN_RELEASE_BASE}/VERSION}"
+KIBAN_COMPOSE_URL="${KIBAN_COMPOSE_URL:-${KIBAN_RELEASE_BASE}/compose.yaml}"
+KIBAN_CLI_URL="${KIBAN_CLI_URL:-${KIBAN_RELEASE_BASE}/kiban}"
 KIBAN_RUNTIME_DIR="${KIBAN_HOME}/runtime/kiban"
 KIBAN_COMPOSE_FILE="${KIBAN_RUNTIME_DIR}/compose.yaml"
 KIBAN_ENV_FILE="${KIBAN_RUNTIME_DIR}/.env"
@@ -195,6 +200,72 @@ cmd_logs() {
 }
 
 # ---------------------------------------------------------------------------
+# update
+# ---------------------------------------------------------------------------
+cmd_update() {
+  ensure_runtime
+  ensure_curl
+
+  assume_yes=0
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      -y|--yes)
+        assume_yes=1
+        ;;
+      *)
+        fail "Unknown option: $1"
+        ;;
+    esac
+    shift
+  done
+
+  current_version="$(env_value KIBAN_VERSION unknown)"
+  latest_version="$(curl -fsSL "${KIBAN_VERSION_URL}" | tr -d '\r\n' | sed 's/^v//')"
+  [ -n "${latest_version}" ] || fail "Could not resolve latest Kiban version from ${KIBAN_VERSION_URL}."
+
+  if [ "${current_version}" = "${latest_version}" ]; then
+    info "Kiban is already up to date (${current_version})."
+    return 0
+  fi
+
+  if [ "${assume_yes}" -ne 1 ]; then
+    warn "This updates Kiban from ${current_version} to ${latest_version}."
+    warn "Installed services will not be removed."
+    printf '%s' "Continue? [y/N] "
+    read answer || answer=""
+    case "${answer}" in
+      y|Y|yes|YES) ;;
+      *) info "Update cancelled."; return 0 ;;
+    esac
+  fi
+
+  compose_next="${KIBAN_COMPOSE_FILE}.next"
+  cli_next="${KIBAN_BIN_FILE}.next"
+  env_next="${KIBAN_ENV_FILE}.next"
+
+  info "Downloading Kiban ${latest_version}..."
+  curl -fsSL "${KIBAN_COMPOSE_URL}" -o "${compose_next}"
+  curl -fsSL "${KIBAN_CLI_URL}" -o "${cli_next}"
+  chmod +x "${cli_next}"
+
+  set_env_value KIBAN_VERSION "${latest_version}" "${env_next}"
+
+  mv "${compose_next}" "${KIBAN_COMPOSE_FILE}"
+  mv "${cli_next}" "${KIBAN_BIN_FILE}"
+  mv "${env_next}" "${KIBAN_ENV_FILE}"
+  chmod 600 "${KIBAN_ENV_FILE}"
+
+  info "Pulling Kiban ${latest_version}..."
+  docker compose --env-file "${KIBAN_ENV_FILE}" -f "${KIBAN_COMPOSE_FILE}" pull
+
+  info "Restarting Kiban..."
+  docker compose --env-file "${KIBAN_ENV_FILE}" -f "${KIBAN_COMPOSE_FILE}" up -d
+
+  info "Kiban updated to ${latest_version}."
+  info "Installed services were not removed."
+}
+
+# ---------------------------------------------------------------------------
 # uninstall
 # ---------------------------------------------------------------------------
 cmd_uninstall() {
@@ -273,6 +344,34 @@ env_value() {
   printf '%s' "${default}"
 }
 
+ensure_curl() {
+  command_exists curl || fail "curl is required to update Kiban."
+}
+
+set_env_value() {
+  key="$1"
+  value="$2"
+  destination="$3"
+  found=0
+
+  : > "${destination}"
+  while IFS= read -r line || [ -n "${line}" ]; do
+    case "${line}" in
+      "${key}="*)
+        printf '%s=%s\n' "${key}" "${value}" >> "${destination}"
+        found=1
+        ;;
+      *)
+        printf '%s\n' "${line}" >> "${destination}"
+        ;;
+    esac
+  done < "${KIBAN_ENV_FILE}"
+
+  if [ "${found}" -eq 0 ]; then
+    printf '%s=%s\n' "${key}" "${value}" >> "${destination}"
+  fi
+}
+
 # ---------------------------------------------------------------------------
 # main
 # ---------------------------------------------------------------------------
@@ -288,6 +387,7 @@ Commands:
   stop          Stop Kiban core runtime
   restart       Restart Kiban core runtime
   logs          Show Kiban core runtime logs (--tail N)
+  update        Update Kiban without removing installed services
   uninstall     Uninstall Kiban without removing installed services
 
 Usage:
@@ -299,6 +399,8 @@ Usage:
   kiban restart
   kiban logs
   kiban logs --tail 50
+  kiban update
+  kiban update --yes
   kiban uninstall
   kiban uninstall --yes
 USAGE
@@ -321,6 +423,7 @@ main() {
     stop)     cmd_stop ;;
     restart)  cmd_restart ;;
     logs)     cmd_logs "$@" ;;
+    update) cmd_update "$@" ;;
     uninstall) cmd_uninstall "$@" ;;
     -h|--help|help) usage ;;
     *) fail "Unknown command: ${cmd}. Run 'kiban --help' for usage." ;;

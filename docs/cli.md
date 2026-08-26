@@ -117,6 +117,24 @@ Supports `--tail` to control the number of lines (default: 300).
 $ kiban logs --tail 50
 ```
 
+### kiban update
+
+Updates Kiban itself without removing installed services.
+
+```sh
+$ kiban update
+```
+
+For non-interactive usage:
+
+```sh
+$ kiban update --yes
+```
+
+The command checks the latest published version, downloads the new Kiban core runtime assets and CLI, updates `KIBAN_VERSION`, pulls the new Kiban runtime images and starts Kiban again.
+
+It preserves Kiban data, configuration, plugins and installed service runtime workspaces.
+
 ### kiban uninstall
 
 Uninstalls Kiban itself without removing installed services.
