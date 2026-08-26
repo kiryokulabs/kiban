@@ -98,7 +98,7 @@ Every milestone leaves the project in a releasable state.
 
 ---
 
-# Phase 2 — Release v0.1
+# Phase 2 — First Public Release
 
 The first public release.
 
@@ -111,7 +111,7 @@ The first public release.
 - Installer improvements
   - GHCR image pull (replace local build)
   - `curl -fsSL https://get.kibanos.com | sh`
-- GitHub release v0.1.0
+- GitHub release
 - GHCR image publishing (`ghcr.io/kiryokulabs/kiban-api`, `ghcr.io/kiryokulabs/kiban-web`)
 - Cloudflare DNS + Worker for `get.kibanos.com`
 

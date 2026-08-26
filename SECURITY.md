@@ -32,10 +32,10 @@ This security policy applies to:
 
 ## Supported Versions
 
-| Version | Supported          |
-|---------|--------------------|
-| 0.1.x   | :white_check_mark: |
-| < 0.1   | :x:                |
+| Release series | Supported          |
+|----------------|--------------------|
+| Current        | :white_check_mark: |
+| Older          | :x:                |
 
 ## Disclosure
 

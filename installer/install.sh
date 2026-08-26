@@ -34,7 +34,7 @@ check_supported_os() {
   case "${KIBAN_OS}" in
     Darwin) return 0 ;;
     Linux) ;;
-    *) fail "Unsupported operating system '${KIBAN_OS}'. Kiban v0.1 supports Linux and macOS." ;;
+    *) fail "Unsupported operating system '${KIBAN_OS}'. Kiban supports Linux and macOS." ;;
   esac
 
   [ -r /etc/os-release ] || fail "Cannot detect Linux distribution because /etc/os-release is missing."
@@ -43,14 +43,14 @@ check_supported_os() {
   . /etc/os-release
   case "${ID:-}" in
     ubuntu|debian) return 0 ;;
-    *) fail "Unsupported distribution '${ID:-unknown}'. Kiban v0.1 supports Ubuntu, Debian and macOS." ;;
+    *) fail "Unsupported distribution '${ID:-unknown}'. Kiban supports Ubuntu, Debian and macOS." ;;
   esac
 }
 
 check_supported_architecture() {
   case "$(uname -m)" in
     x86_64|amd64|aarch64|arm64) return 0 ;;
-    *) fail "Unsupported architecture '$(uname -m)'. Kiban v0.1 supports amd64 and arm64." ;;
+    *) fail "Unsupported architecture '$(uname -m)'. Kiban supports amd64 and arm64." ;;
   esac
 }
 

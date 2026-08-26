@@ -26,7 +26,7 @@ Prints the installed Kiban version.
 
 ```sh
 $ kiban version
-kiban 0.1.0
+kiban <version>
 ```
 
 ### kiban doctor
@@ -193,7 +193,7 @@ The CLI is a single POSIX shell script. It reads configuration from `~/.kiban/ru
 
 The CLI never exposes Docker concepts to the user. All output uses Kiban terminology.
 
-## Limitations (v0.1)
+## Limitations
 
 - Service management (install, remove, configure) is only available through the web UI.
 - The CLI only manages the core runtime and provides read-only service status.
