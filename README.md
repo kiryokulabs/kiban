@@ -63,6 +63,19 @@ curl -fsSL https://get.kibanos.com | sh
 
 Then open the web UI and create your first project.
 
+## CLI
+
+The installer adds the Kiban CLI at `~/.kiban/bin/kiban`.
+
+```bash
+kiban doctor
+kiban version
+kiban update
+kiban uninstall
+```
+
+Use `kiban update` to update Kiban itself without removing installed services.
+
 ## Development
 
 ### Requirements

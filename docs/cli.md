@@ -135,6 +135,16 @@ The command checks the latest published version, downloads the new Kiban core ru
 
 It preserves Kiban data, configuration, plugins and installed service runtime workspaces.
 
+The selected release channel must publish these assets before `kiban update` can work:
+
+- `VERSION`
+- `compose.yaml`
+- `kiban`
+
+For the default channel, those files are expected under `https://get.kibanos.com/latest/`.
+
+See [`docs/release.md`](./release.md) for the full release checklist.
+
 ### kiban uninstall
 
 Uninstalls Kiban itself without removing installed services.
