@@ -7,11 +7,12 @@ import { IconsComponent } from './shared/icons.component';
 import { SidebarComponent, type NavItem, type LearnItem } from './shared/sidebar.component';
 import { ProgressBarComponent } from './shared/progress-bar.component';
 import { SystemMetricsHeaderComponent } from './system/system-metrics-header.component';
+import { UpdateNoticeComponent } from './system/update-notice.component';
 
 @Component({
   selector: 'kiban-root',
   standalone: true,
-  imports: [AuthShellComponent, RouterLink, RouterOutlet, SidebarComponent, IconsComponent, ProgressBarComponent, SystemMetricsHeaderComponent],
+  imports: [AuthShellComponent, RouterLink, RouterOutlet, SidebarComponent, IconsComponent, ProgressBarComponent, SystemMetricsHeaderComponent, UpdateNoticeComponent],
   template: `
     @if (initializing()) {
       <!-- Loading state -->
@@ -54,6 +55,7 @@ import { SystemMetricsHeaderComponent } from './system/system-metrics-header.com
               <kiban-system-metrics-header />
             </div>
             <div class="flex items-center gap-2">
+              <kiban-update-notice />
               <button
                 class="btn-icon"
                 type="button"
