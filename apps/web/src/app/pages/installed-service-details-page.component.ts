@@ -99,6 +99,34 @@ import { SkeletonInstalledDetailComponent } from '../shared/skeleton-installed-d
           } @else {
             <div class="mt-3 space-y-4">
               @if (presenter.webAccessPoints(d.accessPoints).length > 0) {
+                <div class="rounded-xl border kb-border p-3">
+                  <div class="flex items-start justify-between gap-3">
+                    <div>
+                      <h3 class="text-xs font-medium c-muted">Service domain</h3>
+                      <p class="mt-1 text-xs c-muted">Use <code class="kb-text">.localhost</code> only when Kiban runs on your own machine. Remote servers and tunnels need a real domain or wildcard DNS record.</p>
+                    </div>
+                    @if (isLocalhostDomain()) {
+                      <span class="badge badge-warning text-[10px]">Local only</span>
+                    }
+                  </div>
+                  <div class="mt-3 flex flex-col gap-2 sm:flex-row">
+                    <input class="input flex-1" type="text" placeholder="service.example.com" [ngModel]="serviceDomain()" (ngModelChange)="onServiceDomainChange($event)" [disabled]="!!actionInProgress() || serviceDomainSaving()" />
+                    <button class="btn-primary btn shrink-0" type="button" [disabled]="!!actionInProgress() || serviceDomainSaving() || !hasServiceDomainChanges()" (click)="saveServiceDomain()">
+                      {{ serviceDomainSaving() ? 'Saving...' : 'Save domain' }}
+                    </button>
+                  </div>
+                  @if (isLocalhostDomain()) {
+                    <p class="mt-2 text-xs text-yellow-500">This URL works only from the same computer. If Kiban is on a VPS, replace it with a domain that points to that server. If you use a tunnel, use a hostname routed through that tunnel.</p>
+                  } @else {
+                    <p class="mt-2 text-xs c-muted">DNS required: <code class="kb-text">A {{ serviceDomain() }} → your server IP</code>, or route this hostname through your tunnel provider.</p>
+                  }
+                  @if (serviceDomainSaved()) {
+                    <p class="mt-2 text-xs text-green-500">Domain updated. Traefik will route this service through {{ serviceDomain() }}.</p>
+                  }
+                  @if (serviceDomainError()) {
+                    <p class="mt-2 text-xs text-red-500">{{ serviceDomainError() }}</p>
+                  }
+                </div>
                 <div>
                   <h3 class="text-xs font-medium c-muted">Web access</h3>
                   <div class="mt-2 grid gap-2 lg:grid-cols-2">
@@ -267,7 +295,7 @@ import { SkeletonInstalledDetailComponent } from '../shared/skeleton-installed-d
         </section>
 
         <section class="card border-danger/30 p-4">
-          <h2 class="flex items-center gap-2 text-sm font-semibold kb-text"><kiban-icon name="warning" [size]="14" /> Danger Zone</h2>
+          <h2 class="flex items-center gap-2 text-sm font-semibold" style="color: var(--color-danger);"><kiban-icon name="warning" [size]="14" style="color: var(--color-danger);" /> Danger Zone</h2>
           <div class="mt-3 space-y-3">
             <div class="flex items-center justify-between gap-3 rounded-lg border border-danger/30 p-3">
               <div>
@@ -322,6 +350,11 @@ export class InstalledServiceDetailsPageComponent implements OnDestroy {
   protected readonly terminalOutput = signal<{ readonly data: string; readonly sequence: number } | null>(null);
   protected readonly terminalErrorMessage = signal<string | null>(null);
   protected readonly terminalContainerId = signal<string | null>(null);
+  protected readonly serviceDomain = signal('');
+  protected readonly serviceDomainSaving = signal(false);
+  protected readonly serviceDomainSaved = signal(false);
+  protected readonly serviceDomainError = signal('');
+  private originalServiceDomain = '';
   private terminalOutputSequence = 0;
   private timer: ReturnType<typeof setInterval> | null = null;
   private readonly terminalSubscriptions = new Subscription();
@@ -340,7 +373,7 @@ export class InstalledServiceDetailsPageComponent implements OnDestroy {
   protected load(): void {
     this.loading.set(true);
     this.installedServices.details(this.serviceId).subscribe({
-      next: (details) => { this.details.set(details); this.loading.set(false); this.logs.set(details.logs.value); this.configurationValues.set(this.toEditableValues(details.configuration.values)); this.connectInitialTerminal(details); this.message.set(null); },
+      next: (details) => { this.details.set(details); this.loading.set(false); this.logs.set(details.logs.value); this.configurationValues.set(this.toEditableValues(details.configuration.values)); this.setServiceDomainFromDetails(details); this.connectInitialTerminal(details); this.message.set(null); },
       error: () => { this.loading.set(false); this.message.set('Could not load service details.'); }
     });
   }
@@ -348,6 +381,9 @@ export class InstalledServiceDetailsPageComponent implements OnDestroy {
   protected webUrl(ap: AccessPoint): string { return ap.url ?? `http://${ap.host}:${ap.hostPort ?? ap.port}`; }
   protected copy(value: string): void { if (typeof navigator !== 'undefined' && navigator.clipboard) navigator.clipboard.writeText(value).catch(() => {}); }
   protected toggleSecret(key: string): void { const next = new Set(this.visibleSecrets()); next.has(key) ? next.delete(key) : next.add(key); this.visibleSecrets.set(next); }
+  protected onServiceDomainChange(value: string): void { this.serviceDomain.set(value); this.serviceDomainSaved.set(false); this.serviceDomainError.set(''); }
+  protected hasServiceDomainChanges(): boolean { return this.serviceDomain().trim() !== this.originalServiceDomain; }
+  protected isLocalhostDomain(): boolean { return this.serviceDomain().trim().endsWith('.localhost') || this.serviceDomain().trim() === 'localhost'; }
 
   // Terminal event handlers
   protected onTerminalContainerChange(containerId: string): void {
@@ -380,6 +416,18 @@ export class InstalledServiceDetailsPageComponent implements OnDestroy {
     this.confirmSaveConfiguration.set(false);
     this.actionInProgress.set('Applying configuration…');
     this.installedServices.updateConfiguration(this.serviceId, this.configurationValues()).subscribe({ next: () => { this.actionInProgress.set(null); this.load(); }, error: () => { this.actionInProgress.set(null); this.message.set('Could not save configuration.'); } });
+  }
+
+  protected saveServiceDomain(): void {
+    const host = this.serviceDomain().trim();
+    if (!host) { this.serviceDomainError.set('Service domain is required.'); return; }
+    this.serviceDomainSaving.set(true);
+    this.serviceDomainError.set('');
+    this.serviceDomainSaved.set(false);
+    this.installedServices.updateDomain(this.serviceId, host).subscribe({
+      next: () => { this.serviceDomainSaving.set(false); this.originalServiceDomain = host; this.serviceDomainSaved.set(true); this.load(); },
+      error: (error: unknown) => { this.serviceDomainSaving.set(false); this.serviceDomainError.set(this.errorMessage(error, 'Could not update service domain.')); }
+    });
   }
 
   protected recreateService(): void {
@@ -423,6 +471,22 @@ export class InstalledServiceDetailsPageComponent implements OnDestroy {
     }
     this.terminalContainerId.set(first.id);
     this.terminal.connect(this.serviceId, first.id);
+  }
+  private setServiceDomainFromDetails(details: InstalledServiceDetails): void {
+    const first = this.presenter.webAccessPoints(details.accessPoints)[0];
+    const host = first?.host ?? '';
+    this.serviceDomain.set(host);
+    this.originalServiceDomain = host;
+  }
+  private errorMessage(error: unknown, fallback: string): string {
+    if (!error || typeof error !== 'object') return fallback;
+    const response = (error as { readonly error?: unknown }).error;
+    if (response && typeof response === 'object') {
+      const message = (response as { readonly message?: unknown }).message;
+      if (typeof message === 'string' && message.length > 0) return message;
+      if (Array.isArray(message) && typeof message[0] === 'string') return message[0];
+    }
+    return fallback;
   }
   private toEditableValues(values: Readonly<Record<string, unknown>>): Record<string, string> { return Object.fromEntries(Object.entries(values).map(([key, value]) => [key, typeof value === 'string' ? value : String(value ?? '')])); }
 }

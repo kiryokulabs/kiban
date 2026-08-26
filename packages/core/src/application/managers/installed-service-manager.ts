@@ -3,7 +3,7 @@ import type { Environment } from '../../domain/projects/project.js';
 import { ProjectNotFoundError, ProjectValidationError } from '../../domain/projects/project-errors.js';
 import type { InstallServiceInput, InstalledService, InstalledServiceStatus } from '../../domain/services/installed-service.js';
 import type { CatalogRepository } from '../interfaces/catalog-repository.js';
-import type { InstallationPlan, InstalledServiceRepository, RuntimeProvider } from '../interfaces/installed-service-repository.js';
+import type { InstallationPlan, InstalledServiceRepository, RuntimeProvider, RuntimePublicEndpoint } from '../interfaces/installed-service-repository.js';
 import type { EnvironmentRepository } from '../interfaces/project-repository.js';
 
 const STATUS_TRANSITIONS: Readonly<Record<InstalledServiceStatus, readonly InstalledServiceStatus[]>> = {
@@ -87,7 +87,7 @@ export class InstalledServiceManager {
     const serviceDefinition = await this.validateServiceDefinition(service.serviceId);
     this.validateConfiguration(serviceDefinition, configuration);
     await this.runtime.uninstall(service);
-    const result = await this.runtime.install(this.createInstallationPlan(environment, serviceDefinition, configuration));
+    const result = await this.runtime.install(this.createInstallationPlan(environment, serviceDefinition, configuration, this.publicEndpointsFromRuntime(service.runtime)));
     const status = result.status === 'running' ? 'running' : 'failed';
     const updated = await this.installedServices.updateConfiguration(id, configuration, status, result.runtime ?? null);
     if (!updated) {
@@ -123,6 +123,12 @@ export class InstalledServiceManager {
     const service = await this.get(id);
     const result = await this.runtime.restart(service);
     return this.updateStatus(id, result.status, result.runtime);
+  }
+
+  /** Persists refreshed runtime metadata without changing service configuration. */
+  public async updateRuntime(id: string, runtime: Readonly<Record<string, unknown>> | null): Promise<InstalledService> {
+    const service = await this.get(id);
+    return this.updateStatus(id, service.status, runtime);
   }
 
   private async validateEnvironment(projectId: string, environmentId: string): Promise<Environment> {
@@ -166,9 +172,31 @@ export class InstalledServiceManager {
   private createInstallationPlan(
     environment: Environment,
     serviceDefinition: ServiceDefinition,
-    configuration: Readonly<Record<string, unknown>>
+    configuration: Readonly<Record<string, unknown>>,
+    publicEndpoints?: readonly RuntimePublicEndpoint[]
   ): InstallationPlan {
-    return { serviceDefinition, environment, variables: configuration };
+    return { serviceDefinition, environment, variables: configuration, ...(publicEndpoints && publicEndpoints.length > 0 ? { publicEndpoints } : {}) };
+  }
+
+  private publicEndpointsFromRuntime(runtime: Readonly<Record<string, unknown>> | null): readonly RuntimePublicEndpoint[] | undefined {
+    const endpoints = runtime?.['publicEndpoints'];
+    if (!Array.isArray(endpoints)) return undefined;
+
+    const parsed = endpoints.flatMap((endpoint): RuntimePublicEndpoint[] => {
+      if (!endpoint || typeof endpoint !== 'object' || Array.isArray(endpoint)) return [];
+      const record = endpoint as Readonly<Record<string, unknown>>;
+      const name = record['name'];
+      const service = record['service'];
+      const port = record['port'];
+      const host = record['host'];
+      const url = record['url'];
+      const protocol = record['protocol'];
+      if (typeof name !== 'string' || typeof service !== 'string' || typeof port !== 'number' || typeof host !== 'string' || typeof url !== 'string') return [];
+      if (protocol !== 'http' && protocol !== 'https') return [];
+      return [{ name, service, port, host, url, protocol }];
+    });
+
+    return parsed.length > 0 ? parsed : undefined;
   }
 
   private assertTransition(from: InstalledServiceStatus, to: InstalledServiceStatus): void {

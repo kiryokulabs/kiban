@@ -18,8 +18,7 @@ import { IconsComponent } from '../shared/icons.component';
             <kiban-icon name="home" [size]="15" />
           </div>
           <div>
-            <h1 class="text-xl font-semibold kb-text">Welcome to Kiban</h1>
-            <p class="mt-0.5 text-sm c-muted">Your projects and environments at a glance.</p>
+            <h1 class="text-xl font-semibold kb-text">Dashboard</h1>
           </div>
         </div>
       </div>

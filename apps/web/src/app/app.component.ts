@@ -4,19 +4,25 @@ import { AuthShellComponent } from './auth/auth-shell.component';
 import { AuthService } from './auth/auth.service';
 import { ThemeService } from './theme/theme.service';
 import { IconsComponent } from './shared/icons.component';
-import { SidebarComponent, type NavItem } from './shared/sidebar.component';
+import { SidebarComponent, type NavItem, type LearnItem } from './shared/sidebar.component';
 import { ProgressBarComponent } from './shared/progress-bar.component';
+import { SystemMetricsHeaderComponent } from './system/system-metrics-header.component';
+import { UpdateNoticeComponent } from './system/update-notice.component';
 
 @Component({
   selector: 'kiban-root',
   standalone: true,
-  imports: [AuthShellComponent, RouterLink, RouterOutlet, SidebarComponent, IconsComponent, ProgressBarComponent],
+  imports: [AuthShellComponent, RouterLink, RouterOutlet, SidebarComponent, IconsComponent, ProgressBarComponent, SystemMetricsHeaderComponent, UpdateNoticeComponent],
   template: `
     @if (initializing()) {
       <!-- Loading state -->
       <main class="grid min-h-screen place-items-center surface-base">
         <div class="flex flex-col items-center gap-4">
-          <div class="grid h-10 w-10 place-items-center rounded-xl kb-logo text-sm font-bold">K</div>
+          <span
+            class="h-7 w-7 shrink-0 bg-current"
+            style="mask: url(assets/logo.svg) center / contain no-repeat; -webkit-mask: url(assets/logo.svg) center / contain no-repeat;"
+            aria-hidden="true"
+          ></span>
           <p class="text-sm c-muted animate-pulse">Loading Kiban…</p>
         </div>
       </main>
@@ -28,7 +34,7 @@ import { ProgressBarComponent } from './shared/progress-bar.component';
         <kiban-progress-bar />
 
         <!-- Sidebar -->
-        <kiban-sidebar [navItems]="navItems()" (collapseChange)="sidebarCollapsed.set($event)" />
+        <kiban-sidebar [navItems]="navItems()" [learnItems]="learnItems()" (collapseChange)="sidebarCollapsed.set($event)" />
 
         <!-- Main content -->
         <div
@@ -46,9 +52,10 @@ import { ProgressBarComponent } from './shared/progress-bar.component';
               >
                 <kiban-icon name="menu" [size]="16" />
               </button>
-              <p class="text-xs c-subtle">Kiban <span class="c-muted">v0.1</span></p>
+              <kiban-system-metrics-header />
             </div>
             <div class="flex items-center gap-2">
+              <kiban-update-notice />
               <button
                 class="btn-icon"
                 type="button"
@@ -97,7 +104,7 @@ import { ProgressBarComponent } from './shared/progress-bar.component';
           (click)="mobileMenuOpen.set(false)"
         >
           <div class="h-full w-64 surface-elevated border-r kb-border" (click)="$event.stopPropagation()">
-            <kiban-sidebar [navItems]="navItems()" />
+            <kiban-sidebar [navItems]="navItems()" [learnItems]="learnItems()" />
           </div>
         </div>
       }
@@ -112,13 +119,21 @@ export class AppComponent {
   protected readonly mobileMenuOpen = signal(false);
 
   protected readonly navItems = signal<readonly NavItem[]>([
-    { label: 'Home', path: '/', icon: 'home' },
+    { label: 'Dashboard', path: '/', icon: 'home' },
     { label: 'Projects', path: '/projects', icon: 'projects' },
     { label: 'Catalog', path: '/catalog', icon: 'catalog' },
     { label: 'Installed', path: '/installed', icon: 'installed' },
     { label: 'Users', path: '/users', icon: 'users', adminOnly: true },
     { label: 'Logs', path: '/logs', icon: 'logs' },
     { label: 'Settings', path: '/settings', icon: 'settings' },
+  ]);
+
+  protected readonly learnItems = signal<readonly LearnItem[]>([
+    { label: 'Getting Started', path: '/learn/getting-started', icon: 'info' },
+    { label: 'Projects & Environments', path: '/learn/projects-environments', icon: 'projects' },
+    { label: 'Installing Services', path: '/learn/installing-services', icon: 'installed' },
+    { label: 'Domain Routing', path: '/learn/domain-routing', icon: 'server' },
+    { label: 'Remote Access', path: '/learn/remote-access', icon: 'external-link' },
   ]);
 
   public constructor() {

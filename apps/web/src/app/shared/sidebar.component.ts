@@ -12,6 +12,12 @@ export interface NavItem {
   readonly badge?: number;
 }
 
+export interface LearnItem {
+  readonly label: string;
+  readonly path: string;
+  readonly icon: KibanIcon;
+}
+
 @Component({
   selector: 'kiban-sidebar',
   standalone: true,
@@ -31,7 +37,8 @@ export interface NavItem {
         ></span>
         @if (!collapsed()) {
           <div class="flex min-w-0 flex-1 items-center justify-between">
-            <span class="text-sm font-semibold kb-text">Kiban OS</span>
+            <span class="text-sm font-semibold kb-text">KibanOS</span>
+            <span class="badge text-[10px] px-1.5 py-0.5 leading-none badge-danger">beta</span>
           </div>
         }
         <button
@@ -67,6 +74,34 @@ export interface NavItem {
             </a>
           }
         </div>
+
+        <!-- Learn section -->
+        @if (!collapsed() && learnItems().length > 0) {
+          <div class="mt-4">
+            <button
+              class="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-[11px] font-medium uppercase tracking-wider c-subtle transition-colors hover:c-muted"
+              type="button"
+              (click)="learnExpanded.set(!learnExpanded())"
+            >
+              <kiban-icon [name]="learnExpanded() ? 'chevron-down' : 'chevron-right'" [size]="12" class="shrink-0" />
+              <span>Onboarding</span>
+            </button>
+            @if (learnExpanded()) {
+              <div class="mt-1 space-y-0.5">
+                @for (item of learnItems(); track item.path) {
+                  <a
+                    [routerLink]="item.path"
+                    routerLinkActive="active"
+                    class="flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm transition-colors kb-nav-item"
+                  >
+                    <kiban-icon [name]="item.icon" [size]="16" class="shrink-0" />
+                    <span class="truncate">{{ item.label }}</span>
+                  </a>
+                }
+              </div>
+            }
+          </div>
+        }
       </nav>
 
       <!-- Footer area -->
@@ -125,10 +160,13 @@ export class SidebarComponent {
 
   /** Navigation items to display */
   readonly navItems = input<readonly NavItem[]>([]);
+  /** Learn items to display in the collapsible section */
+  readonly learnItems = input<readonly LearnItem[]>([]);
   /** Emits when the sidebar collapse state changes */
   readonly collapseChange = output<boolean>();
 
   protected readonly collapsed = signal(false);
+  protected readonly learnExpanded = signal(false);
   protected readonly isDark = computed(() => this.theme.theme() === 'dark');
   protected readonly themeLabel = computed(() => this.isDark() ? 'Dark mode' : 'Light mode');
   protected readonly userEmail = computed(() => this.auth.user()?.email ?? '');

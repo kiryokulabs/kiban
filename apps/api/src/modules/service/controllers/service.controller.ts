@@ -36,6 +36,10 @@ export class ServiceController {
   @Patch('services/:id/configuration')
   public updateConfiguration(@Param('id') id: string, @Body() body: unknown): Promise<InstalledServiceDto> { return this.service.updateConfiguration(id, body); }
 
+  /** Updates the public domain used to access one installed service. */
+  @Patch('services/:id/domain')
+  public updateDomain(@Param('id') id: string, @Body() body: unknown): Promise<InstalledServiceDto> { return this.service.updateDomain(id, body); }
+
   /** Recreates one installed service. */
   @Patch('services/:id/recreate')
   public recreate(@Param('id') id: string): Promise<InstalledServiceDto> { return this.service.recreate(id); }

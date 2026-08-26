@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit, Optional } from '@nestjs/common';
 import { createKibanPaths } from '@kiban/config';
 import { execFile } from 'node:child_process';
 import { mkdirSync } from 'node:fs';
@@ -6,6 +6,15 @@ import { homedir } from 'node:os';
 import { promisify } from 'node:util';
 
 const execFileAsync = promisify(execFile);
+const SQLITE_BUSY_TIMEOUT_COMMAND = '.timeout 10000';
+export const DATABASE_SERVICE_OPTIONS = Symbol('DATABASE_SERVICE_OPTIONS');
+
+export interface DatabaseServiceOptions {
+  readonly databasePath?: string;
+  readonly executor?: SqliteExecutor;
+}
+
+export type SqliteExecutor = (file: string, args: readonly string[]) => Promise<{ readonly stdout: string }>;
 
 export type SqliteParameter = string | number | null | Date;
 export type SqliteRow = Readonly<Record<string, string | number | null>>;
@@ -13,16 +22,21 @@ export type SqliteRow = Readonly<Record<string, string | number | null>>;
 @Injectable()
 export class DatabaseService implements OnModuleInit {
   private readonly databasePath: string;
+  private readonly executor: SqliteExecutor;
+  private queue: Promise<void> = Promise.resolve();
 
-  public constructor() {
+  public constructor(@Optional() @Inject(DATABASE_SERVICE_OPTIONS) options: DatabaseServiceOptions = {}) {
     const paths = createKibanPaths(homedir());
     mkdirSync(paths.database, { recursive: true });
-    this.databasePath = `${paths.database}/kiban.sqlite`;
+    this.databasePath = options.databasePath ?? `${paths.database}/kiban.sqlite`;
+    this.executor = options.executor ?? (async (file, args) => execFileAsync(file, [...args], { maxBuffer: 1024 * 1024 }));
   }
 
   /** Ensures the foundational SQLite schema exists for local development. */
   public async onModuleInit(): Promise<void> {
     await this.exec(`
+      PRAGMA journal_mode = WAL;
+
       CREATE TABLE IF NOT EXISTS projects (
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
@@ -127,9 +141,17 @@ export class DatabaseService implements OnModuleInit {
   }
 
   private async runSql(sql: string, json = false): Promise<string> {
-    const args = json ? ['-json', this.databasePath, sql] : [this.databasePath, sql];
-    const result = await execFileAsync('sqlite3', args, { maxBuffer: 1024 * 1024 });
-    return result.stdout;
+    return this.enqueue(async () => {
+      const args = json ? ['-json', '-cmd', SQLITE_BUSY_TIMEOUT_COMMAND, this.databasePath, sql] : ['-cmd', SQLITE_BUSY_TIMEOUT_COMMAND, this.databasePath, sql];
+      const result = await this.executor('sqlite3', args);
+      return result.stdout;
+    });
+  }
+
+  private async enqueue<T>(operation: () => Promise<T>): Promise<T> {
+    const run = this.queue.catch(() => undefined).then(operation);
+    this.queue = run.then(() => undefined, () => undefined);
+    return run;
   }
 
   /** Renders a parameterized SQL statement for sqlite3 CLI execution. */

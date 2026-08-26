@@ -9,6 +9,11 @@ export interface DomainBuildInput {
 }
 
 export const KIBAN_RUNTIME_CONFIG = 'KIBAN_RUNTIME_CONFIG';
+export const WILDCARD_DOMAIN_PROVIDER = 'WILDCARD_DOMAIN_PROVIDER';
+
+export interface WildcardDomainProvider {
+  getWildcardDomain(): Promise<string | null>;
+}
 
 const slugify = (value: string): string => {
   const normalized = value
@@ -26,19 +31,22 @@ const slugify = (value: string): string => {
 export class DomainService {
   private readonly config: KibanRuntimeConfig;
 
-  public constructor(@Optional() @Inject(KIBAN_RUNTIME_CONFIG) config?: KibanRuntimeConfig) {
+  public constructor(
+    @Optional() @Inject(KIBAN_RUNTIME_CONFIG) config?: KibanRuntimeConfig,
+    @Optional() @Inject(WILDCARD_DOMAIN_PROVIDER) private readonly wildcardDomainProvider?: WildcardDomainProvider
+  ) {
     this.config = config ?? createKibanRuntimeConfig();
   }
 
   /** Builds the hostname for a service without callers concatenating domains manually. */
-  public buildHost(input: DomainBuildInput): string {
-    const baseDomain = this.baseDomainFor(input.environment);
+  public async buildHost(input: DomainBuildInput): Promise<string> {
+    const baseDomain = await this.baseDomainFor(input.environment);
     return `${slugify(input.service.id || input.service.name)}.${slugify(input.environment.slug || input.environment.name)}.${slugify(input.project.name)}.${baseDomain}`;
   }
 
   /** Builds the browser URL for a service. */
-  public buildUrl(input: DomainBuildInput): string {
-    return `${this.config.protocol}://${this.buildHost(input)}`;
+  public async buildUrl(input: DomainBuildInput): Promise<string> {
+    return `${this.config.protocol}://${await this.buildHost(input)}`;
   }
 
   /** Returns the configured public URL protocol. */
@@ -46,7 +54,9 @@ export class DomainService {
     return this.config.protocol;
   }
 
-  private baseDomainFor(environment: Pick<Environment, 'slug' | 'name'>): string {
+  private async baseDomainFor(environment: Pick<Environment, 'slug' | 'name'>): Promise<string> {
+    const wildcardDomain = await this.wildcardDomainProvider?.getWildcardDomain();
+    if (wildcardDomain && wildcardDomain.trim().length > 0) return wildcardDomain.trim();
     const key = slugify(environment.slug || environment.name);
     return this.config.domains[key] ?? this.config.domains.development;
   }

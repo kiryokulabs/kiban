@@ -1,4 +1,4 @@
-import type { InstallationPlan, ProjectRepository, RuntimeProvider, RuntimeResult, RuntimeHealth, InstalledService } from '@kiban/core';
+import type { InstallationPlan, ProjectRepository, RuntimeProvider, RuntimeResult, RuntimeHealth, InstalledService, RuntimePublicEndpoint } from '@kiban/core';
 import { ProjectNotFoundError } from '@kiban/core';
 import { DomainService } from '../../runtime/domain/domain.service';
 
@@ -14,19 +14,19 @@ export class RoutedRuntimeProvider implements RuntimeProvider {
   public async install(plan: InstallationPlan): Promise<RuntimeResult> {
     const project = await this.projects.findById(plan.environment.projectId);
     if (!project) throw new ProjectNotFoundError();
-    const publicEndpoints = plan.serviceDefinition.metadata.accessPoints
+    const publicEndpoints = await Promise.all(plan.serviceDefinition.metadata.accessPoints
       .filter((accessPoint) => accessPoint.kind === 'web')
-      .map((accessPoint) => {
+      .map(async (accessPoint) => {
         const input = { project, environment: plan.environment, service: { id: plan.serviceDefinition.id, name: plan.serviceDefinition.metadata.name } };
         return {
           name: accessPoint.name,
           service: accessPoint.service,
           port: accessPoint.port,
-          host: this.domains.buildHost(input),
-          url: this.domains.buildUrl(input),
+          host: await this.domains.buildHost(input),
+          url: await this.domains.buildUrl(input),
           protocol: this.domains.protocol()
         };
-      });
+      }));
     return this.delegate.install({ ...plan, publicEndpoints });
   }
 
@@ -42,6 +42,8 @@ export class RoutedRuntimeProvider implements RuntimeProvider {
   public health(service: InstalledService): Promise<RuntimeHealth> { return this.delegate.health(service); }
   /** Delegates runtime metadata refresh. */
   public refresh(service: InstalledService): Promise<RuntimeResult> { return this.delegate.refresh ? this.delegate.refresh(service) : Promise.resolve({ status: service.status, runtime: service.runtime }); }
+  /** Delegates public endpoint updates when the concrete runtime supports mutable routing. */
+  public updatePublicEndpoints(service: InstalledService, publicEndpoints: readonly RuntimePublicEndpoint[]): Promise<RuntimeResult> { return this.delegate.updatePublicEndpoints ? this.delegate.updatePublicEndpoints(service, publicEndpoints) : Promise.resolve({ status: service.status, runtime: service.runtime }); }
   /** Delegates runtime log reads. */
   public getLogs(service: InstalledService): Promise<string> { return this.delegate.getLogs ? this.delegate.getLogs(service) : Promise.resolve(''); }
 }

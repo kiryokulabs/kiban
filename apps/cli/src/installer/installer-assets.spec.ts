@@ -1,10 +1,13 @@
-import { readFileSync, statSync } from 'node:fs';
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { resolve } from 'node:path';
+import { tmpdir } from 'node:os';
 import { describe, expect, it } from 'vitest';
 
 const repositoryRoot = resolve(import.meta.dirname, '../../../..');
 const installerPath = resolve(repositoryRoot, 'installer/install.sh');
 const composeTemplatePath = resolve(repositoryRoot, 'installer/templates/compose.yaml');
+const cliPath = resolve(repositoryRoot, 'apps/cli/kiban');
 
 describe('Kiban installer assets', () => {
   it('provides an executable POSIX installer with required system checks', () => {
@@ -28,6 +31,149 @@ describe('Kiban installer assets', () => {
     expect(installer).toContain('start_kiban');
     expect(installer).toContain('docker compose');
     expect(installer).toContain('~/.kiban');
+  });
+
+
+
+  it('provides a CLI update command', () => {
+    const cli = readFileSync(cliPath, 'utf8');
+
+    expect(cli).toContain('cmd_update');
+    expect(cli).toContain('update) cmd_update');
+    expect(cli).toContain('KIBAN_VERSION_URL');
+    expect(cli).toContain('KIBAN_COMPOSE_URL');
+    expect(cli).toContain('KIBAN_CLI_URL');
+  });
+
+  it('updates Kiban core assets without removing installed service runtime workspaces', () => {
+    const testRoot = mkdtempSync(resolve(tmpdir(), 'kiban-cli-update-'));
+    const kibanHome = resolve(testRoot, '.kiban');
+    const fakeBin = resolve(testRoot, 'bin');
+    const dockerLog = resolve(testRoot, 'docker.log');
+    const curlLog = resolve(testRoot, 'curl.log');
+
+    mkdirSync(resolve(kibanHome, 'runtime/kiban'), { recursive: true });
+    mkdirSync(resolve(kibanHome, 'runtime/services/env-service'), { recursive: true });
+    mkdirSync(resolve(kibanHome, 'bin'), { recursive: true });
+    mkdirSync(fakeBin, { recursive: true });
+
+    writeFileSync(resolve(kibanHome, 'runtime/kiban/compose.yaml'), 'old-compose\n', 'utf8');
+    writeFileSync(resolve(kibanHome, 'runtime/kiban/.env'), 'KIBAN_VERSION=0.2.0\nKIBAN_SECRET=keep-me\n', 'utf8');
+    writeFileSync(resolve(kibanHome, 'runtime/services/env-service/compose.yaml'), 'service-compose\n', 'utf8');
+    writeFileSync(resolve(kibanHome, 'bin/kiban'), 'old-cli\n', 'utf8');
+
+    const fakeDocker = resolve(fakeBin, 'docker');
+    writeFileSync(fakeDocker, `#!/usr/bin/env sh
+printf '%s\n' "$*" >> "${dockerLog}"
+`, 'utf8');
+    chmodSync(fakeDocker, 0o755);
+
+    const fakeCurl = resolve(fakeBin, 'curl');
+    writeFileSync(fakeCurl, `#!/usr/bin/env sh
+printf '%s\n' "$*" >> "${curlLog}"
+out=''
+last=''
+for arg in "$@"; do
+  if [ "$last" = '-o' ]; then out="$arg"; fi
+  last="$arg"
+done
+case "$*" in
+  *VERSION*) printf '0.2.1\n' ;;
+  *compose.yaml*) printf 'new-compose\n' > "$out" ;;
+  *kiban*) printf '#!/usr/bin/env sh\necho new-cli\n' > "$out" ;;
+esac
+`, 'utf8');
+    chmodSync(fakeCurl, 0o755);
+
+    try {
+      execFileSync('sh', [cliPath, 'update', '--yes'], {
+        env: {
+          ...process.env,
+          KIBAN_HOME: kibanHome,
+          KIBAN_VERSION_URL: 'https://updates.example.test/VERSION',
+          KIBAN_COMPOSE_URL: 'https://updates.example.test/compose.yaml',
+          KIBAN_CLI_URL: 'https://updates.example.test/kiban',
+          PATH: `${fakeBin}:${process.env.PATH ?? ''}`
+        },
+        stdio: 'pipe'
+      });
+
+      expect(readFileSync(resolve(kibanHome, 'runtime/kiban/.env'), 'utf8')).toContain('KIBAN_VERSION=0.2.1');
+      expect(readFileSync(resolve(kibanHome, 'runtime/kiban/.env'), 'utf8')).toContain('KIBAN_SECRET=keep-me');
+      expect(readFileSync(resolve(kibanHome, 'runtime/kiban/compose.yaml'), 'utf8')).toBe('new-compose\n');
+      expect(readFileSync(resolve(kibanHome, 'bin/kiban'), 'utf8')).toContain('new-cli');
+      expect(existsSync(resolve(kibanHome, 'runtime/services/env-service/compose.yaml'))).toBe(true);
+      expect(readFileSync(dockerLog, 'utf8')).toContain('pull');
+      expect(readFileSync(dockerLog, 'utf8')).toContain('up -d');
+    } finally {
+      rmSync(testRoot, { recursive: true, force: true });
+    }
+  });
+
+
+  it('provides a CLI uninstall command', () => {
+    const cli = readFileSync(cliPath, 'utf8');
+    const mode = statSync(cliPath).mode;
+
+    expect(cli.startsWith('#!/usr/bin/env sh')).toBe(true);
+    expect(mode & 0o111).not.toBe(0);
+    expect(cli).toContain('cmd_uninstall');
+    expect(cli).toContain('uninstall) cmd_uninstall');
+    expect(cli).toContain('--yes');
+  });
+
+  it('uninstalls Kiban without removing installed service runtime workspaces', () => {
+    const testRoot = mkdtempSync(resolve(tmpdir(), 'kiban-cli-uninstall-'));
+    const kibanHome = resolve(testRoot, '.kiban');
+    const fakeBin = resolve(testRoot, 'bin');
+    const dockerLog = resolve(testRoot, 'docker.log');
+
+    mkdirSync(resolve(kibanHome, 'runtime/kiban'), { recursive: true });
+    mkdirSync(resolve(kibanHome, 'runtime/traefik'), { recursive: true });
+    mkdirSync(resolve(kibanHome, 'runtime/services/env-service'), { recursive: true });
+    mkdirSync(resolve(kibanHome, 'bin'), { recursive: true });
+    mkdirSync(fakeBin, { recursive: true });
+
+    writeFileSync(resolve(kibanHome, 'runtime/kiban/compose.yaml'), 'services: {}\n', 'utf8');
+    writeFileSync(resolve(kibanHome, 'runtime/kiban/.env'), 'KIBAN_HTTP_PORT=8080\n', 'utf8');
+    writeFileSync(resolve(kibanHome, 'runtime/traefik/compose.yaml'), 'services: {}\n', 'utf8');
+    writeFileSync(resolve(kibanHome, 'runtime/services/env-service/compose.yaml'), 'services: {}\n', 'utf8');
+    writeFileSync(resolve(kibanHome, 'bin/kiban'), '#!/usr/bin/env sh\n', 'utf8');
+
+    const fakeDocker = resolve(fakeBin, 'docker');
+    writeFileSync(fakeDocker, `#!/usr/bin/env sh\nprintf '%s\\n' "$*" >> "${dockerLog}"\n`, 'utf8');
+    chmodSync(fakeDocker, 0o755);
+
+    try {
+      execFileSync('sh', [cliPath, 'uninstall', '--yes'], {
+        env: {
+          ...process.env,
+          KIBAN_HOME: kibanHome,
+          PATH: `${fakeBin}:${process.env.PATH ?? ''}`
+        },
+        stdio: 'pipe'
+      });
+
+      expect(existsSync(resolve(kibanHome, 'runtime/kiban'))).toBe(false);
+      expect(existsSync(resolve(kibanHome, 'runtime/traefik'))).toBe(false);
+      expect(existsSync(resolve(kibanHome, 'bin/kiban'))).toBe(false);
+      expect(existsSync(resolve(kibanHome, 'runtime/services/env-service/compose.yaml'))).toBe(true);
+      expect(readFileSync(dockerLog, 'utf8')).toContain('--env-file');
+      expect(readFileSync(dockerLog, 'utf8')).toContain('--project-name kiban-traefik');
+    } finally {
+      rmSync(testRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('does not include destructive service removal in the CLI uninstall command', () => {
+    const cli = readFileSync(cliPath, 'utf8');
+
+    expect(cli).toContain('KIBAN_SERVICES_DIR');
+    expect(cli).toContain('Installed services were not removed');
+    expect(cli).toContain('rm -rf -- "${KIBAN_RUNTIME_DIR}"');
+    expect(cli).toContain('rm -rf -- "${KIBAN_TRAEFIK_DIR}"');
+    expect(cli).not.toContain('rm -rf -- "${KIBAN_SERVICES_DIR}"');
+    expect(cli).not.toContain('rm -rf -- "${KIBAN_HOME}"');
   });
 
   it('provides a Kiban core Compose template exposed on port 8080 by default', () => {

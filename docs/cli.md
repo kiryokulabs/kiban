@@ -26,7 +26,7 @@ Prints the installed Kiban version.
 
 ```sh
 $ kiban version
-kiban 0.1.0
+kiban <version>
 ```
 
 ### kiban doctor
@@ -117,6 +117,46 @@ Supports `--tail` to control the number of lines (default: 300).
 $ kiban logs --tail 50
 ```
 
+### kiban update
+
+Updates Kiban itself without removing installed services.
+
+```sh
+$ kiban update
+```
+
+For non-interactive usage:
+
+```sh
+$ kiban update --yes
+```
+
+The command checks the latest published version, downloads the new Kiban core runtime assets and CLI, updates `KIBAN_VERSION`, pulls the new Kiban runtime images and starts Kiban again.
+
+It preserves Kiban data, configuration, plugins and installed service runtime workspaces.
+
+### kiban uninstall
+
+Uninstalls Kiban itself without removing installed services.
+
+```sh
+$ kiban uninstall
+```
+
+For non-interactive usage:
+
+```sh
+$ kiban uninstall --yes
+```
+
+This command stops and removes the Kiban core runtime and Kiban routing layer, then removes the installed CLI script. It does **not** remove installed services or service runtime workspaces under `~/.kiban/runtime/services/`.
+
+After uninstalling, remove the Kiban `PATH` entry from your shell profile if it is still present:
+
+```sh
+export PATH="$HOME/.kiban/bin:$PATH"
+```
+
 ## File Layout
 
 ```
@@ -153,7 +193,7 @@ The CLI is a single POSIX shell script. It reads configuration from `~/.kiban/ru
 
 The CLI never exposes Docker concepts to the user. All output uses Kiban terminology.
 
-## Limitations (v0.1)
+## Limitations
 
 - Service management (install, remove, configure) is only available through the web UI.
 - The CLI only manages the core runtime and provides read-only service status.
