@@ -190,7 +190,7 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
     const composeContent = await readFile(composeFile, 'utf8');
     const updated = this.withInstanceDomainRouting(composeContent, normalizedDomain);
     await writeFile(composeFile, updated, 'utf8');
-    await this.runner.run('docker', ['compose', '--env-file', envFile, '-f', 'compose.yaml', 'up', '-d', '--force-recreate'], { cwd: runtimeDir });
+    await this.runner.run('docker', ['compose', '--env-file', envFile, '-f', 'compose.yaml', 'up', '-d', '--no-deps', '--force-recreate', 'kiban-web'], { cwd: runtimeDir });
     return true;
   }
 

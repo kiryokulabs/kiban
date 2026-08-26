@@ -91,7 +91,7 @@ describe('DockerComposeRuntimeProvider — applyInstanceDomain', () => {
     expect(networks).toContain('kiban');
   });
 
-  it('recreates the kiban core compose with --force-recreate after applying labels', async () => {
+  it('recreates only kiban-web after applying labels so the API does not restart itself', async () => {
     const runner = new FakeRunner();
     const runtimeRoot = join(TEST_ROOT, 'runtime', 'services');
     setupKibanCore(runtimeRoot);
@@ -102,6 +102,9 @@ describe('DockerComposeRuntimeProvider — applyInstanceDomain', () => {
 
     const upCommand = runner.commands.find((c) => c.args.includes('up') && c.args.includes('-d') && c.args.includes('--force-recreate'));
     expect(upCommand).toBeDefined();
+    expect(upCommand?.args).toContain('--no-deps');
+    expect(upCommand?.args).toContain('kiban-web');
+    expect(upCommand?.args).not.toContain('kiban-api');
   });
 
   it('removes Traefik labels when domain is cleared', async () => {
