@@ -65,9 +65,9 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
         }
 
         <!-- Environment grid -->
-        <div class="grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">
+        <div class="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-2 2xl:grid-cols-3">
           @for (environment of project()?.environments; track environment.id) {
-            <article class="card flex flex-col overflow-hidden">
+            <article class="card flex min-w-0 flex-col overflow-hidden">
               <!-- Environment header -->
               <div class="flex items-start justify-between gap-3 border-b kb-border px-4 py-3">
                 <div class="min-w-0 flex-1">
@@ -100,7 +100,7 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
                 @if (isEnvironmentLoading(environment.id)) {
                   <div class="space-y-2">
                     @for (i of [1, 2]; track i) {
-                      <div class="rounded-lg border kb-border p-3">
+                      <div class="rounded-lg border kb-border p-3 min-w-0 overflow-hidden">
                         <div class="flex items-center gap-2">
                           <kiban-skeleton width="2.5rem" height="2.5rem" blockClass="rounded-lg shrink-0" />
                           <div class="flex-1 space-y-1.5">
@@ -120,10 +120,10 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
                 } @else {
                   <div class="space-y-2">
                     @for (service of installedFor(environment.id); track service.id) {
-                      <div class="rounded-lg border kb-border p-3">
+                      <div class="rounded-lg border kb-border p-3 min-w-0 overflow-hidden">
                         <div class="flex items-start justify-between gap-2">
                           <div class="min-w-0 flex-1">
-                            <div class="flex items-center gap-2">
+                            <div class="flex min-w-0 items-center gap-2">
                               @if (service.icon) {
                                 <div class="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-lg border kb-border bg-surface [&_svg]:h-6 [&_svg]:w-6 py-2">
                                   <kiban-svg-icon [svg]="service.icon" />
@@ -147,7 +147,7 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
                             @if (detailsPresenter.hasWebAccess(detailsPresenter.accessPointsFor(service))) {
                               <div class="mt-4 flex flex-wrap gap-1.5">
                                 @for (url of detailsPresenter.webUrls(detailsPresenter.accessPointsFor(service)); track url) {
-                                  <a class="inline-flex items-center gap-1 text-[11px] c-muted hover:c-text transition-colors" [href]="url" target="_blank">
+                                  <a class="inline-flex max-w-full min-w-0 items-center gap-1 truncate text-[11px] c-muted hover:c-text transition-colors" [href]="url" target="_blank">
                                     {{ url }}
                                     <kiban-icon name="external-link" [size]="10" />
                                   </a>
@@ -161,21 +161,21 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
                           </button>
                         </div>
                         <div class="mt-2 flex flex-wrap items-center gap-1.5">
-                          <button class="btn-ghost btn gap-1 text-[11px] px-2 py-1" type="button" (click)="startInstalledService(service)" [disabled]="service.status === 'running'">
+                          <button class="btn-ghost btn gap-1 text-[11px] px-2 py-1" type="button" (click)="startInstalledService(service)" [disabled]="service.status === 'running'" aria-label="Start service" title="Start">
                             <kiban-icon name="play" [size]="12" />
-                            Start
+                            <span class="hidden sm:inline">Start</span>
                           </button>
-                          <button class="btn-ghost btn gap-1 text-[11px] px-2 py-1" type="button" (click)="stopInstalledService(service)" [disabled]="service.status !== 'running'">
+                          <button class="btn-ghost btn gap-1 text-[11px] px-2 py-1" type="button" (click)="stopInstalledService(service)" [disabled]="service.status !== 'running'" aria-label="Stop service" title="Stop">
                             <kiban-icon name="stop" [size]="12" />
-                            Stop
+                            <span class="hidden sm:inline">Stop</span>
                           </button>
-                          <button class="btn-ghost btn gap-1 text-[11px] px-2 py-1" type="button" (click)="restartInstalledService(service)">
+                          <button class="btn-ghost btn gap-1 text-[11px] px-2 py-1" type="button" (click)="restartInstalledService(service)" aria-label="Restart service" title="Restart">
                             <kiban-icon name="restart" [size]="12" />
-                            Restart
+                            <span class="hidden sm:inline">Restart</span>
                           </button>
-                          <a class="btn-ghost btn gap-1 text-[11px] px-2 py-1 ml-auto" [routerLink]="['/services', service.id]">
+                          <a class="btn-ghost btn gap-1 text-[11px] px-2 py-1 ml-auto" [routerLink]="['/services', service.id]" aria-label="Manage service" title="Manage">
                             <kiban-icon name="info" [size]="12" />
-                            Manage
+                            <span class="hidden sm:inline">Manage</span>
                           </a>
                         </div>
                       </div>
@@ -252,7 +252,7 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
                   </button>
                 }
               </div>
-              <div class="grid grid-cols-2 p-3 gap-1.5 mt-3 max-h-96 space-y-1 overflow-auto">
+              <div class="grid grid-cols-1 md:grid-cols-2 p-3 gap-1.5 mt-3 max-h-96 space-y-1 overflow-auto">
                 @for (item of selectableServices(); track item.id) {
                   <button type="button" class="flex w-full items-start gap-3 rounded-lg border kb-border p-3 text-left transition hover:border-brand/50 hover:bg-hover" (click)="selectService(item)">
                     <div class="grid h-8 w-8 shrink-0 place-items-center rounded-lg border kb-border bg-surface py-1"><kiban-svg-icon [svg]="item.icon" /></div>
