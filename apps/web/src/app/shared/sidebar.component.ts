@@ -3,6 +3,8 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
 import { ThemeService } from '../theme/theme.service';
 import { IconsComponent, type KibanIcon } from './icons.component';
+import { SidebarLayoutPresenter, type SidebarDisplayMode } from './sidebar-layout.presenter';
+import { SystemMetricsHeaderComponent } from '../system/system-metrics-header.component';
 
 export interface NavItem {
   readonly label: string;
@@ -21,11 +23,11 @@ export interface LearnItem {
 @Component({
   selector: 'kiban-sidebar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, IconsComponent],
+  imports: [RouterLink, RouterLinkActive, IconsComponent, SystemMetricsHeaderComponent],
   template: `
     <aside
-      class="fixed inset-y-0 left-0 z-sticky flex flex-col border-r kb-border"
-      [style.width]="collapsed() ? 'var(--sidebar-collapsed-width)' : 'var(--sidebar-width)'"
+      [class]="layout.asideClass(displayMode())"
+      [style.width]="layout.width(displayMode(), collapsed())"
       style="transition: width 200ms cubic-bezier(0.4, 0, 0.2, 1)"
     >
       <!-- Logo area -->
@@ -41,16 +43,24 @@ export interface LearnItem {
             <span class="badge text-[10px] px-1.5 py-0.5 leading-none badge-danger">beta</span>
           </div>
         }
-        <button
-          class="btn-icon hidden md:inline-flex"
-          type="button"
-          (click)="toggleCollapse()"
-          [attr.aria-label]="collapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
-          [title]="collapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
-        >
-          <kiban-icon [name]="collapsed() ? 'chevron-right' : 'chevron-left'" [size]="14" />
-        </button>
+        @if (layout.canCollapse(displayMode())) {
+          <button
+            class="btn-icon hidden md:inline-flex"
+            type="button"
+            (click)="toggleCollapse()"
+            [attr.aria-label]="collapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
+            [title]="collapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
+          >
+            <kiban-icon [name]="collapsed() ? 'chevron-right' : 'chevron-left'" [size]="14" />
+          </button>
+        }
       </div>
+
+      @if (displayMode() === 'mobile') {
+        <div class="border-b kb-border px-3 py-3">
+          <kiban-system-metrics-header [compact]="true" />
+        </div>
+      }
 
       <!-- Navigation -->
       <nav class="flex-1 overflow-y-auto px-2 py-3">
@@ -162,9 +172,12 @@ export class SidebarComponent {
   readonly navItems = input<readonly NavItem[]>([]);
   /** Learn items to display in the collapsible section */
   readonly learnItems = input<readonly LearnItem[]>([]);
+  /** Controls whether the sidebar is rendered as the persistent desktop rail or the mobile drawer content. */
+  readonly displayMode = input<SidebarDisplayMode>('desktop');
   /** Emits when the sidebar collapse state changes */
   readonly collapseChange = output<boolean>();
 
+  protected readonly layout = new SidebarLayoutPresenter();
   protected readonly collapsed = signal(false);
   protected readonly learnExpanded = signal(false);
   protected readonly isDark = computed(() => this.theme.theme() === 'dark');
