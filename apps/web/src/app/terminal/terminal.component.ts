@@ -15,11 +15,11 @@ interface Disposable { dispose(): void; }
   standalone: true,
   imports: [FormsModule, IconsComponent],
   template: `
-    <div class="flex flex-col h-full">
+    <div class="flex h-full min-w-0 flex-col overflow-hidden">
       <!-- Header: container selector + connection status -->
-      <div class="flex items-center gap-3 border-b kb-border px-3 py-2">
+      <div class="flex flex-wrap items-center gap-2 border-b kb-border px-3 py-2">
         <select
-          class="input text-xs py-1 px-2 max-w-[200px]"
+          class="input w-full min-w-0 flex-1 sm:w-auto px-2 py-1 text-xs sm:max-w-[200px]"
           [ngModel]="selectedContainerId()"
           (ngModelChange)="onContainerChange($event)"
           [disabled]="currentState() === 'connecting' || options().length === 0"
@@ -29,7 +29,7 @@ interface Disposable { dispose(): void; }
           }
         </select>
 
-        <div class="flex items-center gap-1.5 ml-auto">
+        <div class="ml-auto flex shrink-0 items-center gap-1.5">
           <span
             class="h-2 w-2 rounded-full"
             [class.bg-green-400]="currentState() === 'connected'"
@@ -41,8 +41,9 @@ interface Disposable { dispose(): void; }
         </div>
 
         @if (selectedContainerId(); as id) {
-          <button class="btn-secondary btn text-[11px] px-2 py-1" type="button" (click)="reconnect(id)">
-            Reconnect
+          <button class="btn-secondary btn px-2 py-1 text-[11px]" type="button" (click)="reconnect(id)" title="Reconnect">
+            <span class="hidden sm:inline">Reconnect</span>
+            <kiban-icon class="sm:hidden" name="restart" [size]="12" />
           </button>
         }
 
@@ -54,7 +55,7 @@ interface Disposable { dispose(): void; }
       </div>
 
       <!-- Terminal area -->
-      <div class="flex-1 relative bg-[#1a1a2e] min-h-[300px]" tabindex="0" (click)="focusTerminal()" (mousedown)="focusTerminal()">
+      <div class="relative min-h-[300px] min-w-0 flex-1 overflow-hidden bg-[#1a1a2e]" tabindex="0" (click)="focusTerminal()" (mousedown)="focusTerminal()">
         @if (currentState() === 'disconnected') {
           <div class="pointer-events-none absolute inset-0 flex items-center justify-center">
             <p class="text-sm c-muted">Select a container to open a terminal session.</p>
@@ -75,7 +76,7 @@ interface Disposable { dispose(): void; }
             <p class="max-w-md px-4 text-center text-sm text-yellow-400">{{ errorMessage || 'Session expired. Select the container to reconnect.' }}</p>
           </div>
         }
-        <div #terminalContainer class="absolute inset-0 p-2"></div>
+        <div #terminalContainer class="absolute inset-0 min-w-0 overflow-hidden p-2"></div>
       </div>
     </div>
   `
