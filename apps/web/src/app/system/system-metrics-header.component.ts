@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, input, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { EMPTY, catchError, interval, startWith, switchMap } from 'rxjs';
 import { SystemMetricsService, type SystemMetrics } from './system-metrics.service';
@@ -11,10 +11,12 @@ const REFRESH_INTERVAL_MS = 10_000;
   standalone: true,
   template: `
     @if (metrics(); as current) {
-      <div class="flex items-center gap-2" aria-label="System resource usage">
-        <span class="hidden rounded-md border kb-border bg-muted px-2 py-1 text-[11px] c-muted sm:inline" title="Kiban host local IP">
-          IP {{ presenter.localIpLabel(current.network.localIp) }}
-        </span>
+      <div class="flex flex-wrap items-center gap-2" aria-label="System resource usage">
+        @if (!compact()) {
+          <span class="hidden rounded-md border kb-border bg-muted px-2 py-1 text-[11px] c-muted sm:inline" title="Kiban host local IP">
+            IP {{ presenter.localIpLabel(current.network.localIp) }}
+          </span>
+        }
 
         <span class="metric-pill" [title]="memoryTitle(current)">
           <span>RAM</span>
@@ -78,6 +80,8 @@ const REFRESH_INTERVAL_MS = 10_000;
   `]
 })
 export class SystemMetricsHeaderComponent {
+  readonly compact = input(false);
+
   protected readonly metrics = signal<SystemMetrics | null>(null);
   protected readonly unavailable = signal(false);
   protected readonly presenter = new SystemMetricsPresenter();

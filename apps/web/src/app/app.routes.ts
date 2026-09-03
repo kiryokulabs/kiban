@@ -16,7 +16,6 @@ import { SettingsPageComponent } from './pages/settings-page.component';
 import { UsersPageComponent } from './pages/users-page.component';
 
 export const routes: Routes = [
-  { path: '*', redirectTo: '', pathMatch: 'full' },
   { path: '', component: HomePageComponent, title: 'Kiban' },
   { path: 'projects', component: ProjectsPageComponent, title: 'Projects · Kiban' },
   { path: 'projects/:id', component: ProjectDetailsPageComponent, title: 'Project · Kiban' },
@@ -32,4 +31,5 @@ export const routes: Routes = [
   { path: 'learn/installing-services', component: InstallingServicesPageComponent, title: 'Installing Services · Kiban' },
   { path: 'learn/domain-routing', component: DomainRoutingPageComponent, title: 'Domain Routing · Kiban' },
   { path: 'learn/remote-access', component: RemoteAccessPageComponent, title: 'Remote Access · Kiban' },
+  { path: '**', redirectTo: '', pathMatch: 'full' },
 ];

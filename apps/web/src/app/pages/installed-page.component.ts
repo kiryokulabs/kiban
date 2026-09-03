@@ -42,7 +42,7 @@ import { SkeletonCardComponent } from '../shared/skeleton-card.component';
 
       @if (loading()) {
         <kiban-skeleton-page-header />
-        <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <div class="grid grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-2 xl:grid-cols-3">
           @for (i of [1, 2, 3, 4, 5, 6]; track i) {
             <kiban-skeleton-card />
           }
@@ -56,12 +56,12 @@ import { SkeletonCardComponent } from '../shared/skeleton-card.component';
           <p class="mt-1 text-xs c-muted">Install a catalog service inside a project environment.</p>
         </div>
       } @else {
-        <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <div class="grid grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-2 xl:grid-cols-3">
           @for (service of services(); track service.id) {
-            <article class="card p-4">
-              <div class="flex items-start justify-between gap-3">
+            <article class="card min-w-0 overflow-hidden p-4">
+              <div class="flex min-w-0 items-start justify-between gap-3">
                 <div class="min-w-0 flex-1">
-                  <div class="flex items-center gap-2">
+                  <div class="flex min-w-0 items-center gap-2">
                     <div class="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-lg border kb-border bg-surface [&_svg]:h-6 [&_svg]:w-6 py-2">
                       @if (service.icon) {
                         <kiban-svg-icon [svg]="service.icon" />
@@ -69,7 +69,7 @@ import { SkeletonCardComponent } from '../shared/skeleton-card.component';
                         <kiban-icon name="box" [size]="14" class="c-muted" />
                       }
                     </div>
-                    <div>
+                    <div class="min-w-0">
                       <h2 class="text-sm font-medium kb-text truncate">{{ service.name }}</h2>
                       <p class="text-[11px] uppercase tracking-wide c-muted">{{ service.createdAt | slice:0:10 }}</p>
                     </div>
@@ -83,9 +83,9 @@ import { SkeletonCardComponent } from '../shared/skeleton-card.component';
 
               <!-- Access links / Details -->
               @if (detailsPresenter.hasWebAccess(detailsPresenter.accessPointsFor(service))) {
-                <div class="mt-3 flex items-center justify-between gap-3">
+                <div class="mt-3 flex flex-col sm:flex-row min-w-0 items-stretch gap-2 sm:items-center sm:justify-between">
                   @if (firstWebUrl(service); as url) {
-                    <a class="min-w-0 truncate rounded-full border kb-border px-2 py-0.5 font-mono text-[11px] c-muted hover:c-text transition-colors" [href]="url" target="_blank">
+                    <a class="min-w-0 break-all rounded-lg border kb-border px-2 py-1 font-mono text-[11px] c-muted hover:c-text transition-colors sm:truncate sm:rounded-full sm:py-0.5" [href]="url" target="_blank">
                       {{ url }}
                     </a>
                   }
@@ -104,22 +104,22 @@ import { SkeletonCardComponent } from '../shared/skeleton-card.component';
               }
 
               <div class="mt-3 space-y-1.5 text-xs c-subtle">
-                <div class="flex items-center justify-between gap-3">
-                  <span class="flex items-center gap-1"><kiban-icon name="box" [size]="10" /> Service ID</span>
-                  <span class="kb-text font-mono truncate">{{ service.serviceId }}</span>
+                <div class="flex min-w-0 items-center justify-between gap-3">
+                  <span class="flex shrink-0 items-center gap-1"><kiban-icon name="box" [size]="10" /> Service ID</span>
+                  <span class="min-w-0 kb-text font-mono truncate">{{ service.serviceId }}</span>
                 </div>
-                <div class="flex items-center justify-between gap-3">
-                  <span class="flex items-center gap-1"><kiban-icon name="folder" [size]="10" /> Location</span>
-                  <span class="kb-text truncate">{{ locationLabel(service) }}</span>
+                <div class="flex min-w-0 items-center justify-between gap-3">
+                  <span class="flex shrink-0 items-center gap-1"><kiban-icon name="folder" [size]="10" /> Location</span>
+                  <span class="min-w-0 kb-text truncate">{{ locationLabel(service) }}</span>
                 </div>
-                <div class="flex items-center justify-between gap-3">
-                  <span class="flex items-center gap-1"><kiban-icon name="grid" [size]="10" /> Environment</span>
-                  <span class="kb-text truncate">{{ service.environmentId }}</span>
+                <div class="flex min-w-0 items-center justify-between gap-3">
+                  <span class="flex shrink-0 items-center gap-1"><kiban-icon name="grid" [size]="10" /> Environment</span>
+                  <span class="min-w-0 kb-text truncate">{{ service.environmentId }}</span>
                 </div>
                 @if (containerId(service)) {
-                  <div class="flex items-center justify-between gap-3">
-                    <span class="flex items-center gap-1"><kiban-icon name="server" [size]="10" /> Container</span>
-                    <span class="kb-text font-mono text-[11px] truncate">{{ containerId(service) }}</span>
+                  <div class="flex min-w-0 items-center justify-between gap-3">
+                    <span class="flex shrink-0 items-center gap-1"><kiban-icon name="server" [size]="10" /> Container</span>
+                    <span class="min-w-0 kb-text font-mono text-[11px] truncate">{{ containerId(service) }}</span>
                   </div>
                 }
               </div>

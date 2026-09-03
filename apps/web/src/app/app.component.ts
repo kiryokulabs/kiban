@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { AuthShellComponent } from './auth/auth-shell.component';
 import { AuthService } from './auth/auth.service';
@@ -8,6 +8,8 @@ import { SidebarComponent, type NavItem, type LearnItem } from './shared/sidebar
 import { ProgressBarComponent } from './shared/progress-bar.component';
 import { SystemMetricsHeaderComponent } from './system/system-metrics-header.component';
 import { UpdateNoticeComponent } from './system/update-notice.component';
+import { AppLayoutPresenter } from './app-layout.presenter';
+import { ViewportService } from './shared/viewport.service';
 
 @Component({
   selector: 'kiban-root',
@@ -34,15 +36,21 @@ import { UpdateNoticeComponent } from './system/update-notice.component';
         <kiban-progress-bar />
 
         <!-- Sidebar -->
-        <kiban-sidebar [navItems]="navItems()" [learnItems]="learnItems()" (collapseChange)="sidebarCollapsed.set($event)" />
+        <kiban-sidebar
+          [class]="layout.persistentSidebarHostClass()"
+          displayMode="desktop"
+          [navItems]="navItems()"
+          [learnItems]="learnItems()"
+          (collapseChange)="sidebarCollapsed.set($event)"
+        />
 
         <!-- Main content -->
         <div
-          class="flex min-h-screen flex-col transition-all duration-200"
-          [style.margin-left]="sidebarCollapsed() ? 'var(--sidebar-collapsed-width)' : 'var(--sidebar-width)'"
+          [class]="mainContentClass()"
+          [style.--sidebar-offset]="layout.sidebarOffset(sidebarCollapsed())"
         >
           <!-- Top header -->
-          <header class="sticky top-0 z-sticky flex h-12 items-center justify-between border-b kb-border kb-header px-6">
+          <header class="sticky top-0 z-sticky flex h-12 items-center justify-between border-b kb-border kb-header px-4 md:px-6">
             <div class="flex items-center gap-3">
               <button
                 class="btn-icon md:hidden"
@@ -52,7 +60,9 @@ import { UpdateNoticeComponent } from './system/update-notice.component';
               >
                 <kiban-icon name="menu" [size]="16" />
               </button>
-              <kiban-system-metrics-header />
+              @if (!viewport.isMobile()) {
+                <kiban-system-metrics-header />
+              }
             </div>
             <div class="flex items-center gap-2">
               <kiban-update-notice />
@@ -91,7 +101,7 @@ import { UpdateNoticeComponent } from './system/update-notice.component';
           </header>
 
           <!-- Page content -->
-          <section class="flex-1 p-6">
+          <section class="flex-1 min-w-0 p-4 md:p-6">
             <router-outlet />
           </section>
         </div>
@@ -100,11 +110,11 @@ import { UpdateNoticeComponent } from './system/update-notice.component';
       <!-- Mobile sidebar overlay -->
       @if (mobileMenuOpen()) {
         <div
-          class="fixed inset-0 z-[450] bg-black/60 md:hidden"
+          [class]="layout.mobileSidebarOverlayClass()"
           (click)="mobileMenuOpen.set(false)"
         >
           <div class="h-full w-64 surface-elevated border-r kb-border" (click)="$event.stopPropagation()">
-            <kiban-sidebar [navItems]="navItems()" [learnItems]="learnItems()" />
+            <kiban-sidebar displayMode="mobile" [navItems]="navItems()" [learnItems]="learnItems()" />
           </div>
         </div>
       }
@@ -114,9 +124,12 @@ import { UpdateNoticeComponent } from './system/update-notice.component';
 export class AppComponent {
   protected readonly auth = inject(AuthService);
   protected readonly theme = inject(ThemeService);
+  protected readonly viewport = inject(ViewportService);
   protected readonly initializing = signal(true);
   protected readonly sidebarCollapsed = signal(false);
   protected readonly mobileMenuOpen = signal(false);
+  protected readonly layout = new AppLayoutPresenter();
+  protected readonly mainContentClass = computed(() => this.layout.mainContentClass());
 
   protected readonly navItems = signal<readonly NavItem[]>([
     { label: 'Dashboard', path: '/', icon: 'home' },

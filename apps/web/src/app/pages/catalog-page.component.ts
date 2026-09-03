@@ -68,10 +68,10 @@ interface CatalogSchemaField { readonly key: string; readonly label: string; rea
           <p class="mt-1 text-xs c-muted">Try another search or select a different category.</p>
         </div>
       } @else {
-        <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <div class="grid grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-2 xl:grid-cols-3">
           @for (item of visibleItems(); track item.id) {
-            <article class="card p-4 transition hover:border-brand/30 hover:bg-hover/30 group cursor-default">
-              <div class="flex items-start gap-3">
+            <article class="card min-w-0 overflow-hidden p-4 transition hover:border-brand/30 hover:bg-hover/30 group cursor-default">
+              <div class="flex min-w-0 items-start gap-3">
                 <div class="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-lg border kb-border bg-surface [&_svg]:h-6 [&_svg]:w-6 py-2">
                   <kiban-svg-icon [svg]="item.icon" />
                 </div>
@@ -79,12 +79,12 @@ interface CatalogSchemaField { readonly key: string; readonly label: string; rea
                   <div class="flex flex-wrap items-center gap-1.5">
                     <span class="text-[10px] uppercase tracking-wider c-subtle">{{ item.category.name }}</span>
                   </div>
-                  <h3 class="mt-0.5 text-sm font-medium kb-text">{{ item.name }}</h3>
+                  <h3 class="mt-0.5 truncate text-sm font-medium kb-text">{{ item.name }}</h3>
                   <p class="mt-1 text-xs leading-relaxed c-muted line-clamp-2">{{ item.description }}</p>
                 </div>
               </div>
-              <div class="mt-3 flex items-center justify-between gap-3 border-t kb-border pt-3">
-                <span class="min-w-0 truncate font-mono text-[11px] c-subtle" title="{{ item.runtimeImage }}">{{ item.runtimeImage }}</span>
+              <div class="mt-3 flex min-w-0 items-center justify-between gap-3 border-t kb-border pt-3">
+                <span class="min-w-0 flex-1 truncate font-mono text-[11px] c-subtle" title="{{ item.runtimeImage }}">{{ item.runtimeImage }}</span>
                 <button class="btn-primary btn shrink-0 gap-1.5 text-xs px-2.5 py-1.5" type="button" (click)="openInstallModal(item)">
                   <kiban-icon name="plus" [size]="13" />
                   Install
