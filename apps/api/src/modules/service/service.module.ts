@@ -14,6 +14,8 @@ import { DomainService, WILDCARD_DOMAIN_PROVIDER } from '../runtime/domain/domai
 import { SqliteSettingsRepository } from '../settings/repositories/sqlite-settings.repository';
 import { DockerComposeTerminalProvider } from './providers/docker-compose-terminal.provider';
 import { DockerComposeRuntimeProvider } from './providers/docker-compose-runtime.provider';
+import type { TlsSettingsProvider } from '../proxy/domain/tls-settings-provider';
+import { TraefikProxyProvider } from '../proxy/infrastructure/traefik/traefik-proxy.provider';
 import { RoutedRuntimeProvider } from './providers/routed-runtime.provider';
 import { SqliteInstalledServiceRepository } from './repositories/sqlite-installed-service.repository';
 import { ServiceService } from './services/service.service';
@@ -40,7 +42,23 @@ import { TERMINAL_PROVIDER } from './terminal/terminal.types';
     DomainService,
     TerminalGateway,
     TerminalSessionService,
-    { provide: DockerComposeRuntimeProvider, useFactory: (): DockerComposeRuntimeProvider => DockerComposeRuntimeProvider.create() },
+    TraefikProxyProvider,
+    {
+      provide: DockerComposeRuntimeProvider,
+      useFactory: (settings: SqliteSettingsRepository, proxy: TraefikProxyProvider): DockerComposeRuntimeProvider => {
+        const tlsSettingsProvider: TlsSettingsProvider = {
+          getTlsSettings: async () => {
+            const [email, staging] = await Promise.all([
+              settings.get(toSettingKey('tls_acme_email')),
+              settings.get(toSettingKey('tls_acme_staging'))
+            ]);
+            return { acmeEmail: email?.value ?? null, useStaging: staging?.value === 'true' };
+          }
+        };
+        return DockerComposeRuntimeProvider.create(tlsSettingsProvider, proxy);
+      },
+      inject: [SqliteSettingsRepository, TraefikProxyProvider]
+    },
     { provide: TERMINAL_PROVIDER, useFactory: (): DockerComposeTerminalProvider => new DockerComposeTerminalProvider() },
     { provide: RoutedRuntimeProvider, useFactory: (runtime: DockerComposeRuntimeProvider, projects: SqliteProjectRepository, domains: DomainService): RoutedRuntimeProvider => new RoutedRuntimeProvider(runtime, projects, domains), inject: [DockerComposeRuntimeProvider, SqliteProjectRepository, DomainService] },
     { provide: RUNTIME_PROVIDER, useExisting: RoutedRuntimeProvider },
