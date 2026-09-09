@@ -41,7 +41,7 @@ export class DomainService {
   /** Builds the hostname for a service without callers concatenating domains manually. */
   public async buildHost(input: DomainBuildInput): Promise<string> {
     const baseDomain = await this.baseDomainFor(input.environment);
-    return `${slugify(input.service.id || input.service.name)}.${slugify(input.environment.slug || input.environment.name)}.${slugify(input.project.name)}.${baseDomain}`;
+    return `${slugify(input.service.id || input.service.name)}-${slugify(input.environment.slug || input.environment.name)}-${slugify(input.project.name)}.${baseDomain}`;
   }
 
   /** Builds the browser URL for a service. */

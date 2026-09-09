@@ -5,6 +5,8 @@ import { toSettingKey } from '@kiban/shared';
 import type { SettingsManager } from '@kiban/core';
 import { SettingsService } from './settings.service.js';
 import type { InstanceDomainApplier } from '../interfaces/instance-domain-applier.js';
+import type { TlsSettingsApplier } from '../interfaces/tls-settings-applier.js';
+import type { TlsSettings } from '../../proxy/domain/tls-settings.js';
 import type { TraefikInfo } from '../../service/providers/docker-compose-runtime.provider.js';
 
 const now = new Date('2026-08-22T12:00:00.000Z');
@@ -27,6 +29,19 @@ class MockSettingsManager {
 
   public async clearSetting(key: SettingKey): Promise<void> {
     this.settings.delete(key);
+  }
+}
+
+class MockTlsApplier implements TlsSettingsApplier {
+  public lastSettings: TlsSettings | null = null;
+  public calls = 0;
+  public shouldThrow = false;
+
+  public async applyTlsSettings(settings: TlsSettings): Promise<boolean> {
+    if (this.shouldThrow) throw new Error('proxy refresh failed');
+    this.lastSettings = settings;
+    this.calls += 1;
+    return true;
   }
 }
 
@@ -60,11 +75,13 @@ describe('SettingsService', () => {
   let manager: MockSettingsManager;
   let applier: MockApplier;
   let service: SettingsService;
+  let tlsApplier: MockTlsApplier;
 
   beforeEach(() => {
     manager = new MockSettingsManager();
     applier = new MockApplier();
-    service = new SettingsService(manager as unknown as SettingsManager, applier);
+    tlsApplier = new MockTlsApplier();
+    service = new SettingsService(manager as unknown as SettingsManager, applier, tlsApplier);
   });
 
   describe('getInstanceDomain', () => {
@@ -269,5 +286,45 @@ describe('SettingsService', () => {
 
       expect(domain).toBe('apps.example.com');
     });
+  });
+
+  describe('TLS settings', () => {
+    it('returns safe defaults when TLS settings are not configured', async () => {
+      await expect(service.getTlsSettings()).resolves.toEqual({ acmeEmail: null, useStaging: false });
+    });
+
+    it('persists a normalized ACME email and staging flag', async () => {
+      await service.setTlsSettings({ acmeEmail: '  ops@example.com ', useStaging: true });
+
+      await expect(service.getTlsSettings()).resolves.toEqual({ acmeEmail: 'ops@example.com', useStaging: true });
+    });
+
+    it('clears the ACME email when omitted and preserves the staging flag', async () => {
+      await service.setTlsSettings({ acmeEmail: 'ops@example.com', useStaging: true });
+      await service.setTlsSettings({ acmeEmail: null, useStaging: true });
+
+      await expect(service.getTlsSettings()).resolves.toEqual({ acmeEmail: null, useStaging: true });
+    });
+
+    it('rejects invalid ACME emails', async () => {
+      await expect(service.setTlsSettings({ acmeEmail: 'not-an-email', useStaging: false })).rejects.toThrow('ACME email must be valid.');
+      await expect(service.setTlsSettings({ acmeEmail: 'ops@example.com/path', useStaging: false })).rejects.toThrow('ACME email must be valid.');
+    });
+
+    it('applies normalized TLS settings before persisting them', async () => {
+      await service.setTlsSettings({ acmeEmail: '  SECURITY@example.com ', useStaging: true });
+
+      expect(tlsApplier.lastSettings).toEqual({ acmeEmail: 'security@example.com', useStaging: true });
+      expect(tlsApplier.calls).toBe(1);
+    });
+
+    it('does not persist TLS settings when proxy refresh fails', async () => {
+      tlsApplier.shouldThrow = true;
+
+      await expect(service.setTlsSettings({ acmeEmail: 'ops@example.com', useStaging: false })).rejects.toThrow('proxy refresh failed');
+
+      await expect(service.getTlsSettings()).resolves.toEqual({ acmeEmail: null, useStaging: false });
+    });
+
   });
 });

@@ -33,6 +33,11 @@ export interface TraefikRouter {
   readonly container: string;
 }
 
+export interface TlsSettings {
+  readonly acmeEmail: string | null;
+  readonly useStaging: boolean;
+}
+
 export interface TraefikInfo {
   readonly status: 'running' | 'stopped' | 'not-installed';
   readonly version: string | null;
@@ -77,6 +82,16 @@ export class SettingsApiService {
   /** Saves the installation type. */
   public setInstallationType(type: 'local' | 'remote'): Observable<void> {
     return this.http.put<void>(`${this.apiUrl}/settings/installation-type`, { type }, { withCredentials: true });
+  }
+
+  /** Returns the shared proxy TLS/ACME settings. */
+  public getTlsSettings(): Observable<TlsSettings> {
+    return this.http.get<TlsSettings>(`${this.apiUrl}/settings/tls`, { withCredentials: true });
+  }
+
+  /** Saves the shared proxy TLS/ACME settings. */
+  public setTlsSettings(settings: TlsSettings): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/settings/tls`, settings, { withCredentials: true });
   }
 
   /** Returns Traefik reverse proxy information and active routers. */

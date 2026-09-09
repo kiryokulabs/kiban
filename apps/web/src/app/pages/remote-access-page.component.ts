@@ -89,7 +89,7 @@ import { IconsComponent } from '../shared/icons.component';
               </div>
             </div>
             <div class="mt-3 rounded-lg border border-brand/20 bg-brand/5 p-3">
-              <p class="text-xs c-muted">After this, the dashboard is available at <code class="kb-text">kiban.example.com</code> and still available at <code class="kb-text">VPS_IP:8080</code>. Services are available at hostnames like <code class="kb-text">grafana.development.myapp.services.example.com</code>.</p>
+              <p class="text-xs c-muted">After this, the dashboard is available at <code class="kb-text">kiban.example.com</code> and still available at <code class="kb-text">VPS_IP:8080</code>. Services are available at hostnames like <code class="kb-text">grafana-development-myapp.services.example.com</code>.</p>
             </div>
           </div>
         </div>

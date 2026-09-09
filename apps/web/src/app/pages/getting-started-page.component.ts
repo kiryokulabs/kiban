@@ -156,7 +156,7 @@ import { IconsComponent } from '../shared/icons.component';
           <p>The dashboard can be opened at <code class="kb-text">IP:8080</code>, but services are opened through their own hostnames.</p>
           <div class="rounded-lg border kb-border bg-surface p-3 space-y-1">
             <p class="text-xs c-muted">Correct remote service URL:</p>
-            <p><code class="text-xs kb-text">grafana.development.myapp.services.example.com</code></p>
+            <p><code class="text-xs kb-text">grafana-development-myapp.services.example.com</code></p>
             <p class="text-xs c-muted pt-2">Not recommended:</p>
             <p><code class="text-xs kb-text">100.16.16.18:8080/grafana</code></p>
           </div>

@@ -3,6 +3,8 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { describe, expect, it } from 'vitest';
 import type { Environment, InstallationPlan, InstalledService, ServiceDefinition } from '@kiban/core';
+import type { TlsSettingsProvider } from '../../proxy/domain/tls-settings-provider';
+import type { TlsSettings } from '../../proxy/domain/tls-settings';
 import { DockerComposeRuntimeProvider, type ComposeCommandRunner, type HostPortAllocator, type WebHealthChecker } from './docker-compose-runtime.provider';
 
 const definition: ServiceDefinition = {
@@ -122,6 +124,31 @@ class FakeWebHealthChecker implements WebHealthChecker {
 const installed = (runtime: Readonly<Record<string, unknown>>): InstalledService => ({ id: 'installed-1', environmentId: 'env-1', serviceId: 'mongo-express', name: 'Mongo Express', status: 'running', configuration: {}, runtime, createdAt: new Date(), updatedAt: new Date() });
 
 describe('DockerComposeRuntimeProvider', () => {
+  it('uses persisted TLS settings when generating the shared proxy', async () => {
+    const root = join(await mkdtemp(join(tmpdir(), 'kiban-compose-runtime-')), 'services');
+    const tlsSettingsProvider: TlsSettingsProvider = { getTlsSettings: async () => ({ acmeEmail: 'ops@example.com', useStaging: true }) };
+    const provider = DockerComposeRuntimeProvider.withRunner(new FakeRunner(), root, new FakePortAllocator(), new FakeWebHealthChecker(true), tlsSettingsProvider);
+
+    await provider.install(plan);
+
+    const traefikWorkspace = join(root, '..', 'traefik');
+    const compose = await readFile(join(traefikWorkspace, 'compose.yaml'), 'utf8');
+    expect(compose).toContain('--certificatesresolvers.letsencrypt.acme.email=ops@example.com');
+    expect(compose).toContain('acme-staging-v02.api.letsencrypt.org/directory');
+  });
+
+  it('recreates the shared proxy with new TLS settings', async () => {
+    const root = join(await mkdtemp(join(tmpdir(), 'kiban-compose-runtime-')), 'services');
+    const provider = DockerComposeRuntimeProvider.withRunner(new FakeRunner(), root, new FakePortAllocator(), new FakeWebHealthChecker(true));
+
+    await provider.install(plan);
+    await provider.applyTlsSettings({ acmeEmail: 'security@example.com', useStaging: false });
+
+    const compose = await readFile(join(root, '..', 'traefik', 'compose.yaml'), 'utf8');
+    expect(compose).toContain('--certificatesresolvers.letsencrypt.acme.email=security@example.com');
+    expect(compose).not.toContain('acme-staging-v02.api.letsencrypt.org/directory');
+  });
+
   it('bootstraps the shared Kiban reverse proxy before installing services', async () => {
     const root = join(await mkdtemp(join(tmpdir(), 'kiban-compose-runtime-')), 'services');
     const runner = new FakeRunner();
@@ -133,6 +160,13 @@ describe('DockerComposeRuntimeProvider', () => {
     expect(traefikWorkspace).toBeDefined();
     const traefikComposeYaml = await readFile(join(traefikWorkspace!, 'compose.yaml'), 'utf8');
     expect(traefikComposeYaml).toContain('image: traefik:v3.6');
+    expect(traefikComposeYaml).toContain('--certificatesresolvers.letsencrypt.acme.httpchallenge=true');
+    expect(traefikComposeYaml).toContain('--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=http');
+    expect(traefikComposeYaml).toContain('--certificatesresolvers.letsencrypt.acme.storage=/traefik/acme.json');
+    expect(traefikComposeYaml).toContain('/var/run/docker.sock:/var/run/docker.sock:ro');
+    expect(traefikComposeYaml).toContain('.:/traefik');
+    expect(traefikComposeYaml).toContain('443:443/udp');
+    await expect(readFile(join(traefikWorkspace!, 'acme.json'), 'utf8')).resolves.toBe('');
     expect(traefikComposeYaml).not.toContain('DOCKER_API_VERSION');
     expect(runner.calls.some((call) => call.args.join(' ') === 'network inspect kiban')).toBe(true);
     expect(runner.calls.some((call) => call.args.join(' ') === 'network create kiban')).toBe(false);
@@ -151,6 +185,21 @@ describe('DockerComposeRuntimeProvider', () => {
     await expect(readFile(join(traefikRoot, 'compose.yaml'), 'utf8')).resolves.toContain('--custom-user-setting=true');
   });
 
+  it('migrates the previous proxy entrypoint names so existing services keep working', async () => {
+    const root = join(await mkdtemp(join(tmpdir(), 'kiban-compose-runtime-')), 'services');
+    const traefikRoot = join(root, '..', 'traefik');
+    await mkdir(traefikRoot, { recursive: true });
+    await writeFile(join(traefikRoot, 'compose.yaml'), 'services:\n  traefik:\n    image: traefik:v3.6\n    command:\n      - --entrypoints.web.address=:80\n      - --entrypoints.websecure.address=:443\n', 'utf8');
+    const provider = DockerComposeRuntimeProvider.withRunner(new FakeRunner(), root, new FakePortAllocator());
+
+    await provider.install(plan);
+
+    const compose = await readFile(join(traefikRoot, 'compose.yaml'), 'utf8');
+    expect(compose).toContain('--entrypoints.http.address=:80');
+    expect(compose).toContain('--entrypoints.https.address=:443');
+    expect(compose).not.toContain('--entrypoints.web.address=:80');
+  });
+
   it('routes HTTP services through Traefik instead of publishing host ports', async () => {
     const root = await mkdtemp(join(tmpdir(), 'kiban-compose-runtime-'));
     const runner = new FakeRunner();
@@ -164,7 +213,7 @@ describe('DockerComposeRuntimeProvider', () => {
     expect(composeYaml).toContain('8081');
     expect(composeYaml).toContain('traefik.enable');
     expect(composeYaml).toContain('Host(`mongo-express.development.crossmetrics.localhost`)');
-    expect(composeYaml).toContain('traefik.http.services.mongo-express-development-crossmetrics-localhost-mongo-express-8081.loadbalancer.server.port');
+    expect(composeYaml).toContain('traefik.http.services.http-0-mongo-express-development-crossmetrics-localhost-mongo-express-8081.loadbalancer.server.port');
     expect(composeYaml).toContain('name: kiban');
     expect(result.runtime?.['publicEndpoints']).toEqual(routedPlan.publicEndpoints);
   });
@@ -204,7 +253,7 @@ describe('DockerComposeRuntimeProvider', () => {
     expect(composeYaml).not.toContain('traefik.enable');
   });
 
-  it('registers HTTPS public endpoints on Traefik websecure with TLS enabled', async () => {
+  it('registers HTTPS public endpoints with Coolify-style routers, redirect and Let’s Encrypt resolver', async () => {
     const root = await mkdtemp(join(tmpdir(), 'kiban-compose-runtime-'));
     const runner = new FakeRunner();
     const provider = DockerComposeRuntimeProvider.withRunner(runner, root, new FakePortAllocator());
@@ -215,8 +264,13 @@ describe('DockerComposeRuntimeProvider', () => {
     });
 
     const composeYaml = await readFile(join(String(result.runtime?.['workingDirectory']), 'compose.yaml'), 'utf8');
-    expect(composeYaml).toContain('entrypoints: websecure');
-    expect(composeYaml).toContain('tls: "true"');
+    expect(composeYaml).toContain('traefik.http.middlewares.redirect-to-https.redirectscheme.scheme');
+    expect(composeYaml).toContain('traefik.http.routers.http-0-mongo-express-development-crossmetrics-localhost-mongo-express-8081.entrypoints');
+    expect(composeYaml).toContain('redirect-to-https');
+    expect(composeYaml).toContain('traefik.http.routers.https-0-mongo-express-development-crossmetrics-localhost-mongo-express-8081.entrypoints');
+    expect(composeYaml).toContain('traefik.http.routers.https-0-mongo-express-development-crossmetrics-localhost-mongo-express-8081.tls.certresolver');
+    expect(composeYaml).toContain('letsencrypt');
+    expect(composeYaml).not.toContain('entrypoints: websecure');
   });
 
   it('writes compose.yaml and .env, then runs docker compose up', async () => {

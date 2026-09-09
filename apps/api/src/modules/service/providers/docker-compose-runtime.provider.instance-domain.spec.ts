@@ -80,9 +80,15 @@ describe('DockerComposeRuntimeProvider — applyInstanceDomain', () => {
     const labels = webService.labels as Record<string, string>;
 
     expect(labels['traefik.enable']).toBe('true');
-    expect(labels['traefik.http.routers.kiban-web.rule']).toBe('Host(`kiban.example.com`)');
-    expect(labels['traefik.http.routers.kiban-web.entrypoints']).toBe('web');
-    expect(labels['traefik.http.services.kiban-web.loadbalancer.server.port']).toBe('80');
+    expect(labels['traefik.http.middlewares.redirect-to-https.redirectscheme.scheme']).toBe('https');
+    expect(labels['traefik.http.routers.http-0-kiban-instance.rule']).toBe('Host(`kiban.example.com`) && PathPrefix(`/`)');
+    expect(labels['traefik.http.routers.http-0-kiban-instance.entrypoints']).toBe('http');
+    expect(labels['traefik.http.routers.http-0-kiban-instance.middlewares']).toBe('redirect-to-https');
+    expect(labels['traefik.http.routers.https-0-kiban-instance.rule']).toBe('Host(`kiban.example.com`) && PathPrefix(`/`)');
+    expect(labels['traefik.http.routers.https-0-kiban-instance.entrypoints']).toBe('https');
+    expect(labels['traefik.http.routers.https-0-kiban-instance.tls']).toBe('true');
+    expect(labels['traefik.http.routers.https-0-kiban-instance.tls.certresolver']).toBe('letsencrypt');
+    expect(labels['traefik.http.services.https-0-kiban-instance.loadbalancer.server.port']).toBe('80');
     expect(labels['traefik.docker.network']).toBe('kiban');
     expect(webService.ports).toEqual(['8080:80']);
 

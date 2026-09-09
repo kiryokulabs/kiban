@@ -1,4 +1,4 @@
-import { access, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { access, chmod, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { dirname, join, resolve, sep } from 'node:path';
 import { spawn } from 'node:child_process';
@@ -9,6 +9,10 @@ import { Logger } from '@nestjs/common';
 import { parse, stringify } from 'yaml';
 import type { InstallationPlan, InstalledService, RuntimeHealth, RuntimeProvider, RuntimePublicEndpoint, RuntimeResult } from '@kiban/core';
 import type { RuntimeStatusDto } from '../dto/runtime.dto';
+import type { ProxyProvider } from '../../proxy/application/proxy-provider';
+import { TraefikProxyProvider } from '../../proxy/infrastructure/traefik/traefik-proxy.provider';
+import type { TlsSettingsProvider } from '../../proxy/domain/tls-settings-provider';
+import type { TlsSettings } from '../../proxy/domain/tls-settings';
 
 export interface ComposeCommandRunner {
   run(command: string, args: readonly string[], options: { readonly cwd: string }): Promise<{ readonly stdout: string; readonly stderr: string }>;
@@ -118,10 +122,6 @@ const SHARED_REVERSE_PROXY_NETWORK = 'kiban';
 const TRAEFIK_PROJECT_NAME = 'kiban-traefik';
 
 const sanitize = (value: string): string => value.replace(/[^a-zA-Z0-9_.-]/g, '-');
-const traefikName = (value: string): string => {
-  const normalized = value.toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '');
-  return normalized || 'service';
-};
 
 const resolveComposeFallback = (value: unknown): { readonly value: string; readonly variableName?: string } => {
   const text = String(value);
@@ -141,17 +141,19 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
     private readonly runner: ComposeCommandRunner,
     private readonly runtimeRoot: string,
     private readonly portAllocator: HostPortAllocator,
-    private readonly webHealthChecker: WebHealthChecker
+    private readonly webHealthChecker: WebHealthChecker,
+    private readonly tlsSettingsProvider: TlsSettingsProvider | null = null,
+    private readonly proxyProvider: ProxyProvider = new TraefikProxyProvider()
   ) {}
 
   /** Creates the production Docker Compose runtime provider. */
-  public static create(): DockerComposeRuntimeProvider {
-    return new DockerComposeRuntimeProvider(new SpawnComposeCommandRunner(), join(homedir(), '.kiban', 'runtime', 'services'), new NodeHostPortAllocator(), new NodeWebHealthChecker());
+  public static create(tlsSettingsProvider: TlsSettingsProvider | null = null, proxyProvider: ProxyProvider = new TraefikProxyProvider()): DockerComposeRuntimeProvider {
+    return new DockerComposeRuntimeProvider(new SpawnComposeCommandRunner(), join(homedir(), '.kiban', 'runtime', 'services'), new NodeHostPortAllocator(), new NodeWebHealthChecker(), tlsSettingsProvider, proxyProvider);
   }
 
   /** Creates a provider with a fake runner and runtime root for tests. */
-  public static withRunner(runner: ComposeCommandRunner, runtimeRoot: string, portAllocator: HostPortAllocator = new NodeHostPortAllocator(), webHealthChecker: WebHealthChecker = new NodeWebHealthChecker()): DockerComposeRuntimeProvider {
-    return new DockerComposeRuntimeProvider(runner, runtimeRoot, portAllocator, webHealthChecker);
+  public static withRunner(runner: ComposeCommandRunner, runtimeRoot: string, portAllocator: HostPortAllocator = new NodeHostPortAllocator(), webHealthChecker: WebHealthChecker = new NodeWebHealthChecker(), tlsSettingsProvider: TlsSettingsProvider | null = null, proxyProvider: ProxyProvider = new TraefikProxyProvider()): DockerComposeRuntimeProvider {
+    return new DockerComposeRuntimeProvider(runner, runtimeRoot, portAllocator, webHealthChecker, tlsSettingsProvider, proxyProvider);
   }
 
   /** Returns Docker Compose diagnostics for API/UI runtime status. */
@@ -191,6 +193,19 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
     const updated = this.withInstanceDomainRouting(composeContent, normalizedDomain);
     await writeFile(composeFile, updated, 'utf8');
     await this.runner.run('docker', ['compose', '--env-file', envFile, '-f', 'compose.yaml', 'up', '-d', '--no-deps', '--force-recreate', 'kiban-web'], { cwd: runtimeDir });
+    return true;
+  }
+
+  /** Applies TLS settings and recreates the shared proxy without touching service runtimes. */
+  public async applyTlsSettings(settings: TlsSettings): Promise<boolean> {
+    const workspace = join(resolve(this.runtimeRoot), '..', 'traefik');
+    await mkdir(workspace, { recursive: true });
+    await mkdir(join(workspace, 'dynamic'), { recursive: true });
+    await this.ensureAcmeStorage(join(workspace, 'acme.json'));
+    await this.ensureNetwork(workspace, SHARED_REVERSE_PROXY_NETWORK);
+    await writeFile(join(workspace, 'compose.yaml'), await this.traefikComposeYaml(settings), 'utf8');
+    await this.runner.run('docker', ['compose', '--project-name', TRAEFIK_PROJECT_NAME, '-f', 'compose.yaml', 'up', '-d'], { cwd: workspace });
+    this.reverseProxyReady = true;
     return true;
   }
 
@@ -337,13 +352,25 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
     if (this.reverseProxyReady) return;
     const workspace = join(resolve(this.runtimeRoot), '..', 'traefik');
     await mkdir(workspace, { recursive: true });
+    await mkdir(join(workspace, 'dynamic'), { recursive: true });
+    await this.ensureAcmeStorage(join(workspace, 'acme.json'));
     await this.ensureNetwork(workspace, SHARED_REVERSE_PROXY_NETWORK);
     const composeFile = join(workspace, 'compose.yaml');
-    if (!(await this.fileExists(composeFile))) {
-      await writeFile(composeFile, this.traefikComposeYaml(), 'utf8');
+    if (!(await this.fileExists(composeFile)) || await this.requiresProxyMigration(composeFile)) {
+      await writeFile(composeFile, await this.traefikComposeYaml(), 'utf8');
     }
     await this.runner.run('docker', ['compose', '--project-name', TRAEFIK_PROJECT_NAME, '-f', 'compose.yaml', 'up', '-d'], { cwd: workspace });
     this.reverseProxyReady = true;
+  }
+
+  private async ensureAcmeStorage(path: string): Promise<void> {
+    if (!(await this.fileExists(path))) await writeFile(path, '', 'utf8');
+    await chmod(path, 0o600);
+  }
+
+  private async requiresProxyMigration(composeFile: string): Promise<boolean> {
+    const compose = await readFile(composeFile, 'utf8');
+    return compose.includes('--entrypoints.web.address=:80') || compose.includes('--entrypoints.websecure.address=:443');
   }
 
   private async fileExists(path: string): Promise<boolean> {
@@ -355,32 +382,9 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
     }
   }
 
-  private traefikComposeYaml(): string {
-    return [
-      'services:',
-      '  traefik:',
-      '    image: traefik:v3.6',
-      '    restart: unless-stopped',
-      '    command:',
-      '      - --providers.docker=true',
-      '      - --providers.docker.exposedbydefault=false',
-      '      - --providers.docker.network=kiban',
-      '      - --entrypoints.web.address=:80',
-      '      - --entrypoints.websecure.address=:443',
-      '      - --api.dashboard=false',
-      '    ports:',
-      '      - "80:80"',
-      '      - "443:443"',
-      '    volumes:',
-      '      - /var/run/docker.sock:/var/run/docker.sock:ro',
-      '    networks:',
-      '      - kiban',
-      'networks:',
-      '  kiban:',
-      '    name: kiban',
-      '    external: true',
-      ''
-    ].join('\n');
+  private async traefikComposeYaml(overrides: TlsSettings | null = null): Promise<string> {
+    const settings = overrides ?? (this.tlsSettingsProvider ? await this.tlsSettingsProvider.getTlsSettings() : null);
+    return this.proxyProvider.composeYaml(settings);
   }
 
   /** Parses the Traefik compose file to extract static configuration. */
@@ -515,11 +519,18 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
     this.addExpose(webService, 80);
     this.addServiceNetwork(webService, SHARED_REVERSE_PROXY_NETWORK);
     const labels = this.ensureRecord(webService, 'labels');
-    labels['traefik.enable'] = 'true';
-    labels['traefik.http.routers.kiban-web.rule'] = `Host(\`${domain}\`)`;
-    labels['traefik.http.routers.kiban-web.entrypoints'] = 'web';
-    labels['traefik.http.services.kiban-web.loadbalancer.server.port'] = '80';
-    labels['traefik.docker.network'] = SHARED_REVERSE_PROXY_NETWORK;
+    const generated = this.proxyProvider.labelsFor({
+      resourceId: 'kiban-instance',
+      resourceType: 'kiban-instance',
+      name: 'Kiban',
+      targetService: 'kiban-web',
+      port: 80,
+      host: domain,
+      path: '/',
+      protocol: 'https',
+      forceHttps: true
+    }, { networkName: SHARED_REVERSE_PROXY_NETWORK, certificateResolver: 'letsencrypt' });
+    for (const [key, value] of Object.entries(generated)) labels[key] = value;
 
     const networks = this.ensureRecord(document, 'networks');
     if (!networks[SHARED_REVERSE_PROXY_NETWORK]) {
@@ -670,13 +681,18 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
 
   private addTraefikLabels(service: Record<string, unknown>, endpoint: RuntimePublicEndpoint): void {
     const labels = this.ensureRecord(service, 'labels');
-    const routerName = traefikName(`${endpoint.host}-${endpoint.service}-${endpoint.port}`);
-    labels['traefik.enable'] = 'true';
-    labels[`traefik.http.routers.${routerName}.rule`] = `Host(\`${endpoint.host}\`)`;
-    labels[`traefik.http.routers.${routerName}.entrypoints`] = endpoint.protocol === 'https' ? 'websecure' : 'web';
-    if (endpoint.protocol === 'https') labels[`traefik.http.routers.${routerName}.tls`] = 'true';
-    labels[`traefik.http.services.${routerName}.loadbalancer.server.port`] = String(endpoint.port);
-    labels['traefik.docker.network'] = SHARED_REVERSE_PROXY_NETWORK;
+    const generated = this.proxyProvider.labelsFor({
+      resourceId: `${endpoint.host}-${endpoint.service}-${endpoint.port}`,
+      resourceType: 'service',
+      name: endpoint.name,
+      targetService: endpoint.service,
+      port: endpoint.port,
+      host: endpoint.host,
+      path: '/',
+      protocol: endpoint.protocol,
+      forceHttps: endpoint.protocol === 'https'
+    }, { networkName: SHARED_REVERSE_PROXY_NETWORK, certificateResolver: 'letsencrypt' });
+    for (const [key, value] of Object.entries(generated)) labels[key] = value;
   }
 
   private removeTraefikLabels(service: Record<string, unknown>): void {

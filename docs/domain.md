@@ -43,23 +43,25 @@ Without a Wildcard Domain, service URLs fall back to `.localhost`. That is usefu
 Service domains follow a fixed pattern:
 
 ```
-{service}.{environment}.{project}.{base-domain}
+{service}-{environment}-{project}.{base-domain}
 ```
 
 Examples with Wildcard Domain `services.example.com`:
 
 ```txt
-grafana.development.crossmetrics.services.example.com
-n8n.production.myproject.services.example.com
-postgresql.staging.crm.services.example.com
+grafana-development-crossmetrics.services.example.com
+n8n-production-myproject.services.example.com
+postgresql-staging-crm.services.example.com
 ```
 
 Examples with no Wildcard Domain (default `localhost`):
 
 ```txt
-grafana.development.crossmetrics.localhost
-n8n.production.myproject.localhost
+grafana-development-crossmetrics.localhost
+n8n-production-myproject.localhost
 ```
+
+The flattened subdomain format is intentional: it keeps generated service names under a single DNS label before the base domain, so a future wildcard certificate such as `*.services.example.com` can cover generated service URLs.
 
 The slugification rules:
 
@@ -132,7 +134,7 @@ A   *.services.example.com   →   your server IP
 When a new service is installed, `DomainService` generates its URL:
 
 ```txt
-n8n.development.crossmetrics.services.example.com
+n8n-development-crossmetrics.services.example.com
 ```
 
 Traefik routes this hostname to the service container through the shared `kiban` Docker network.
@@ -160,7 +162,7 @@ http://your-server-ip:8080
 Installed services are exposed through hostnames:
 
 ```txt
-http://grafana.development.myapp.services.example.com
+http://grafana-development-myapp.services.example.com
 ```
 
 Kiban does **not** expose services as:
@@ -190,7 +192,7 @@ Every installed service can have its own custom domain, overriding the generated
 Open the service detail page. The **Service domain** section shows the current hostname.
 
 ```
-n8n.development.crossmetrics.services.example.com
+n8n-development-crossmetrics.services.example.com
 ```
 
 Change it to a custom hostname:
@@ -230,7 +232,7 @@ When saved, Kiban:
 When no Wildcard Domain is configured, Kiban defaults to:
 
 ```txt
-{service}.{environment}.{project}.localhost
+{service}-{environment}-{project}.localhost
 ```
 
 This works **only** when the browser is on the same machine running Kiban.
@@ -308,9 +310,11 @@ services:
     image: n8nio/n8n
     labels:
       traefik.enable: "true"
-      traefik.http.routers.n8n.rule: "Host(`n8n.example.com`)"
-      traefik.http.routers.n8n.entrypoints: web
-      traefik.http.services.n8n.loadbalancer.server.port: "5678"
+      traefik.http.routers.https-0-n8n.rule: "Host(`n8n.example.com`)"
+      traefik.http.routers.https-0-n8n.entrypoints: https
+      traefik.http.routers.https-0-n8n.tls: "true"
+      traefik.http.routers.https-0-n8n.tls.certresolver: letsencrypt
+      traefik.http.services.https-0-n8n.loadbalancer.server.port: "5678"
       traefik.docker.network: kiban
     networks:
       - default
@@ -342,6 +346,7 @@ All services with web access points are connected to the `kiban` Docker network.
 | `/api/settings/wildcard-domain` | GET | Read Wildcard Domain |
 | `/api/settings/wildcard-domain` | PUT | Set Wildcard Domain |
 | `/api/settings/traefik` | GET | Traefik status and active routers |
+| `/api/settings/tls` | GET/PUT | Read or configure ACME email and Let’s Encrypt staging mode |
 | `/api/services/:id/domain` | PATCH | Override a service's domain |
 
 ---
@@ -352,4 +357,5 @@ All services with web access points are connected to the `kiban` Docker network.
 - Per-service domain override applies to all web access points of that service (not per-endpoint).
 - `.localhost` domains only work on the local machine.
 - Domain routing requires the installed Docker runtime (not development mode).
-- SSL/TLS termination is not managed by Kiban. Use Cloudflare, a tunnel provider, or your own certificate setup.
+- SSL/TLS termination is managed by Kiban’s shared Traefik proxy. Kiban obtains and renews certificates through Let’s Encrypt; the DNS provider only needs to point the hostname to the VPS and ports `80`/`443` must be reachable for HTTP-01.
+- Use staging mode while testing to avoid Let’s Encrypt rate limits, then disable it before production issuance.

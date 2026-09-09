@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Environment, Project } from '@kiban/core';
-import { DomainService } from './domain.service';
+import { DomainService, type WildcardDomainProvider } from './domain.service';
 
 const project: Project = {
   id: 'project-1',
@@ -21,6 +21,8 @@ const environment: Environment = {
   updatedAt: new Date('2026-08-04T10:00:00.000Z')
 };
 
+const provider = (domain: string | null): WildcardDomainProvider => ({ getWildcardDomain: async () => domain });
+
 describe('DomainService', () => {
   it('builds local service hosts from service, environment and project slugs', async () => {
     const service = new DomainService({
@@ -28,7 +30,7 @@ describe('DomainService', () => {
       domains: { development: 'localhost', staging: 'localhost', production: 'localhost' }
     });
 
-    await expect(service.buildHost({ project, environment, service: { id: 'grafana', name: 'Grafana' } })).resolves.toBe('grafana.development.cross-metrics.localhost');
+    await expect(service.buildHost({ project, environment, service: { id: 'grafana', name: 'Grafana' } })).resolves.toBe('grafana-development-cross-metrics.localhost');
   });
 
   it('uses the configured base domain without changing callers', async () => {
@@ -37,7 +39,7 @@ describe('DomainService', () => {
       domains: { development: 'dev.example.com', staging: 'staging.example.com', production: 'example.com' }
     });
 
-    await expect(service.buildUrl({ project, environment, service: { id: 'n8n', name: 'n8n' } })).resolves.toBe('https://n8n.development.cross-metrics.dev.example.com');
+    await expect(service.buildUrl({ project, environment, service: { id: 'n8n', name: 'n8n' } })).resolves.toBe('https://n8n-development-cross-metrics.dev.example.com');
   });
 
   it('uses the configured wildcard domain when provided', async () => {
@@ -46,10 +48,10 @@ describe('DomainService', () => {
         protocol: 'https',
         domains: { development: 'localhost', staging: 'localhost', production: 'localhost' }
       },
-      { getWildcardDomain: async () => 'apps.example.com' }
+      provider('apps.example.com')
     );
 
-    await expect(service.buildUrl({ project, environment, service: { id: 'plausible', name: 'Plausible' } })).resolves.toBe('https://plausible.development.cross-metrics.apps.example.com');
+    await expect(service.buildUrl({ project, environment, service: { id: 'plausible', name: 'Plausible' } })).resolves.toBe('https://plausible-development-cross-metrics.apps.example.com');
   });
 
   it('falls back to runtime config when wildcard domain is not configured', async () => {
@@ -58,9 +60,19 @@ describe('DomainService', () => {
         protocol: 'http',
         domains: { development: 'localhost', staging: 'localhost', production: 'localhost' }
       },
-      { getWildcardDomain: async () => null }
+      provider(null)
     );
 
-    await expect(service.buildUrl({ project, environment, service: { id: 'grafana', name: 'Grafana' } })).resolves.toBe('http://grafana.development.cross-metrics.localhost');
+    await expect(service.buildUrl({ project, environment, service: { id: 'grafana', name: 'Grafana' } })).resolves.toBe('http://grafana-development-cross-metrics.localhost');
+  });
+
+  it('builds wildcard-certificate-friendly service hostnames under the wildcard domain', async () => {
+    const service = new DomainService(undefined, provider('services.example.com'));
+
+    await expect(service.buildHost({
+      project: { name: 'My Project' },
+      environment: { name: 'Production', slug: 'production' },
+      service: { id: 'n8n', name: 'n8n' }
+    })).resolves.toBe('n8n-production-my-project.services.example.com');
   });
 });

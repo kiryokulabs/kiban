@@ -22,6 +22,10 @@ import { SettingsService } from './services/settings.service';
     {
       provide: 'INSTANCE_DOMAIN_APPLIER',
       useExisting: DockerComposeRuntimeProvider
+    },
+    {
+      provide: 'TLS_SETTINGS_APPLIER',
+      useExisting: DockerComposeRuntimeProvider
     }
   ],
   exports: [SettingsService]

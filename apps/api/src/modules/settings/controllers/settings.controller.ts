@@ -1,6 +1,7 @@
 import { Body, Controller, Get, HttpCode, Put } from '@nestjs/common';
 import { SettingsService } from '../services/settings.service';
 import type { TraefikInfo } from '../../service/providers/docker-compose-runtime.provider';
+import type { TlsSettings } from '../../proxy/domain/tls-settings';
 
 interface InstanceDomainDto {
   readonly domain: string;
@@ -25,6 +26,8 @@ interface InstallationTypeDto {
 interface InstallationTypeResponseDto {
   readonly type: 'local' | 'remote';
 }
+
+interface TlsSettingsDto extends TlsSettings {}
 
 @Controller('settings')
 export class SettingsController {
@@ -62,6 +65,19 @@ export class SettingsController {
   @HttpCode(204)
   public async setWildcardDomain(@Body() body: WildcardDomainDto): Promise<void> {
     await this.service.setWildcardDomain(body.domain);
+  }
+
+  /** Returns the shared proxy ACME configuration. */
+  @Get('tls')
+  public async getTls(): Promise<TlsSettings> {
+    return this.service.getTlsSettings();
+  }
+
+  /** Saves the shared proxy ACME configuration. */
+  @Put('tls')
+  @HttpCode(204)
+  public async setTls(@Body() body: TlsSettingsDto): Promise<void> {
+    await this.service.setTlsSettings(body);
   }
 
   /** Returns the installation type (local or remote). */
