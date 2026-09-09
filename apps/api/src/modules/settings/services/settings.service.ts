@@ -4,13 +4,16 @@ import { toSettingKey } from '@kiban/shared';
 import { SETTINGS_MANAGER } from '../interfaces/settings.constants';
 import type { InstanceDomainApplier } from '../interfaces/instance-domain-applier';
 import type { TraefikInfo } from '../../service/providers/docker-compose-runtime.provider';
+import type { TlsSettings } from '../../proxy/domain/tls-settings';
+import type { TlsSettingsApplier } from '../interfaces/tls-settings-applier';
 
 /** Application service for reading and writing Kiban settings. */
 @Injectable()
 export class SettingsService {
   public constructor(
     @Inject(SETTINGS_MANAGER) private readonly manager: SettingsManager,
-    @Optional() @Inject('INSTANCE_DOMAIN_APPLIER') private readonly applier: InstanceDomainApplier | null
+    @Optional() @Inject('INSTANCE_DOMAIN_APPLIER') private readonly applier: InstanceDomainApplier | null,
+    @Optional() @Inject('TLS_SETTINGS_APPLIER') private readonly tlsApplier: TlsSettingsApplier | null = null
   ) {}
 
   /** Returns the configured instance domain, or null when not set. */
@@ -54,6 +57,29 @@ export class SettingsService {
       return;
     }
     await this.manager.setSetting(toSettingKey('wildcard_domain'), normalized);
+  }
+
+  /** Returns the shared proxy ACME configuration. */
+  public async getTlsSettings(): Promise<TlsSettings> {
+    const [email, staging] = await Promise.all([
+      this.manager.getSetting(toSettingKey('tls_acme_email')),
+      this.manager.getSetting(toSettingKey('tls_acme_staging'))
+    ]);
+    return { acmeEmail: email?.value ?? null, useStaging: staging?.value === 'true' };
+  }
+
+  /** Persists the shared proxy ACME configuration. */
+  public async setTlsSettings(settings: TlsSettings): Promise<void> {
+    const email = settings.acmeEmail?.trim().toLowerCase() ?? null;
+    if (email !== null && !/^[^\s@/]+@[a-z0-9-]+(?:\.[a-z0-9-]+)+$/.test(email)) {
+      throw new BadRequestException('ACME email must be valid.');
+    }
+
+    const normalized: TlsSettings = { acmeEmail: email, useStaging: settings.useStaging };
+    if (this.tlsApplier) await this.tlsApplier.applyTlsSettings(normalized);
+    if (email === null) await this.manager.clearSetting(toSettingKey('tls_acme_email'));
+    else await this.manager.setSetting(toSettingKey('tls_acme_email'), email);
+    await this.manager.setSetting(toSettingKey('tls_acme_staging'), String(settings.useStaging));
   }
 
   private normalizeOptionalHostname(value: string, label: 'Instance domain' | 'Wildcard domain'): string | null {
