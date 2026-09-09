@@ -246,6 +246,83 @@ import { SettingsApiService, type TraefikInfo } from '../settings/settings-api.s
         </div>
       </div>
 
+
+      <!-- TLS / Let's Encrypt -->
+      <div class="card p-5">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="grid h-8 w-8 place-items-center rounded-lg bg-brand/10 text-brand-light">
+            <kiban-icon name="warning" [size]="16" />
+          </div>
+          <div>
+            <p class="text-sm font-medium kb-text">TLS certificates</p>
+            <p class="text-xs c-muted">Automatic Let's Encrypt certificates for Kiban and service domains</p>
+          </div>
+        </div>
+
+        @if (tlsLoading()) {
+          <p class="text-sm c-muted">Loading...</p>
+        } @else {
+          <div class="space-y-3">
+            <div>
+              <label class="text-xs c-muted mb-1 block">ACME email</label>
+              <input
+                type="email"
+                class="input"
+                placeholder="ops@example.com"
+                [value]="tlsEmail()"
+                (input)="onTlsEmailInput($event)"
+                [disabled]="tlsSaving()"
+              />
+            </div>
+
+            <label class="flex items-start gap-2 rounded-lg border border-white/5 p-3">
+              <input
+                type="checkbox"
+                class="mt-0.5"
+                [checked]="tlsUseStaging()"
+                (change)="onTlsStagingChange($event)"
+                [disabled]="tlsSaving()"
+              />
+              <span>
+                <span class="text-xs font-medium kb-text block">Use Let's Encrypt staging</span>
+                <span class="text-xs c-muted block">Recommended while testing on a VPS to avoid production rate limits.</span>
+              </span>
+            </label>
+
+            @if (installationType() === 'remote') {
+              <div class="rounded-lg bg-brand/5 border border-brand/10 p-3">
+                <p class="text-xs c-muted">Kiban uses HTTP-01 validation. Port <code class="kb-text">80</code> must point to this VPS and remain reserved for Kiban's shared proxy.</p>
+              </div>
+            }
+
+            @if (!tlsEmail() && installationType() === 'remote') {
+              <div class="rounded-lg bg-yellow-500/5 border border-yellow-500/10 p-3">
+                <p class="text-xs text-yellow-500">Add an ACME email before testing HTTPS domains on the VPS.</p>
+              </div>
+            }
+
+            @if (tlsSaved()) {
+              <p class="text-xs text-green-500">TLS settings saved. The shared proxy configuration was refreshed.</p>
+            }
+
+            @if (tlsError()) {
+              <p class="text-xs text-red-500">{{ tlsError() }}</p>
+            }
+
+            <div class="flex gap-2">
+              <button
+                class="btn btn-primary"
+                type="button"
+                (click)="saveTlsSettings()"
+                [disabled]="tlsSaving() || !hasTlsChanges()"
+              >
+                {{ tlsSaving() ? 'Saving...' : 'Save TLS settings' }}
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+
       <!-- Reverse Proxy (Traefik) -->
       <div class="card p-5">
         <div class="flex items-center gap-3 mb-4">
@@ -364,6 +441,15 @@ export class SettingsPageComponent implements OnInit {
   public readonly wildcardError = signal('');
   protected originalWildcardDomain = '';
 
+  public readonly tlsEmail = signal('');
+  public readonly tlsUseStaging = signal(false);
+  public readonly tlsLoading = signal(true);
+  public readonly tlsSaving = signal(false);
+  public readonly tlsSaved = signal(false);
+  public readonly tlsError = signal('');
+  protected originalTlsEmail = '';
+  protected originalTlsUseStaging = false;
+
   public readonly traefikInfo = signal<TraefikInfo | null>(null);
   public readonly traefikLoading = signal(true);
 
@@ -375,6 +461,7 @@ export class SettingsPageComponent implements OnInit {
     this.loadInstallationType();
     this.loadDomain();
     this.loadWildcardDomain();
+    this.loadTlsSettings();
     this.loadTraefikInfo();
   }
 
@@ -455,6 +542,44 @@ export class SettingsPageComponent implements OnInit {
     await this.saveWildcardDomain();
   }
 
+
+  public onTlsEmailInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.tlsEmail.set(input.value);
+    this.tlsSaved.set(false);
+    this.tlsError.set('');
+  }
+
+  public onTlsStagingChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.tlsUseStaging.set(input.checked);
+    this.tlsSaved.set(false);
+    this.tlsError.set('');
+  }
+
+  public hasTlsChanges(): boolean {
+    return this.tlsEmail().trim() !== this.originalTlsEmail || this.tlsUseStaging() !== this.originalTlsUseStaging;
+  }
+
+  public async saveTlsSettings(): Promise<void> {
+    this.tlsSaving.set(true);
+    this.tlsError.set('');
+    this.tlsSaved.set(false);
+    const email = this.tlsEmail().trim();
+    try {
+      await this.api.setTlsSettings({ acmeEmail: email.length > 0 ? email : null, useStaging: this.tlsUseStaging() }).toPromise();
+      this.originalTlsEmail = email;
+      this.originalTlsUseStaging = this.tlsUseStaging();
+      this.tlsEmail.set(email);
+      this.tlsSaved.set(true);
+      this.loadTraefikInfo();
+    } catch (err: unknown) {
+      this.tlsError.set(err instanceof Error ? err.message : 'Failed to save TLS settings.');
+    } finally {
+      this.tlsSaving.set(false);
+    }
+  }
+
   private async loadInstallationType(): Promise<void> {
     try {
       const response = await this.api.getInstallationType().toPromise();
@@ -489,6 +614,23 @@ export class SettingsPageComponent implements OnInit {
       this.wildcardError.set('Failed to load wildcard domain.');
     } finally {
       this.wildcardLoading.set(false);
+    }
+  }
+
+
+  private async loadTlsSettings(): Promise<void> {
+    try {
+      const response = await this.api.getTlsSettings().toPromise();
+      const email = response?.acmeEmail ?? '';
+      const useStaging = response?.useStaging ?? false;
+      this.tlsEmail.set(email);
+      this.tlsUseStaging.set(useStaging);
+      this.originalTlsEmail = email;
+      this.originalTlsUseStaging = useStaging;
+    } catch {
+      this.tlsError.set('Failed to load TLS settings.');
+    } finally {
+      this.tlsLoading.set(false);
     }
   }
 

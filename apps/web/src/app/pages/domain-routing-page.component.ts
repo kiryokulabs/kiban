@@ -53,7 +53,7 @@ import { IconsComponent } from '../shared/icons.component';
             <p class="text-xs c-muted">Dashboard:</p>
             <p><code class="text-xs kb-text">http://100.16.16.18:8080</code></p>
             <p class="text-xs c-muted pt-2">Service:</p>
-            <p><code class="text-xs kb-text">http://grafana.development.myapp.services.example.com</code></p>
+            <p><code class="text-xs kb-text">http://grafana-development-myapp.services.example.com</code></p>
           </div>
         </div>
       </div>
@@ -70,17 +70,17 @@ import { IconsComponent } from '../shared/icons.component';
           </div>
         </div>
         <div class="rounded-lg border kb-border bg-surface p-3 mb-3">
-          <code class="text-xs kb-text">&#123;service&#125;.<wbr>&#123;environment&#125;.<wbr>&#123;project&#125;.<wbr>&#123;base-domain&#125;</code>
+          <code class="text-xs kb-text">&#123;service&#125;-<wbr>&#123;environment&#125;-<wbr>&#123;project&#125;.<wbr>&#123;base-domain&#125;</code>
         </div>
         <div class="space-y-2 text-xs c-muted">
           <p><strong class="kb-text">Example</strong> with Wildcard Domain <code class="kb-text">services.example.com</code>:</p>
           <div class="rounded-lg border kb-border bg-surface p-3 space-y-1">
-            <p><code class="kb-text">grafana.development.myapp.services.example.com</code></p>
-            <p><code class="kb-text">n8n.production.crm.services.example.com</code></p>
+            <p><code class="kb-text">grafana-development-myapp.services.example.com</code></p>
+            <p><code class="kb-text">n8n-production-crm.services.example.com</code></p>
           </div>
           <p class="mt-2"><strong class="kb-text">Example</strong> with no Wildcard Domain (default):</p>
           <div class="rounded-lg border kb-border bg-surface p-3 space-y-1">
-            <p><code class="kb-text">grafana.development.myapp.localhost</code></p>
+            <p><code class="kb-text">grafana-development-myapp.localhost</code></p>
           </div>
         </div>
       </div>
