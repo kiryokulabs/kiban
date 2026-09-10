@@ -46,7 +46,14 @@ export class DomainService {
 
   /** Builds the browser URL for a service. */
   public async buildUrl(input: DomainBuildInput): Promise<string> {
-    return `${this.config.protocol}://${await this.buildHost(input)}`;
+    const host = await this.buildHost(input);
+    return `${this.protocolForHost(host)}://${host}`;
+  }
+
+  /** Returns the public URL protocol Kiban should use for a host. */
+  public protocolForHost(host: string): 'http' | 'https' {
+    if (host === 'localhost' || host.endsWith('.localhost')) return 'http';
+    return 'https';
   }
 
   /** Returns the configured public URL protocol. */

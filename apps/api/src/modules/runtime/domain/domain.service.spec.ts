@@ -66,6 +66,23 @@ describe('DomainService', () => {
     await expect(service.buildUrl({ project, environment, service: { id: 'grafana', name: 'Grafana' } })).resolves.toBe('http://grafana-development-cross-metrics.localhost');
   });
 
+
+  it('uses HTTPS URLs for non-localhost service hosts even when the runtime default protocol is HTTP', async () => {
+    const service = new DomainService(
+      {
+        protocol: 'http',
+        domains: { development: 'localhost', staging: 'localhost', production: 'localhost' }
+      },
+      provider('services.example.com')
+    );
+
+    await expect(service.buildUrl({
+      project,
+      environment,
+      service: { id: 'n8n', name: 'n8n' }
+    })).resolves.toBe('https://n8n-development-cross-metrics.services.example.com');
+  });
+
   it('builds wildcard-certificate-friendly service hostnames under the wildcard domain', async () => {
     const service = new DomainService(undefined, provider('services.example.com'));
 
