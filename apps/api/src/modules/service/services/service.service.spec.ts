@@ -133,9 +133,51 @@ describe('ServiceService runtime state enrichment', () => {
     if (!Array.isArray(publicEndpoints)) throw new Error('Expected public endpoints to be persisted.');
     expect(publicEndpoints[0]).toMatchObject({
       host: 'grafana.example.com',
-      url: 'http://grafana.example.com'
+      url: 'https://grafana.example.com'
     });
-    expect(result.accessPoints?.[0]?.url).toBe('http://grafana.example.com');
+    expect(result.accessPoints?.[0]?.url).toBe('https://grafana.example.com');
+  });
+
+
+  it('upgrades public service domain overrides to HTTPS for non-localhost hosts', async () => {
+    let persistedRuntime: Readonly<Record<string, unknown>> | null = null;
+    const serviceWithEndpoint = installed({
+      status: 'running',
+      runtime: {
+        provider: 'docker-compose',
+        publicEndpoints: [{ name: 'Web UI', service: 'grafana', port: 3000, host: 'grafana.localhost', url: 'http://grafana.localhost', protocol: 'http' }]
+      }
+    });
+    const runtime: RuntimeProvider = {
+      install: async () => ({ status: 'running' }),
+      uninstall: async () => ({ status: 'stopped' }),
+      start: async () => ({ status: 'running' }),
+      stop: async () => ({ status: 'stopped' }),
+      restart: async () => ({ status: 'running' }),
+      health: async () => ({ status: 'healthy' }),
+      updatePublicEndpoints: async (_service, publicEndpoints) => ({
+        status: 'running',
+        runtime: { ...serviceWithEndpoint.runtime, publicEndpoints }
+      })
+    };
+    const service = createService([serviceWithEndpoint], runtime, {
+      updateRuntime: async (_id: string, runtimeValue: Readonly<Record<string, unknown>> | null) => {
+        persistedRuntime = runtimeValue;
+        return { ...serviceWithEndpoint, runtime: runtimeValue };
+      }
+    });
+
+    const result = await service.updateDomain('svc-1', { host: 'grafana.example.com' });
+
+    const publicEndpoints = persistedRuntime?.['publicEndpoints'];
+    expect(Array.isArray(publicEndpoints)).toBe(true);
+    if (!Array.isArray(publicEndpoints)) throw new Error('Expected public endpoints to be persisted.');
+    expect(publicEndpoints[0]).toMatchObject({
+      host: 'grafana.example.com',
+      url: 'https://grafana.example.com',
+      protocol: 'https'
+    });
+    expect(result.accessPoints?.[0]?.url).toBe('https://grafana.example.com');
   });
 
   it('updates service domains for legacy public endpoints without an explicit protocol', async () => {

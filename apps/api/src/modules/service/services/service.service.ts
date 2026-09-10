@@ -84,7 +84,10 @@ export class ServiceService {
       const endpoints = this.runtimePublicEndpoints(service.runtime);
       if (endpoints.length === 0) throw new ProjectValidationError('This service does not expose a web endpoint.');
       if (!this.runtime.updatePublicEndpoints) throw new ProjectValidationError('The current runtime cannot update service domains.');
-      const updatedEndpoints = endpoints.map((endpoint) => ({ ...endpoint, host, url: `${endpoint.protocol}://${host}` }));
+      const updatedEndpoints = endpoints.map((endpoint) => {
+        const protocol = this.publicProtocolForHost(host);
+        return { ...endpoint, host, url: `${protocol}://${host}`, protocol };
+      });
       const result = await this.runtime.updatePublicEndpoints(service, updatedEndpoints);
       const updated = await this.services.updateRuntime(id, result.runtime ?? { ...(service.runtime ?? {}), publicEndpoints: updatedEndpoints });
       return await this.enrichOne(updated);
@@ -247,6 +250,14 @@ export class ServiceService {
       if (typeof name !== 'string' || typeof service !== 'string' || typeof port !== 'number' || typeof host !== 'string' || typeof url !== 'string') return [];
       return [{ name, service, port, host, url, protocol }];
     });
+  }
+
+  private publicProtocolForHost(host: string): 'http' | 'https' {
+    return this.isLocalhost(host) ? 'http' : 'https';
+  }
+
+  private isLocalhost(host: string): boolean {
+    return host === 'localhost' || host.endsWith('.localhost');
   }
 
   private endpointProtocol(protocol: unknown, url: unknown): 'http' | 'https' {
