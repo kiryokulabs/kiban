@@ -18,13 +18,15 @@ export class RoutedRuntimeProvider implements RuntimeProvider {
       .filter((accessPoint) => accessPoint.kind === 'web')
       .map(async (accessPoint) => {
         const input = { project, environment: plan.environment, service: { id: plan.serviceDefinition.id, name: plan.serviceDefinition.metadata.name } };
+        const host = await this.domains.buildHost(input);
+        const protocol = this.domains.protocolForHost(host);
         return {
           name: accessPoint.name,
           service: accessPoint.service,
           port: accessPoint.port,
-          host: await this.domains.buildHost(input),
-          url: await this.domains.buildUrl(input),
-          protocol: this.domains.protocol()
+          host,
+          url: `${protocol}://${host}`,
+          protocol
         };
       }));
     return this.delegate.install({ ...plan, publicEndpoints });

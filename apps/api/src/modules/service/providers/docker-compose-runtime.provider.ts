@@ -617,6 +617,12 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
     return !value || typeof value !== 'object' || Array.isArray(value) ? null : value as Record<string, unknown>;
   }
 
+  private publicProtocolForHost(host: string, protocol: 'http' | 'https'): 'http' | 'https' {
+    if (protocol === 'https') return 'https';
+    if (host === 'localhost' || host.endsWith('.localhost')) return 'http';
+    return 'https';
+  }
+
   private ensureRecord(target: Record<string, unknown>, key: string): Record<string, unknown> {
     const existing = this.recordValue(target[key]);
     if (existing) return existing;
@@ -681,6 +687,7 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
 
   private addTraefikLabels(service: Record<string, unknown>, endpoint: RuntimePublicEndpoint): void {
     const labels = this.ensureRecord(service, 'labels');
+    const protocol = this.publicProtocolForHost(endpoint.host, endpoint.protocol);
     const generated = this.proxyProvider.labelsFor({
       resourceId: `${endpoint.host}-${endpoint.service}-${endpoint.port}`,
       resourceType: 'service',
@@ -689,8 +696,8 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
       port: endpoint.port,
       host: endpoint.host,
       path: '/',
-      protocol: endpoint.protocol,
-      forceHttps: endpoint.protocol === 'https'
+      protocol,
+      forceHttps: protocol === 'https'
     }, { networkName: SHARED_REVERSE_PROXY_NETWORK, certificateResolver: 'letsencrypt' });
     for (const [key, value] of Object.entries(generated)) labels[key] = value;
   }
