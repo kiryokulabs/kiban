@@ -218,6 +218,56 @@ describe('DockerComposeRuntimeProvider', () => {
     expect(result.runtime?.['publicEndpoints']).toEqual(routedPlan.publicEndpoints);
   });
 
+
+  it('routes HTTPS service endpoints through Traefik with a certificate resolver', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'kiban-compose-runtime-'));
+    const provider = DockerComposeRuntimeProvider.withRunner(new FakeRunner(), root, new FakePortAllocator(), new FakeWebHealthChecker(true));
+
+    const result = await provider.install({
+      ...routedPlan,
+      publicEndpoints: [{
+        name: 'Web UI',
+        service: 'mongo-express',
+        port: 8081,
+        host: 'mongo-express.example.com',
+        url: 'https://mongo-express.example.com',
+        protocol: 'https'
+      }]
+    });
+
+    const composeYaml = await readFile(join(String(result.runtime?.['workingDirectory']), 'compose.yaml'), 'utf8');
+    expect(composeYaml).toContain('traefik.http.routers.http-0-mongo-express-example-com-mongo-express-8081.entrypoints');
+    expect(composeYaml).toContain('traefik.http.routers.http-0-mongo-express-example-com-mongo-express-8081.middlewares');
+    expect(composeYaml).toContain('redirect-to-https');
+    expect(composeYaml).toContain('traefik.http.routers.https-0-mongo-express-example-com-mongo-express-8081.entrypoints');
+    expect(composeYaml).toContain('traefik.http.routers.https-0-mongo-express-example-com-mongo-express-8081.tls');
+    expect(composeYaml).toContain('traefik.http.routers.https-0-mongo-express-example-com-mongo-express-8081.tls.certresolver');
+    expect(composeYaml).toContain('letsencrypt');
+  });
+
+
+  it('treats legacy HTTP endpoints with public hosts as HTTPS routes', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'kiban-compose-runtime-'));
+    const provider = DockerComposeRuntimeProvider.withRunner(new FakeRunner(), root, new FakePortAllocator(), new FakeWebHealthChecker(true));
+
+    const result = await provider.install({
+      ...routedPlan,
+      publicEndpoints: [{
+        name: 'Web UI',
+        service: 'mongo-express',
+        port: 8081,
+        host: 'mongo-express.example.com',
+        url: 'http://mongo-express.example.com',
+        protocol: 'http'
+      }]
+    });
+
+    const composeYaml = await readFile(join(String(result.runtime?.['workingDirectory']), 'compose.yaml'), 'utf8');
+    expect(composeYaml).toContain('traefik.http.routers.https-0-mongo-express-example-com-mongo-express-8081.entrypoints');
+    expect(composeYaml).toContain('traefik.http.routers.https-0-mongo-express-example-com-mongo-express-8081.tls');
+    expect(composeYaml).toContain('traefik.http.routers.https-0-mongo-express-example-com-mongo-express-8081.tls.certresolver');
+  });
+
   it('updates public endpoint Traefik labels without deleting service data', async () => {
     const root = await mkdtemp(join(tmpdir(), 'kiban-compose-runtime-'));
     const runner = new FakeRunner();
