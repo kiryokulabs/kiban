@@ -136,6 +136,7 @@ export class AppComponent {
     { label: 'Projects', path: '/projects', icon: 'projects' },
     { label: 'Catalog', path: '/catalog', icon: 'catalog' },
     { label: 'Installed', path: '/installed', icon: 'installed' },
+    { label: 'Monitoring', path: '/monitoring', icon: 'activity' },
     { label: 'Users', path: '/users', icon: 'users', adminOnly: true },
     { label: 'Logs', path: '/logs', icon: 'logs' },
     { label: 'Settings', path: '/settings', icon: 'settings' },

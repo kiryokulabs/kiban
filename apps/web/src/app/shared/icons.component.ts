@@ -2,7 +2,7 @@ import { Component, Input } from '@angular/core';
 
 export type KibanIcon =
   | 'home' | 'projects' | 'catalog' | 'installed' | 'users'
-  | 'logs' | 'settings' | 'profile'
+  | 'logs' | 'settings' | 'profile' | 'activity'
   | 'plus' | 'search' | 'refresh' | 'edit' | 'trash' | 'x'
   | 'menu' | 'chevron-left' | 'chevron-right' | 'chevron-down'
   | 'chevron-up' | 'external-link' | 'play' | 'stop' | 'restart'
@@ -74,6 +74,9 @@ export type KibanIcon =
           <path d="M5.52 19.72c.87-1.16 2.79-2 4.48-2s3.61.84 4.48 2"/>
           <circle cx="10" cy="11" r="3"/>
           <path d="M10 2C5.58 2 2 5.58 2 10s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8z"/>
+        }
+        @case ('activity') {
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
         }
         @case ('search') {
           <circle cx="11" cy="11" r="8"/>
