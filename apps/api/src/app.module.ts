@@ -6,6 +6,7 @@ import { CatalogModule } from './modules/catalog/catalog.module';
 import { DockerModule } from './modules/docker/docker.module';
 import { HealthModule } from './modules/health/health.module';
 import { LogsModule } from './modules/logs/logs.module';
+import { MonitoringModule } from './modules/monitoring/monitoring.module';
 import { PluginModule } from './modules/plugin/plugin.module';
 import { ProjectModule } from './modules/project/project.module';
 import { ServiceModule } from './modules/service/service.module';
@@ -16,7 +17,7 @@ import { UsersModule } from './modules/users/users.module';
 import { SessionAuthGuard } from './modules/auth/guards/session-auth.guard';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, ProjectModule, PluginModule, CatalogModule, DockerModule, HealthModule, SettingsModule, LogsModule, StackModule, ServiceModule, UsersModule, SystemModule],
+  imports: [DatabaseModule, AuthModule, ProjectModule, PluginModule, CatalogModule, DockerModule, HealthModule, SettingsModule, LogsModule, StackModule, ServiceModule, UsersModule, SystemModule, MonitoringModule],
   providers: [{ provide: APP_GUARD, useClass: SessionAuthGuard }]
 })
 export class AppModule {}

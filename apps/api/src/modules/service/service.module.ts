@@ -68,6 +68,6 @@ import { TERMINAL_PROVIDER } from './terminal/terminal.types';
       inject: [SqliteInstalledServiceRepository, SqliteEnvironmentRepository, CATALOG_REPOSITORY, RUNTIME_PROVIDER]
     }
   ],
-  exports: [ServiceService, DockerComposeRuntimeProvider]
+  exports: [ServiceService, DockerComposeRuntimeProvider, INSTALLED_SERVICE_MANAGER]
 })
 export class ServiceModule {}

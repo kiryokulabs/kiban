@@ -21,6 +21,7 @@ import { SystemVersionController } from './presentation/system-version.controlle
       provide: SYSTEM_VERSION_PROVIDER,
       useFactory: (): ReleaseVersionProvider => new ReleaseVersionProvider(`${createKibanPaths(os.homedir()).root}/runtime/kiban`)
     }
-  ]
+  ],
+  exports: [SystemMetricsService]
 })
 export class SystemModule {}
