@@ -9,6 +9,7 @@ import { Logger } from '@nestjs/common';
 import { parse, stringify } from 'yaml';
 import type { InstallationPlan, InstalledService, RuntimeHealth, RuntimeProvider, RuntimePublicEndpoint, RuntimeResult } from '@kiban/core';
 import type { RuntimeStatusDto } from '../dto/runtime.dto';
+import type { FleetRuntimeStats } from '../interfaces/fleet-runtime-stats';
 import type { ProxyProvider } from '../../proxy/application/proxy-provider';
 import { TraefikProxyProvider } from '../../proxy/infrastructure/traefik/traefik-proxy.provider';
 import type { TlsSettingsProvider } from '../../proxy/domain/tls-settings-provider';
@@ -238,8 +239,50 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
   public async onApplicationBootstrap(): Promise<void> {
     try {
       await this.ensureReverseProxy();
-    } catch (error) {
+    } catch (error: unknown) {
       this.logger.warn(`Kiban reverse proxy is not ready: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  /** Returns current runtime stats for every Compose-managed container on the host. */
+  public async fleetStats(): Promise<FleetRuntimeStats> {
+    try {
+      await mkdir(this.runtimeRoot, { recursive: true });
+      const cwd = this.runtimeRoot;
+      const ps = await this.runner.run('docker', ['ps', '-a', '--format', 'json'], { cwd });
+      const composeContainers = this.parseDockerPs(ps.stdout).filter((container) => container.projectName !== null);
+      if (composeContainers.length === 0) return { units: [], available: true, message: null };
+
+      const stats = await this.runner.run('docker', ['stats', '--no-stream', '--format', 'json', ...composeContainers.map((container) => container.containerId)], { cwd });
+      const statsByName = this.parseDockerStats(stats.stdout);
+
+      const inspect = await this.runner.run('docker', ['inspect', '--format', '{{.Name}}|{{.RestartCount}}|{{.State.StartedAt}}', ...composeContainers.map((container) => container.containerId)], { cwd });
+      const metaByName = this.parseFleetInspect(inspect.stdout);
+
+      return {
+        units: composeContainers.map((container) => {
+          const containerStats = statsByName[container.name];
+          const meta = metaByName[container.name];
+          return {
+            runtimeUnitId: container.containerId,
+            runtimeUnitName: container.name,
+            projectName: container.projectName,
+            state: container.state,
+            health: container.health,
+            cpuPercent: containerStats?.cpuPercent ?? null,
+            memoryUsedBytes: containerStats?.memoryUsedBytes ?? null,
+            memoryLimitBytes: containerStats?.memoryLimitBytes ?? null,
+            networkRxBytes: containerStats?.networkRxBytes ?? null,
+            networkTxBytes: containerStats?.networkTxBytes ?? null,
+            restartCount: meta?.restartCount ?? null,
+            startedAt: meta?.startedAt ?? null
+          };
+        }),
+        available: true,
+        message: null
+      };
+    } catch (error: unknown) {
+      return { units: [], available: false, message: `Runtime stats are unavailable: ${error instanceof Error ? error.message : String(error)}` };
     }
   }
 
@@ -927,6 +970,102 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
       if (id.length > 0 && status.length > 0) result[id] = status;
     }
     return result;
+  }
+
+  private parseDockerPs(stdout: string): readonly { readonly containerId: string; readonly name: string; readonly state: string; readonly health: 'healthy' | 'unhealthy' | 'starting' | 'unknown'; readonly projectName: string | null }[] {
+    const trimmed = stdout.trim();
+    if (!trimmed) return [];
+    const parsed = this.parseComposeJsonOutput(trimmed);
+    const rows = Array.isArray(parsed) ? parsed : [parsed];
+    return rows.flatMap((row) => {
+      const record = this.recordValue(row);
+      if (!record) return [];
+      const id = this.stringField(record, 'ID');
+      const name = this.normalizeContainerName(this.stringField(record, 'Names'));
+      if (id.length === 0 || name.length === 0) return [];
+      return [{
+        containerId: id,
+        name,
+        state: this.stringField(record, 'State') || 'unknown',
+        health: this.parseHealthFromStatus(this.stringField(record, 'Status')),
+        projectName: this.parseComposeProject(this.stringField(record, 'Labels'))
+      }];
+    });
+  }
+
+  private parseDockerStats(stdout: string): Readonly<Record<string, { readonly cpuPercent: number | null; readonly memoryUsedBytes: number | null; readonly memoryLimitBytes: number | null; readonly networkRxBytes: number | null; readonly networkTxBytes: number | null }>> {
+    const trimmed = stdout.trim();
+    if (!trimmed) return {};
+    const parsed = this.parseComposeJsonOutput(trimmed);
+    const rows = Array.isArray(parsed) ? parsed : [parsed];
+    const result: Record<string, { readonly cpuPercent: number | null; readonly memoryUsedBytes: number | null; readonly memoryLimitBytes: number | null; readonly networkRxBytes: number | null; readonly networkTxBytes: number | null }> = {};
+    for (const row of rows) {
+      const record = this.recordValue(row);
+      if (!record) continue;
+      const name = this.normalizeContainerName(this.stringField(record, 'Name'));
+      if (name.length === 0) continue;
+      const memory = this.parseSizePair(this.stringField(record, 'MemUsage'));
+      const network = this.parseSizePair(this.stringField(record, 'NetIO'));
+      result[name] = {
+        cpuPercent: this.parsePercent(this.stringField(record, 'CPUPerc')),
+        memoryUsedBytes: memory.first,
+        memoryLimitBytes: memory.second,
+        networkRxBytes: network.first,
+        networkTxBytes: network.second
+      };
+    }
+    return result;
+  }
+
+  private parseFleetInspect(stdout: string): Readonly<Record<string, { readonly restartCount: number | null; readonly startedAt: string | null }>> {
+    const result: Record<string, { readonly restartCount: number | null; readonly startedAt: string | null }> = {};
+    for (const line of stdout.split(/\r?\n/)) {
+      const trimmed = line.trim();
+      if (trimmed.length === 0) continue;
+      const [rawName, rawRestarts, rawStartedAt] = trimmed.split('|');
+      const name = this.normalizeContainerName(rawName ?? '');
+      if (name.length === 0) continue;
+      const restarts = Number(rawRestarts);
+      result[name] = {
+        restartCount: Number.isFinite(restarts) ? restarts : null,
+        startedAt: typeof rawStartedAt === 'string' && rawStartedAt.length > 0 ? rawStartedAt : null
+      };
+    }
+    return result;
+  }
+
+  private normalizeContainerName(name: string): string {
+    return name.replace(/^\//, '');
+  }
+
+  private parseComposeProject(labels: string): string | null {
+    const match = /(?:^|,)com\.docker\.compose\.project=([^,]+)/.exec(labels);
+    return match && match[1] ? match[1] : null;
+  }
+
+  private parseHealthFromStatus(status: string): 'healthy' | 'unhealthy' | 'starting' | 'unknown' {
+    const match = /\((healthy|unhealthy|starting)\)/.exec(status);
+    return match && (match[1] === 'healthy' || match[1] === 'unhealthy' || match[1] === 'starting') ? match[1] : 'unknown';
+  }
+
+  private parsePercent(value: string): number | null {
+    const parsed = Number.parseFloat(value.replace('%', ''));
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  private parseSizePair(value: string): { readonly first: number | null; readonly second: number | null } {
+    const parts = value.split(' / ');
+    return { first: this.parseByteSize(parts[0] ?? ''), second: this.parseByteSize(parts[1] ?? '') };
+  }
+
+  private parseByteSize(value: string): number | null {
+    const match = /^([\d.]+)\s*(B|KiB|MiB|GiB|TiB|kB|KB|MB|GB|TB)$/.exec(value.trim());
+    if (!match || !match[1] || !match[2]) return null;
+    const amount = Number.parseFloat(match[1]);
+    if (!Number.isFinite(amount)) return null;
+    const multipliers: Readonly<Record<string, number>> = { B: 1, KiB: 1024, MiB: 1024 ** 2, GiB: 1024 ** 3, TiB: 1024 ** 4, kB: 1000, KB: 1000, MB: 1000 ** 2, GB: 1000 ** 3, TB: 1000 ** 4 };
+    const multiplier = multipliers[match[2]];
+    return multiplier === undefined ? null : Math.round(amount * multiplier);
   }
 
   private parsePs(stdout: string): readonly ComposeContainerInfo[] {
