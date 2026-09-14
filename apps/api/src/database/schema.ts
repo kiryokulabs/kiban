@@ -36,3 +36,17 @@ export interface AuthSessionTable {
   readonly createdAt: Date;
   readonly revokedAt: Date | null;
 }
+
+export interface MonitoringSampleTable {
+  readonly id: string;
+  readonly scope: 'host' | 'service';
+  readonly resourceId: string;
+  readonly capturedAt: Date;
+  readonly cpuPercent: number | null;
+  readonly memoryUsedBytes: number | null;
+  readonly memoryLimitBytes: number | null;
+  readonly diskUsedBytes: number | null;
+  readonly diskLimitBytes: number | null;
+  readonly networkRxBytes: number | null;
+  readonly networkTxBytes: number | null;
+}

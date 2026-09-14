@@ -23,6 +23,7 @@ export const routes: Routes = [
   { path: 'catalog', component: CatalogPageComponent, title: 'Catalog · Kiban' },
   { path: 'installed', component: InstalledPageComponent, title: 'Installed · Kiban' },
   { path: 'services/:id', component: InstalledServiceDetailsPageComponent, title: 'Service · Kiban' },
+  { path: 'monitoring', loadComponent: () => import('./pages/monitoring-page.component').then((m) => m.MonitoringPageComponent), title: 'Monitoring · Kiban' },
   { path: 'users', component: UsersPageComponent, title: 'Users · Kiban' },
   { path: 'logs', component: LogsPageComponent, title: 'Logs · Kiban' },
   { path: 'settings', component: SettingsPageComponent, title: 'Settings · Kiban' },

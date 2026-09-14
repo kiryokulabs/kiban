@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CatalogModule } from './modules/catalog/catalog.module';
 import { DockerModule } from './modules/docker/docker.module';
 import { HealthModule } from './modules/health/health.module';
 import { LogsModule } from './modules/logs/logs.module';
+import { MonitoringModule } from './modules/monitoring/monitoring.module';
 import { PluginModule } from './modules/plugin/plugin.module';
 import { ProjectModule } from './modules/project/project.module';
 import { ServiceModule } from './modules/service/service.module';
@@ -12,6 +14,10 @@ import { SettingsModule } from './modules/settings/settings.module';
 import { StackModule } from './modules/stack/stack.module';
 import { SystemModule } from './modules/system/system.module';
 import { UsersModule } from './modules/users/users.module';
+import { SessionAuthGuard } from './modules/auth/guards/session-auth.guard';
 
-@Module({ imports: [DatabaseModule, AuthModule, ProjectModule, PluginModule, CatalogModule, DockerModule, HealthModule, SettingsModule, LogsModule, StackModule, ServiceModule, UsersModule, SystemModule] })
+@Module({
+  imports: [DatabaseModule, AuthModule, ProjectModule, PluginModule, CatalogModule, DockerModule, HealthModule, SettingsModule, LogsModule, StackModule, ServiceModule, UsersModule, SystemModule, MonitoringModule],
+  providers: [{ provide: APP_GUARD, useClass: SessionAuthGuard }]
+})
 export class AppModule {}

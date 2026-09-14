@@ -2,6 +2,7 @@ import { Body, Controller, Get, HttpCode, Post, Req, Res } from '@nestjs/common'
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import type { AuthResponseDto, BootstrapStatusDto, ChangePasswordDto, LoginDto, RegisterAdminDto } from '../dto/auth.dto';
 import { AUTH_SESSION_COOKIE_NAME } from '../interfaces/auth.constants';
+import { Public } from '../guards/session-auth.guard';
 import { AuthService } from '../services/auth.service';
 
 @Controller('auth')
@@ -9,18 +10,21 @@ export class AuthController {
   public constructor(private readonly auth: AuthService) {}
 
   /** Returns whether the first admin account still needs to be created. */
+  @Public()
   @Get('bootstrap-status')
   public bootstrapStatus(): Promise<BootstrapStatusDto> {
     return this.auth.bootstrapStatus();
   }
 
   /** Creates the initial admin account; disabled once an admin exists. */
+  @Public()
   @Post('register-admin')
   public registerAdmin(@Body() dto: RegisterAdminDto): Promise<AuthResponseDto> {
     return this.auth.registerAdmin(dto);
   }
 
   /** Logs in and writes an httpOnly session cookie. */
+  @Public()
   @Post('login')
   @HttpCode(200)
   public async login(@Body() dto: LoginDto, @Res({ passthrough: true }) reply: FastifyReply): Promise<AuthResponseDto> {
