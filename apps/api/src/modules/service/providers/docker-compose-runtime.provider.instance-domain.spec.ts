@@ -15,6 +15,14 @@ class FakeRunner {
   }
 }
 
+class FakeInstanceDomainReader {
+  public domain: string | null = 'kiban.example.com';
+
+  public async getInstanceDomain(): Promise<string | null> {
+    return this.domain;
+  }
+}
+
 const KIBAN_CORE_COMPOSE = `name: kiban
 
 services:
@@ -158,5 +166,62 @@ describe('DockerComposeRuntimeProvider — applyInstanceDomain', () => {
     const result = await provider.applyInstanceDomain('kiban.example.com');
 
     expect(result).toBe(true);
+  });
+});
+
+describe('DockerComposeRuntimeProvider — startup reconciliation', () => {
+  beforeEach(() => {
+    rmSync(TEST_ROOT, { recursive: true, force: true });
+  });
+
+  afterEach(() => {
+    rmSync(TEST_ROOT, { recursive: true, force: true });
+  });
+
+  it('reapplies the persisted instance domain after the API starts', async () => {
+    const runner = new FakeRunner();
+    const domainReader = new FakeInstanceDomainReader();
+    const runtimeRoot = join(TEST_ROOT, 'runtime', 'services');
+    const kibanDir = setupKibanCore(runtimeRoot);
+
+    const provider = DockerComposeRuntimeProvider.withRunner(
+      runner as unknown as Parameters<typeof DockerComposeRuntimeProvider.withRunner>[0],
+      runtimeRoot,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      domainReader
+    );
+
+    await provider.onApplicationBootstrap();
+
+    const document = parse(readFileSync(join(kibanDir, 'compose.yaml'), 'utf8')) as { services: Record<string, Record<string, unknown>> };
+    const labels = document.services['kiban-web']!.labels as Record<string, string>;
+
+    expect(labels['traefik.http.routers.https-0-kiban-instance.rule']).toBe('Host(`kiban.example.com`) && PathPrefix(`/`)');
+    expect(document.services['kiban-web']!.networks).toContain('kiban');
+  });
+
+  it('does not recreate kiban-web when no instance domain is persisted', async () => {
+    const runner = new FakeRunner();
+    const domainReader = new FakeInstanceDomainReader();
+    domainReader.domain = null;
+    const runtimeRoot = join(TEST_ROOT, 'runtime', 'services');
+    setupKibanCore(runtimeRoot);
+
+    const provider = DockerComposeRuntimeProvider.withRunner(
+      runner as unknown as Parameters<typeof DockerComposeRuntimeProvider.withRunner>[0],
+      runtimeRoot,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      domainReader
+    );
+
+    await provider.onApplicationBootstrap();
+
+    expect(runner.commands.some((command) => command.args.includes('--force-recreate'))).toBe(false);
   });
 });

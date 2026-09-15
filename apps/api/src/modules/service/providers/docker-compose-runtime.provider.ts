@@ -27,6 +27,10 @@ export interface WebHealthChecker {
   isReachable(url: string): Promise<boolean>;
 }
 
+export interface InstanceDomainReader {
+  getInstanceDomain(): Promise<string | null>;
+}
+
 export interface KibanPlatformLogs { readonly available: boolean; readonly logs: string; readonly message: string | null; }
 
 export interface TraefikRouter {
@@ -144,17 +148,18 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
     private readonly portAllocator: HostPortAllocator,
     private readonly webHealthChecker: WebHealthChecker,
     private readonly tlsSettingsProvider: TlsSettingsProvider | null = null,
-    private readonly proxyProvider: ProxyProvider = new TraefikProxyProvider()
+    private readonly proxyProvider: ProxyProvider = new TraefikProxyProvider(),
+    private readonly instanceDomainReader: InstanceDomainReader | null = null
   ) {}
 
   /** Creates the production Docker Compose runtime provider. */
-  public static create(tlsSettingsProvider: TlsSettingsProvider | null = null, proxyProvider: ProxyProvider = new TraefikProxyProvider()): DockerComposeRuntimeProvider {
-    return new DockerComposeRuntimeProvider(new SpawnComposeCommandRunner(), join(homedir(), '.kiban', 'runtime', 'services'), new NodeHostPortAllocator(), new NodeWebHealthChecker(), tlsSettingsProvider, proxyProvider);
+  public static create(tlsSettingsProvider: TlsSettingsProvider | null = null, proxyProvider: ProxyProvider = new TraefikProxyProvider(), instanceDomainReader: InstanceDomainReader | null = null): DockerComposeRuntimeProvider {
+    return new DockerComposeRuntimeProvider(new SpawnComposeCommandRunner(), join(homedir(), '.kiban', 'runtime', 'services'), new NodeHostPortAllocator(), new NodeWebHealthChecker(), tlsSettingsProvider, proxyProvider, instanceDomainReader);
   }
 
   /** Creates a provider with a fake runner and runtime root for tests. */
-  public static withRunner(runner: ComposeCommandRunner, runtimeRoot: string, portAllocator: HostPortAllocator = new NodeHostPortAllocator(), webHealthChecker: WebHealthChecker = new NodeWebHealthChecker(), tlsSettingsProvider: TlsSettingsProvider | null = null, proxyProvider: ProxyProvider = new TraefikProxyProvider()): DockerComposeRuntimeProvider {
-    return new DockerComposeRuntimeProvider(runner, runtimeRoot, portAllocator, webHealthChecker, tlsSettingsProvider, proxyProvider);
+  public static withRunner(runner: ComposeCommandRunner, runtimeRoot: string, portAllocator: HostPortAllocator = new NodeHostPortAllocator(), webHealthChecker: WebHealthChecker = new NodeWebHealthChecker(), tlsSettingsProvider: TlsSettingsProvider | null = null, proxyProvider: ProxyProvider = new TraefikProxyProvider(), instanceDomainReader: InstanceDomainReader | null = null): DockerComposeRuntimeProvider {
+    return new DockerComposeRuntimeProvider(runner, runtimeRoot, portAllocator, webHealthChecker, tlsSettingsProvider, proxyProvider, instanceDomainReader);
   }
 
   /** Returns Docker Compose diagnostics for API/UI runtime status. */
@@ -239,6 +244,8 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
   public async onApplicationBootstrap(): Promise<void> {
     try {
       await this.ensureReverseProxy();
+      const instanceDomain = await this.instanceDomainReader?.getInstanceDomain();
+      if (instanceDomain) await this.applyInstanceDomain(instanceDomain);
     } catch (error: unknown) {
       this.logger.warn(`Kiban reverse proxy is not ready: ${error instanceof Error ? error.message : String(error)}`);
     }

@@ -55,7 +55,10 @@ import { TERMINAL_PROVIDER } from './terminal/terminal.types';
             return { acmeEmail: email?.value ?? null, useStaging: staging?.value === 'true' };
           }
         };
-        return DockerComposeRuntimeProvider.create(tlsSettingsProvider, proxy);
+        const instanceDomainReader = {
+          getInstanceDomain: async (): Promise<string | null> => (await settings.get(toSettingKey('instance_domain')))?.value ?? null
+        };
+        return DockerComposeRuntimeProvider.create(tlsSettingsProvider, proxy, instanceDomainReader);
       },
       inject: [SqliteSettingsRepository, TraefikProxyProvider]
     },
