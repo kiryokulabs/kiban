@@ -134,6 +134,8 @@ $ kiban update --yes
 The command checks the latest published version, downloads the new Kiban core runtime assets and CLI, updates `KIBAN_VERSION`, pulls the new Kiban runtime images and starts Kiban again.
 
 It preserves Kiban data, configuration, plugins and installed service runtime workspaces.
+If an Instance Domain is configured, the API reapplies its Traefik routing during
+startup. You do not need to configure the Instance Domain again after updating.
 
 The selected release channel must publish these assets before `kiban update` can work:
 
@@ -196,6 +198,7 @@ export PATH="$HOME/.kiban/bin:$PATH"
 - **Docker invisible**: The user never thinks about containers. Commands operate on "Kiban" and "services", not "containers" and "images".
 - **Fail loudly**: Every failure produces a clear error message and non-zero exit code.
 - **Idempotent**: Starting an already-running Kiban is safe. Stopping a stopped Kiban is safe.
+- **Configuration-safe**: Updates and restarts reconcile persisted domain and TLS configuration with the generated runtime.
 
 ## Implementation
 

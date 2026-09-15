@@ -98,6 +98,12 @@ When saved, Kiban:
 2. Runs `docker compose up -d --force-recreate` on the core stack.
 3. Traefik starts routing `kiban.example.com` to the dashboard.
 
+The configured Instance Domain is persisted in Kiban's database. Every API
+startup, including the startup performed by `kiban update` and `kiban restart`,
+reconciles the persisted domain with the generated core compose file. The
+dashboard routing therefore survives updates and restarts without requiring
+the domain to be entered again.
+
 ## Behavior
 
 - The dashboard remains accessible at `IP:8080` until that port is closed manually.
@@ -325,12 +331,18 @@ services:
 
 All services with web access points are connected to the `kiban` Docker network. Traefik joins this network to route traffic to any service without exposing host ports.
 
+When an Instance Domain is configured, `kiban-web` is also connected to this
+shared network and receives the same generated HTTP-to-HTTPS and HTTPS labels
+as an installed service. The API remains on the private `kiban-core` network;
+the web application proxies API requests internally.
+
 ## Service Lifecycle
 
 | Action | Traefik effect |
 |---|---|
 | Install service | Labels written, `up -d` |
 | Update domain | Labels rewritten, `up -d --force-recreate` |
+| Kiban update/restart | Persisted Instance Domain reapplied, `kiban-web` recreated if configured |
 | Stop service | Labels preserved, containers stopped |
 | Restart service | Labels preserved, containers restarted |
 | Delete service | Compose down -v, workspace removed |
@@ -358,4 +370,6 @@ All services with web access points are connected to the `kiban` Docker network.
 - `.localhost` domains only work on the local machine.
 - Domain routing requires the installed Docker runtime (not development mode).
 - SSL/TLS termination is managed by Kiban’s shared Traefik proxy. Kiban obtains and renews certificates through Let’s Encrypt; the DNS provider only needs to point the hostname to the VPS and ports `80`/`443` must be reachable for HTTP-01.
+- Configure the Let’s Encrypt email in **Settings → TLS**. Enable staging only for testing; disable it before requesting production certificates.
+- For Cloudflare, use **Full (strict)** when the origin certificate is a trusted Let’s Encrypt certificate. With other DNS providers, no proxy feature is required: the hostname must resolve directly to the VPS.
 - Use staging mode while testing to avoid Let’s Encrypt rate limits, then disable it before production issuance.

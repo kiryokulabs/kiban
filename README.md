@@ -9,7 +9,7 @@
 
 
 > [!NOTE]
-> KibanOS is still in beta. We are actively developing the platform and welcome contributions.  
+> KibanOS is still in beta. I am actively developing the platform and welcome contributions.  
 > The current version is not production-ready yet. Please report any issues or feature requests on GitHub.
 
 ![KibanOS](docs/screenshots/all-previews.png)

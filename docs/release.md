@@ -47,3 +47,6 @@ https://get.kibanos.com/latest/kiban
 - Verify `get.kibanos.com/latest/kiban` is reachable and executable.
 - Install Kiban on a clean VPS.
 - Verify `kiban update` from the previous release candidate.
+- Configure an Instance Domain on the previous release, run `kiban update` and `kiban restart`, and verify the domain still routes without saving it again.
+- Verify the updated `kiban-web` runtime has the shared `kiban` network and HTTPS Traefik labels.
+- Verify existing service URLs still work after the update.
