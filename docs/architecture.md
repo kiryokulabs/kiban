@@ -214,6 +214,12 @@ On API startup the Docker Compose runtime provider attempts to prepare one share
 - ACME storage: `~/.kiban/runtime/traefik/acme.json` (mode `600`)
 - certificate resolver: Let’s Encrypt HTTP-01 through the `http` entrypoint
 
+The persisted Instance Domain is reconciled during API startup. When present,
+the provider updates the generated core compose so `kiban-web` joins the
+shared `kiban` network, receives HTTP-to-HTTPS and HTTPS Traefik labels, and is
+recreated without restarting `kiban-api`. This makes the routing survive
+`kiban update`, `kiban restart`, and host reboots.
+
 Catalog `compose.yaml` files remain untouched. During installation Kiban writes a generated runtime `compose.yaml` into the service workspace. For web access points, that generated file:
 
 - connects the target service to the shared `kiban` network

@@ -129,8 +129,13 @@ The first public release.
 
 # Phase 4 — Custom Domains & HTTPS
 
+## Completed
+
 - Custom domain configuration per service
 - Automatic SSL/TLS via Let's Encrypt
+
+## Planned
+
 - DNS challenge support
 - Wildcard certificate support
 - Domain verification
