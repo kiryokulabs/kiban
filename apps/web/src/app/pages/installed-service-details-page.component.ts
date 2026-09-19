@@ -195,7 +195,7 @@ import { SkeletonInstalledDetailComponent } from '../shared/skeleton-installed-d
           <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <h2 class="flex items-center gap-2 text-sm font-semibold kb-text"><kiban-icon name="settings" [size]="14" /> Configuration</h2>
             @if (presenter.schemaFields(d).length > 0) {
-              <button class="btn-primary btn text-xs" type="button" [disabled]="actionInProgress()" (click)="confirmSaveConfiguration.set(true)"> Save & recreate</button>
+              <button class="btn-primary btn text-xs" type="button" [disabled]="actionInProgress()" (click)="confirmSaveConfiguration.set(true)"> Save & redeploy</button>
             }
           </div>
           @if (presenter.schemaFields(d).length === 0) {
@@ -324,7 +324,7 @@ import { SkeletonInstalledDetailComponent } from '../shared/skeleton-installed-d
       <kiban-confirm-modal title="Recreate service" message="This will recreate the service runtime units. Any data stored inside containers and not persisted in volumes may be lost. Are you sure you want to continue?" confirmLabel="Recreate service" [destructive]="true" (cancel)="confirmRecreate.set(false)" (confirm)="recreateService()" />
     }
     @if (confirmSaveConfiguration()) {
-      <kiban-confirm-modal title="Save configuration and recreate service" message="Saving this configuration will recreate the service runtime units. Any data stored inside containers and not persisted in volumes may be lost. Are you sure you want to continue?" confirmLabel="Save and recreate" [destructive]="true" (cancel)="confirmSaveConfiguration.set(false)" (confirm)="saveConfiguration()" />
+      <kiban-confirm-modal title="Save configuration and redeploy service" message="Saving this configuration will redeploy the service without deleting persistent volumes. Containers may restart to apply changes." confirmLabel="Save and redeploy" [destructive]="false" (cancel)="confirmSaveConfiguration.set(false)" (confirm)="saveConfiguration()" />
     }
   `
 })

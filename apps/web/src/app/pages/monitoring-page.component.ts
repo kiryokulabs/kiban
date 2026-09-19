@@ -8,6 +8,7 @@ import { MonitoringPresenter } from '../monitoring/monitoring.presenter';
 import type { MonitoringHistory, MonitoringOverview } from '../monitoring/monitoring.models';
 import { SystemMetricsPresenter } from '../system/system-metrics.presenter';
 import { IconsComponent } from '../shared/icons.component';
+import { SkeletonComponent } from '../shared/skeleton.component';
 
 const OVERVIEW_REFRESH_MS = 10_000;
 const HISTORY_REFRESH_MS = 60_000;
@@ -17,7 +18,7 @@ const RECENT_CHANGES_LIMIT = 5;
 @Component({
   selector: 'kiban-monitoring-page',
   standalone: true,
-  imports: [RouterLink, IconsComponent, MonitoringChartComponent],
+  imports: [RouterLink, IconsComponent, MonitoringChartComponent, SkeletonComponent],
   template: `
     <div class="space-y-6">
       <div>
@@ -134,6 +135,65 @@ const RECENT_CHANGES_LIMIT = 5;
       } @else if (overviewUnavailable()) {
         <div class="card-subtle px-4 py-3 text-xs c-muted" title="Monitoring data is temporarily unavailable">
           Monitoring data is temporarily unavailable.
+        </div>
+      } @else {
+        <div class="space-y-6" aria-label="Loading monitoring data">
+          <div>
+            <div class="flex items-center gap-2">
+              <kiban-skeleton width="7rem" height="0.875rem" />
+            </div>
+            <kiban-skeleton width="14rem" height="0.625rem" blockClass="mt-2" />
+            <div class="mt-3 grid grid-cols-1 gap-4 md:grid-cols-3">
+              @for (i of [1, 2, 3]; track i) {
+                <div class="card p-4 space-y-4">
+                  <div class="flex items-baseline justify-between gap-2">
+                    <kiban-skeleton width="3rem" height="0.625rem" />
+                    <kiban-skeleton width="4rem" height="0.875rem" />
+                  </div>
+                  <kiban-skeleton width="100%" height="6rem" blockClass="rounded-lg" />
+                </div>
+              }
+            </div>
+          </div>
+
+          <div>
+            <kiban-skeleton width="7rem" height="0.875rem" />
+            <kiban-skeleton width="12rem" height="0.625rem" blockClass="mt-2" />
+            <ul class="mt-3 space-y-2">
+              @for (i of [1, 2, 3]; track i) {
+                <li class="card flex flex-col gap-2 p-3 sm:flex-row sm:items-center">
+                  <div class="min-w-0 flex-1 space-y-2">
+                    <kiban-skeleton width="40%" height="0.875rem" />
+                    <div class="flex gap-1.5">
+                      <kiban-skeleton width="4rem" height="1.25rem" blockClass="rounded-full" />
+                      <kiban-skeleton width="4rem" height="1.25rem" blockClass="rounded-full" />
+                    </div>
+                  </div>
+                  <div class="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-4">
+                    @for (metric of [1, 2, 3, 4]; track metric) {
+                      <kiban-skeleton width="4.5rem" height="0.625rem" />
+                    }
+                  </div>
+                  <kiban-skeleton width="4rem" height="1.5rem" blockClass="rounded-lg" />
+                </li>
+              }
+            </ul>
+          </div>
+
+          <div>
+            <kiban-skeleton width="7rem" height="0.875rem" />
+            <ul class="mt-3 space-y-2">
+              @for (i of [1, 2]; track i) {
+                <li class="card flex items-center justify-between gap-2 p-3">
+                  <kiban-skeleton width="45%" height="0.875rem" />
+                  <div class="flex shrink-0 items-center gap-2">
+                    <kiban-skeleton width="4rem" height="1.25rem" blockClass="rounded-full" />
+                    <kiban-skeleton width="3rem" height="0.625rem" />
+                  </div>
+                </li>
+              }
+            </ul>
+          </div>
         </div>
       }
 

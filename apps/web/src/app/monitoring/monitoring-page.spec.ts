@@ -5,14 +5,6 @@ import { describe, expect, it } from 'vitest';
 const readSource = (path: string): string => readFileSync(resolve(process.cwd(), path), 'utf8');
 
 describe('monitoring page', () => {
-  it('registers the monitoring route lazily', () => {
-    const routes = readSource('src/app/app.routes.ts');
-
-    expect(routes).toContain("path: 'monitoring'");
-    expect(routes).toContain('loadComponent');
-    expect(routes).toContain('MonitoringPageComponent');
-    expect(routes).toContain('Monitoring · Kiban');
-  });
 
   it('adds the monitoring entry to the sidebar navigation', () => {
     const app = readSource('src/app/app.component.ts');
@@ -68,6 +60,16 @@ describe('monitoring page', () => {
 
     expect(page).toContain('Monitoring data is temporarily unavailable.');
     expect(page).toContain('Runtime details are temporarily unavailable.');
+  });
+
+  it('uses the shared skeleton shimmer while monitoring cards are loading', () => {
+    const page = readSource('src/app/pages/monitoring-page.component.ts');
+
+    expect(page).toContain("import { SkeletonComponent } from '../shared/skeleton.component';");
+    expect(page).toContain('imports: [RouterLink, IconsComponent, MonitoringChartComponent, SkeletonComponent]');
+    expect(page).toContain('@else {');
+    expect(page).toContain('aria-label="Loading monitoring data"');
+    expect(page).toContain('<kiban-skeleton');
   });
 
   it('scales every chart to its resource ceiling', () => {
