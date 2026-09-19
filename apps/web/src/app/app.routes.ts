@@ -14,6 +14,7 @@ import { ProjectsEnvironmentsPageComponent } from './pages/projects-environments
 import { RemoteAccessPageComponent } from './pages/remote-access-page.component';
 import { SettingsPageComponent } from './pages/settings-page.component';
 import { UsersPageComponent } from './pages/users-page.component';
+import { MonitoringPageComponent } from './pages/monitoring-page.component';
 
 export const routes: Routes = [
   { path: '', component: HomePageComponent, title: 'Kiban' },
@@ -23,7 +24,7 @@ export const routes: Routes = [
   { path: 'catalog', component: CatalogPageComponent, title: 'Catalog · Kiban' },
   { path: 'installed', component: InstalledPageComponent, title: 'Installed · Kiban' },
   { path: 'services/:id', component: InstalledServiceDetailsPageComponent, title: 'Service · Kiban' },
-  { path: 'monitoring', loadComponent: () => import('./pages/monitoring-page.component').then((m) => m.MonitoringPageComponent), title: 'Monitoring · Kiban' },
+  { path: 'monitoring', component: MonitoringPageComponent, title: 'Monitoring · Kiban' },
   { path: 'users', component: UsersPageComponent, title: 'Users · Kiban' },
   { path: 'logs', component: LogsPageComponent, title: 'Logs · Kiban' },
   { path: 'settings', component: SettingsPageComponent, title: 'Settings · Kiban' },
