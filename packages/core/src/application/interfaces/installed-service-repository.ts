@@ -31,6 +31,7 @@ export interface RuntimeHealth {
 
 export interface RuntimeProvider {
   install(plan: InstallationPlan): Promise<RuntimeResult>;
+  redeploy(service: InstalledService, plan: InstallationPlan): Promise<RuntimeResult>;
   uninstall(service: InstalledService): Promise<RuntimeResult>;
   start(service: InstalledService): Promise<RuntimeResult>;
   stop(service: InstalledService): Promise<RuntimeResult>;

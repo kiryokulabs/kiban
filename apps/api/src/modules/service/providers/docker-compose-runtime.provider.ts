@@ -314,6 +314,27 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
     return { status: health.status === 'unhealthy' ? 'failed' : 'running', runtime: { provider: 'docker-compose', projectName, workingDirectory: workspace, composeFile, envFile, networkName, sharedNetworkName: SHARED_REVERSE_PROXY_NETWORK, publicEndpoints: plan.publicEndpoints ?? [], containers, health: health.status, healthSource: health.source, healthCheckedAt: health.checkedAt, healthMessage: health.message, status: 'running', createdAt: new Date().toISOString() } };
   }
 
+  /** Redeploys a catalog service by rewriting its Compose workspace and running `docker compose up -d` without deleting volumes. */
+  public async redeploy(service: InstalledService, plan: InstallationPlan): Promise<RuntimeResult> {
+    const workspace = this.runtimeString(service, 'workingDirectory');
+    await mkdir(workspace, { recursive: true });
+    const composeFile = this.runtimeString(service, 'composeFile');
+    const envFile = this.runtimeString(service, 'envFile');
+    const projectName = this.runtimeString(service, 'projectName');
+    const networkName = this.runtimeString(service, 'networkName');
+    await this.ensureReverseProxy();
+    let generatedComposeYaml = this.composeYamlForRuntime(plan.serviceDefinition.composeYaml, networkName, plan.publicEndpoints ?? []);
+    generatedComposeYaml = await this.materializeGeneratedBindFiles(workspace, generatedComposeYaml);
+    let variables = await this.variablesWithAvailableHostPorts(generatedComposeYaml, this.variablesWithPublicEndpoints(plan.variables, plan.publicEndpoints ?? [], plan.serviceDefinition.id));
+    await this.ensureEnvironmentNetwork(workspace, networkName);
+    await writeFile(composeFile, generatedComposeYaml, 'utf8');
+    await writeFile(envFile, this.envFile(variables), 'utf8');
+    variables = await this.composeUpWithPortCollisionRetry(workspace, projectName, generatedComposeYaml, variables, envFile);
+    const containers = await this.ps(workspace, projectName);
+    const health = await this.runtimeHealth(containers, plan.publicEndpoints ?? []);
+    return { status: health.status === 'unhealthy' ? 'failed' : 'running', runtime: { ...(service.runtime ?? {}), provider: 'docker-compose', projectName, workingDirectory: workspace, composeFile, envFile, networkName, sharedNetworkName: SHARED_REVERSE_PROXY_NETWORK, publicEndpoints: plan.publicEndpoints ?? [], containers, health: health.status, healthSource: health.source, healthCheckedAt: health.checkedAt, healthMessage: health.message, status: 'running' } };
+  }
+
   /** Removes the Compose project and persistent volumes for an installed service. */
   public async uninstall(service: InstalledService): Promise<RuntimeResult> {
     await this.composeFromService(service, ['down', '-v']);

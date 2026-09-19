@@ -457,6 +457,24 @@ describe('DockerComposeRuntimeProvider', () => {
     ]);
   });
 
+
+  it('redeploys changed configuration without down -v or removing the workspace', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'kiban-compose-runtime-'));
+    const runner = new FakeRunner();
+    const provider = DockerComposeRuntimeProvider.withRunner(runner, root, new FakePortAllocator());
+    const installedResult = await provider.install(plan);
+    const service = installed(installedResult.runtime!);
+
+    const result = await provider.redeploy(service, { ...plan, variables: { KIBAN_MONGOEXPRESS_MONGODB_URL: 'mongodb://changed:secret@mongo:27017/' } });
+
+    const workingDirectory = String(installedResult.runtime?.['workingDirectory']);
+    await expect(readFile(join(workingDirectory, '.env'), 'utf8')).resolves.toContain('KIBAN_MONGOEXPRESS_MONGODB_URL=mongodb://changed:secret@mongo:27017/');
+    await expect(access(workingDirectory)).resolves.toBeUndefined();
+    expect(result.status).toBe('running');
+    expect(runner.calls.some((call) => call.args.includes('down') || call.args.includes('-v'))).toBe(false);
+    expect(runner.calls.filter((call) => call.args.includes('up') && call.args.includes('-d')).length).toBeGreaterThanOrEqual(2);
+  });
+
   it('maps compose ps output into runtime container metadata and access ports', async () => {
     const provider = DockerComposeRuntimeProvider.withRunner(new FakeRunner(), await mkdtemp(join(tmpdir(), 'kiban-compose-runtime-')), new FakePortAllocator());
     const result = await provider.install(plan);
