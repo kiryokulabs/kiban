@@ -6,7 +6,6 @@ import { mapEnvironmentToDto, mapProjectDetailsToDto, mapProjectSummaryToDto } f
 
 interface InstalledServicesForProjectDeletion {
   list(projectId: string, environmentId: string): Promise<readonly { readonly id: string }[]>;
-  delete(id: string): Promise<void>;
 }
 
 @Injectable()
@@ -51,15 +50,15 @@ export class ProjectService {
     }
   }
 
-  /** Deletes a project and every installed service that belongs to its environments. */
+  /** Deletes a project only when none of its environments has installed services. */
   public async delete(id: string): Promise<void> {
     try {
       if (this.installedServices) {
         const details = await this.projects.getProject(id);
         for (const environment of details.environments) {
           const services = await this.installedServices.list(id, environment.id);
-          for (const service of services) {
-            await this.installedServices.delete(service.id);
+          if (services.length > 0) {
+            throw new ProjectValidationError('Project must be empty before it can be deleted.');
           }
         }
       }
