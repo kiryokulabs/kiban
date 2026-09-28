@@ -119,15 +119,24 @@ import { IconsComponent } from '../shared/icons.component';
       </kiban-modal>
     }
 
-    @if (projectPendingDelete()) {
-      <kiban-confirm-modal
-        title="Delete project"
-        [message]="deleteProjectMessage()"
-        confirmLabel="Delete project"
-        [destructive]="true"
-        (cancel)="cancelDeleteProject()"
-        (confirm)="confirmDeleteProject()"
-      />
+    @if (projectPendingDelete(); as project) {
+      @if (project.serviceCount > 0) {
+        <kiban-modal title="Delete project" (close)="cancelDeleteProject()">
+          <p class="text-sm leading-6 c-muted">{{ deleteProjectMessage() }}</p>
+          <div class="mt-5 flex justify-end">
+            <button class="btn-primary btn" type="button" (click)="cancelDeleteProject()">Close</button>
+          </div>
+        </kiban-modal>
+      } @else {
+        <kiban-confirm-modal
+          title="Delete project"
+          [message]="deleteProjectMessage()"
+          confirmLabel="Delete project"
+          [destructive]="true"
+          (cancel)="cancelDeleteProject()"
+          (confirm)="confirmDeleteProject()"
+        />
+      }
     }
   `
 })
@@ -189,12 +198,14 @@ export class ProjectsPageComponent {
 
   protected deleteProjectMessage(): string {
     const project = this.projectPendingDelete();
-    return project ? `Delete project "${project.name}"? This will delete all environments and cannot be undone.` : '';
+    if (!project) return '';
+    if (project.serviceCount > 0) return `Project "${project.name}" has installed services. Delete those services before deleting the project.`;
+    return `Delete project "${project.name}"? This will delete all environments and cannot be undone.`;
   }
 
   protected confirmDeleteProject(): void {
     const project = this.projectPendingDelete();
-    if (!project) {
+    if (!project || project.serviceCount > 0) {
       return;
     }
     this.projectsService.deleteProject(project.id).subscribe({ next: () => { this.projectPendingDelete.set(null); this.loadProjects(); }, error: () => this.message.set('Could not delete project.') });

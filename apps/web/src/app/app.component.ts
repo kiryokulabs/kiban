@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { AuthShellComponent } from './auth/auth-shell.component';
 import { AuthService } from './auth/auth.service';
@@ -46,7 +46,7 @@ import { ViewportService } from './shared/viewport.service';
 
         <!-- Main content -->
         <div
-          [class]="mainContentClass()"
+          [class]="layout.mainContentClass()"
           [style.--sidebar-offset]="layout.sidebarOffset(sidebarCollapsed())"
         >
           <!-- Top header -->
@@ -129,7 +129,6 @@ export class AppComponent {
   protected readonly sidebarCollapsed = signal(false);
   protected readonly mobileMenuOpen = signal(false);
   protected readonly layout = new AppLayoutPresenter();
-  protected readonly mainContentClass = computed(() => this.layout.mainContentClass());
 
   protected readonly navItems = signal<readonly NavItem[]>([
     { label: 'Dashboard', path: '/', icon: 'home' },

@@ -1,5 +1,4 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { ConfirmationDialogPresenter } from './confirmation-dialog.presenter';
 import { ModalComponent } from './modal.component';
 import { IconsComponent } from './icons.component';
 
@@ -42,23 +41,20 @@ import { IconsComponent } from './icons.component';
   `
 })
 export class ConfirmModalComponent {
-  private readonly presenter = new ConfirmationDialogPresenter();
-  private readonly copy = this.presenter.defaults();
-
   /** Dialog title. */
-  @Input() public title = this.copy.title;
+  @Input() public title = 'Confirm action';
 
   /** Explanation of what will happen if the user confirms. */
-  @Input() public message = this.copy.message;
+  @Input() public message = '';
 
   /** Secondary action label. */
-  @Input() public cancelLabel = this.copy.cancelLabel;
+  @Input() public cancelLabel = 'Cancel';
 
   /** Primary action label. */
-  @Input() public confirmLabel = this.copy.confirmLabel;
+  @Input() public confirmLabel = 'Confirm';
 
   /** Whether the primary action should be styled as destructive. */
-  @Input() public destructive = this.copy.destructive;
+  @Input() public destructive = false;
 
   /** Emitted when the user confirms the action. */
   @Output() public readonly confirm = new EventEmitter<void>();

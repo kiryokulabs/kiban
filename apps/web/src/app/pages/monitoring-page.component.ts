@@ -54,21 +54,21 @@ const RECENT_CHANGES_LIMIT = 5;
                 <p class="text-xs c-muted">CPU</p>
                 <p class="text-sm font-semibold kb-text">{{ hostPresenter.percentLabel(current.host.cpu.usagePercent) }}</p>
               </div>
-              <kiban-monitoring-chart [points]="cpuPoints()" [max]="100" maxLabel="100%" label="CPU" [valueFormatter]="percentFormatter" />
+              <kiban-monitoring-chart [points]="cpuPoints()" [max]="100" maxLabel="100%" label="CPU" [valueFormatter]="hostPresenter.percentLabel" />
             </div>
             <div class="card p-4">
               <div class="flex items-baseline justify-between gap-2">
                 <p class="text-xs c-muted">Memory</p>
                 <p class="text-sm font-semibold kb-text">{{ hostPresenter.percentLabel(current.host.memory.usagePercent) }} · {{ hostPresenter.bytesLabel(current.host.memory.usedBytes) }} of {{ hostPresenter.bytesLabel(current.host.memory.totalBytes) }}</p>
               </div>
-              <kiban-monitoring-chart [points]="memoryPoints()" [max]="current.host.memory.totalBytes" [maxLabel]="hostPresenter.bytesLabel(current.host.memory.totalBytes)" label="Memory" [valueFormatter]="bytesFormatter" />
+              <kiban-monitoring-chart [points]="memoryPoints()" [max]="current.host.memory.totalBytes" [maxLabel]="hostPresenter.bytesLabel(current.host.memory.totalBytes)" label="Memory" [valueFormatter]="hostPresenter.bytesLabel" />
             </div>
             <div class="card p-4">
               <div class="flex items-baseline justify-between gap-2">
                 <p class="text-xs c-muted">Disk</p>
                 <p class="text-sm font-semibold kb-text">{{ hostPresenter.percentLabel(current.host.disk.usagePercent) }} · {{ hostPresenter.bytesLabel(current.host.disk.usedBytes) }} of {{ hostPresenter.bytesLabel(current.host.disk.totalBytes) }}</p>
               </div>
-              <kiban-monitoring-chart [points]="diskPoints()" [max]="current.host.disk.totalBytes" [maxLabel]="hostPresenter.bytesLabel(current.host.disk.totalBytes)" label="Disk" [valueFormatter]="bytesFormatter" />
+              <kiban-monitoring-chart [points]="diskPoints()" [max]="current.host.disk.totalBytes" [maxLabel]="hostPresenter.bytesLabel(current.host.disk.totalBytes)" label="Disk" [valueFormatter]="hostPresenter.bytesLabel" />
             </div>
           </div>
           <p class="mt-2 text-xs c-muted">IP {{ hostPresenter.localIpLabel(current.host.network.localIp) }}</p>
@@ -211,8 +211,6 @@ export class MonitoringPageComponent {
   protected readonly presenter = new MonitoringPresenter();
   protected readonly hostPresenter = new SystemMetricsPresenter();
   protected readonly historyHours = HISTORY_HOURS;
-  protected readonly percentFormatter = (value: number): string => this.hostPresenter.percentLabel(value);
-  protected readonly bytesFormatter = (value: number): string => this.hostPresenter.bytesLabel(value);
 
   protected readonly overview = signal<MonitoringOverview | null>(null);
   protected readonly overviewUnavailable = signal(false);
