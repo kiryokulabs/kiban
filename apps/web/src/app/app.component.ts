@@ -104,6 +104,14 @@ import { ViewportService } from './shared/viewport.service';
           <section class="flex-1 min-w-0 p-4 md:p-6">
             <router-outlet />
           </section>
+
+          <!-- Global footer -->
+          <footer class="text-left border-t kb-border px-4 py-4 text-xs c-subtle md:px-6">
+            Developed and maintained by
+            <a href="https://arlee.dev" target="_blank" rel="noopener noreferrer" class="c-muted hover:c-text transition-colors">Arlee</a>
+            at
+            <a href="https://kiryokulabs.com" target="_blank" rel="noopener noreferrer" class="c-muted hover:c-text transition-colors">Kiryoku Labs</a>
+          </footer>
         </div>
       </div>
 
