@@ -36,3 +36,6 @@ export interface ProjectDetails {
 export interface CreateProjectRequest { readonly name: string; readonly description?: string | null; }
 export interface UpdateProjectRequest { readonly name: string; readonly description?: string | null; }
 export interface CreateEnvironmentRequest { readonly name: string; readonly description?: string | null; }
+
+export interface ProjectSettings { readonly id: string; readonly name: string; readonly description: string | null; readonly createdAt: string; readonly updatedAt: string; readonly environmentCount: number; readonly serviceCount: number; readonly hasImage: boolean; }
+export interface SaveProjectImageRequest { readonly contentType: string; readonly dataBase64: string; }

@@ -33,6 +33,12 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
           <kiban-icon name="arrow-left" [size]="14" />
           Projects
         </a>
+        @if (projectId) {
+          <a [routerLink]="['/projects', projectId, 'settings']" class="btn-ghost btn gap-1.5" aria-label="Project settings" title="Project settings">
+            <kiban-icon name="settings" [size]="14" />
+            Settings
+          </a>
+        }
       </div>
 
       @if (project()) {
@@ -41,8 +47,12 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
           <div class="flex items-start justify-between gap-4">
             <div class="min-w-0 flex-1">
               <div class="flex items-center gap-2.5">
-                <div class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand/20 text-brand-light">
-                  <kiban-icon name="projects" [size]="16" />
+                <div class="grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-lg bg-brand/20 text-brand-light">
+                  @if (!projectImageFailed() && projectId) {
+                    <img [src]="projectImageUrl()" alt="Project image" class="h-full w-full object-cover" (error)="projectImageFailed.set(true)" />
+                  } @else {
+                    <kiban-icon name="projects" [size]="16" />
+                  }
                 </div>
                 <div>
                   <h1 class="text-xl font-semibold kb-text">{{ project()?.name }}</h1>
@@ -460,11 +470,12 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
 })
 export class ProjectDetailsPageComponent {
   private readonly route = inject(ActivatedRoute); private readonly projectsService = inject(ProjectsService); private readonly installedServices = inject(InstalledServicesService); private readonly catalogService = inject(CatalogService); private readonly environmentPresenter = new EnvironmentCardPresenter(); private readonly catalogPresenter = new CatalogPagePresenter();
-  protected readonly detailsPresenter = new ServiceDetailsPresenter();   protected readonly project = signal<ProjectDetails | null>(null); protected readonly message = signal<string | null>(null); protected readonly environmentPendingDelete = signal<EnvironmentItem | null>(null); protected readonly installedServicePendingDelete = signal<InstalledService | null>(null); protected readonly environmentModalOpen = signal(false); protected readonly servicesByEnvironment = signal<Readonly<Record<string, readonly InstalledService[]>>>({}); protected readonly loadingEnvironments = signal<ReadonlySet<string>>(new Set()); protected readonly catalogCategories = signal<readonly CatalogCategory[]>([]); protected readonly catalogItems = signal<readonly CatalogItem[]>([]); protected readonly installEnvironment = signal<EnvironmentItem | null>(null); protected readonly selectedService = signal<CatalogItem | null>(null); protected readonly installStep = signal<InstallStep>(1); protected readonly installingService = signal(false); protected readonly selectedCatalogCategory = signal('all'); protected readonly serviceForDetails = signal<InstalledService | null>(null); protected readonly visiblePasswords = signal<ReadonlySet<number>>(new Set());
-  protected environmentName = ''; protected environmentDescriptionText = ''; protected serviceSearch = ''; protected configurationValues: Record<string, string> = {}; private readonly projectId: string | null;
+  protected readonly detailsPresenter = new ServiceDetailsPresenter();   protected readonly project = signal<ProjectDetails | null>(null); protected readonly message = signal<string | null>(null); protected readonly environmentPendingDelete = signal<EnvironmentItem | null>(null); protected readonly installedServicePendingDelete = signal<InstalledService | null>(null); protected readonly environmentModalOpen = signal(false); protected readonly servicesByEnvironment = signal<Readonly<Record<string, readonly InstalledService[]>>>({}); protected readonly loadingEnvironments = signal<ReadonlySet<string>>(new Set()); protected readonly catalogCategories = signal<readonly CatalogCategory[]>([]); protected readonly catalogItems = signal<readonly CatalogItem[]>([]); protected readonly installEnvironment = signal<EnvironmentItem | null>(null); protected readonly selectedService = signal<CatalogItem | null>(null); protected readonly installStep = signal<InstallStep>(1); protected readonly installingService = signal(false); protected readonly selectedCatalogCategory = signal('all'); protected readonly serviceForDetails = signal<InstalledService | null>(null); protected readonly visiblePasswords = signal<ReadonlySet<number>>(new Set()); protected readonly projectImageFailed = signal(false);
+  protected environmentName = ''; protected environmentDescriptionText = ''; protected serviceSearch = ''; protected configurationValues: Record<string, string> = {}; protected readonly projectId: string | null;
   public constructor() { this.projectId = this.route.snapshot.paramMap.get('id'); this.loadCatalog(); this.loadProject(); }
-  protected loadProject(): void { if (this.projectId) this.projectsService.getProject(this.projectId).subscribe({ next: (project) => { this.project.set(project); for (const environment of project.environments) this.loadInstalledServices(environment.id); }, error: () => this.message.set('Could not load project.') }); }
+  protected loadProject(): void { if (this.projectId) this.projectsService.getProject(this.projectId).subscribe({ next: (project) => { this.project.set(project); this.projectImageFailed.set(false); for (const environment of project.environments) this.loadInstalledServices(environment.id); }, error: () => this.message.set('Could not load project.') }); }
   protected loadCatalog(): void { this.catalogService.list().subscribe({ next: (catalog) => { this.catalogCategories.set(catalog.categories); this.catalogItems.set(catalog.items); }, error: () => this.message.set('Could not load catalog.') }); }
+  protected projectImageUrl(): string { return this.projectId ? this.projectsService.projectImageUrl(this.projectId) : ''; }
   protected installedFor(environmentId: string): readonly InstalledService[] { return this.servicesByEnvironment()[environmentId] ?? []; }
   protected isEnvironmentLoading(environmentId: string): boolean { return this.loadingEnvironments().has(environmentId); }
   private loadInstalledServices(environmentId: string): void { if (!this.projectId) return; this.loadingEnvironments.set(new Set([...this.loadingEnvironments(), environmentId])); this.installedServices.list(this.projectId, environmentId).subscribe({ next: (services) => { this.servicesByEnvironment.set({ ...this.servicesByEnvironment(), [environmentId]: services }); this.loadingEnvironments.set(new Set([...this.loadingEnvironments()].filter((id) => id !== environmentId))); }, error: () => { this.loadingEnvironments.set(new Set([...this.loadingEnvironments()].filter((id) => id !== environmentId))); this.message.set('Could not load installed services.'); } }); }

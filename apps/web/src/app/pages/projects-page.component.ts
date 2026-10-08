@@ -66,8 +66,12 @@ import { IconsComponent } from '../shared/icons.component';
               <!-- Mobile: name + date | Desktop: name -->
               <div class="md:flex md:items-center">
                 <a [routerLink]="['/projects', project.id]" class="flex items-center gap-2.5 group cursor-pointer">
-                  <div class="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-brand/10 text-brand-light group-hover:bg-brand/20 transition-colors">
-                    <kiban-icon name="folder" [size]="14" />
+                  <div class="grid h-7 w-7 shrink-0 place-items-center overflow-hidden rounded-md bg-brand/10 text-brand-light group-hover:bg-brand/20 transition-colors">
+                    @if (!projectImageFailed(project.id)) {
+                      <img [src]="projectImageUrl(project.id)" alt="Project image" class="h-full w-full object-cover" (error)="markProjectImageFailed(project.id)" />
+                    } @else {
+                      <kiban-icon name="folder" [size]="14" />
+                    }
                   </div>
                   <div>
                     <p class="text-sm font-medium kb-text group-hover:text-brand-light transition-colors">{{ project.name }}</p>
@@ -150,6 +154,7 @@ export class ProjectsPageComponent {
   protected readonly modalOpen = signal(false);
   protected readonly editingProject = signal<ProjectSummary | null>(null);
   protected readonly projectPendingDelete = signal<ProjectSummary | null>(null);
+  private readonly failedProjectImages = signal<ReadonlySet<string>>(new Set());
 
   protected name = '';
   protected description = '';
@@ -160,7 +165,19 @@ export class ProjectsPageComponent {
 
   protected loadProjects(): void {
     this.loading.set(true);
-    this.projectsService.listProjects().subscribe({ next: (projects) => { this.projects.set(projects); this.loading.set(false); }, error: () => { this.message.set('Could not load projects.'); this.loading.set(false); } });
+    this.projectsService.listProjects().subscribe({ next: (projects) => { this.projects.set(projects); this.failedProjectImages.set(new Set()); this.loading.set(false); }, error: () => { this.message.set('Could not load projects.'); this.loading.set(false); } });
+  }
+
+  protected projectImageUrl(projectId: string): string {
+    return this.projectsService.projectImageUrl(projectId);
+  }
+
+  protected projectImageFailed(projectId: string): boolean {
+    return this.failedProjectImages().has(projectId);
+  }
+
+  protected markProjectImageFailed(projectId: string): void {
+    this.failedProjectImages.set(new Set([...this.failedProjectImages(), projectId]));
   }
 
   protected openCreateModal(): void {

@@ -92,8 +92,12 @@ import { IconsComponent } from '../shared/icons.component';
                 <div class="flex items-start justify-between gap-3">
                   <div class="min-w-0 flex-1">
                     <div class="flex items-center gap-2">
-                      <div class="grid h-6 w-6 shrink-0 place-items-center rounded-md bg-brand/10 text-brand-light group-hover:bg-brand/20 transition-colors">
-                        <kiban-icon name="folder" [size]="13" />
+                      <div class="grid h-6 w-6 shrink-0 place-items-center overflow-hidden rounded-md bg-brand/10 text-brand-light group-hover:bg-brand/20 transition-colors">
+                        @if (!projectImageFailed(project.id)) {
+                          <img [src]="projectImageUrl(project.id)" alt="Project image" class="h-full w-full object-cover" (error)="markProjectImageFailed(project.id)" />
+                        } @else {
+                          <kiban-icon name="folder" [size]="13" />
+                        }
                       </div>
                       <h3 class="text-sm font-medium kb-text truncate group-hover:text-brand-light transition-colors">{{ project.name }}</h3>
                     </div>
@@ -119,12 +123,25 @@ import { IconsComponent } from '../shared/icons.component';
 export class HomePageComponent {
   private readonly projectsService = inject(ProjectsService);
   protected readonly projects = signal<readonly ProjectSummary[]>([]);
+  private readonly failedProjectImages = signal<ReadonlySet<string>>(new Set());
 
   protected readonly totalEnvironments = () => this.projects().reduce((acc, p) => acc + p.environmentCount, 0);
   protected readonly totalRunning = () => this.projects().reduce((acc, p) => acc + p.runningServiceCount, 0);
   protected readonly totalDegraded = () => this.projects().filter((p) => p.healthStatus === 'degraded').length;
 
+  protected projectImageUrl(projectId: string): string {
+    return this.projectsService.projectImageUrl(projectId);
+  }
+
+  protected projectImageFailed(projectId: string): boolean {
+    return this.failedProjectImages().has(projectId);
+  }
+
+  protected markProjectImageFailed(projectId: string): void {
+    this.failedProjectImages.set(new Set([...this.failedProjectImages(), projectId]));
+  }
+
   public constructor() {
-    this.projectsService.listProjects().subscribe({ next: (projects) => this.projects.set(projects), error: () => undefined });
+    this.projectsService.listProjects().subscribe({ next: (projects) => { this.projects.set(projects); this.failedProjectImages.set(new Set()); }, error: () => undefined });
   }
 }

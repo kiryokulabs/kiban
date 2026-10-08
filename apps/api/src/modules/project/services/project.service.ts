@@ -1,7 +1,8 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { ProjectManager, ProjectNotFoundError, ProjectValidationError } from '@kiban/core';
-import type { CreateEnvironmentDto, CreateProjectDto, EnvironmentDto, ProjectDetailsDto, ProjectSummaryDto, UpdateProjectDto } from '../dto/project.dto';
+import type { CreateEnvironmentDto, CreateProjectDto, EnvironmentDto, ProjectDetailsDto, ProjectSettingsDto, ProjectSummaryDto, SaveProjectImageDto, UpdateProjectDto } from '../dto/project.dto';
 import { PROJECT_MANAGER } from '../interfaces/project.constants';
+import type { ProjectImageData, ProjectImageStorage } from '../interfaces/project-image-storage';
 import { mapEnvironmentToDto, mapProjectDetailsToDto, mapProjectSummaryToDto } from '../mappers/project.mapper';
 
 interface InstalledServicesForProjectDeletion {
@@ -12,7 +13,8 @@ interface InstalledServicesForProjectDeletion {
 export class ProjectService {
   public constructor(
     @Inject(PROJECT_MANAGER) private readonly projects: ProjectManager,
-    private readonly installedServices?: InstalledServicesForProjectDeletion
+    private readonly installedServices?: InstalledServicesForProjectDeletion,
+    private readonly imageStorage?: ProjectImageStorage
   ) {}
 
   /** Lists project summaries. */
@@ -50,6 +52,57 @@ export class ProjectService {
     }
   }
 
+  /** Gets editable settings and aggregate project information. */
+  public async getSettings(id: string): Promise<ProjectSettingsDto> {
+    try {
+      const details = await this.projects.getProject(id);
+      let serviceCount = 0;
+      if (this.installedServices) {
+        for (const environment of details.environments) {
+          serviceCount += (await this.installedServices.list(id, environment.id)).length;
+        }
+      }
+      const image = this.imageStorage ? await this.imageStorage.find(id) : null;
+      return {
+        id: details.project.id,
+        name: details.project.name,
+        description: details.project.description,
+        createdAt: details.project.createdAt.toISOString(),
+        updatedAt: details.project.updatedAt.toISOString(),
+        environmentCount: details.environments.length,
+        serviceCount,
+        hasImage: image !== null
+      };
+    } catch (error: unknown) {
+      this.mapProjectError(error);
+    }
+  }
+
+  /** Stores the project image outside the database. */
+  public async saveImage(id: string, payload: unknown): Promise<void> {
+    if (!this.imageStorage) throw new Error('Project image storage is not configured.');
+    const dto = this.parseImagePayload(payload);
+    try {
+      await this.projects.getProject(id);
+      await this.imageStorage.save(id, { contentType: dto.contentType, data: Buffer.from(dto.dataBase64, 'base64') });
+    } catch (error: unknown) {
+      this.mapProjectError(error);
+    }
+  }
+
+  /** Reads a project image from local storage. */
+  public async getImage(id: string): Promise<ProjectImageData> {
+    if (!this.imageStorage) throw new Error('Project image storage is not configured.');
+    try {
+      await this.projects.getProject(id);
+      const image = await this.imageStorage.find(id);
+      if (!image) throw new NotFoundException('Project image not found.');
+      return image;
+    } catch (error: unknown) {
+      this.mapProjectError(error);
+    }
+  }
+
   /** Deletes a project only when none of its environments has installed services. */
   public async delete(id: string): Promise<void> {
     try {
@@ -77,7 +130,6 @@ export class ProjectService {
       this.mapProjectError(error);
     }
   }
-
 
   /** Creates a custom environment for a project. */
   public async createEnvironment(projectId: string, payload: unknown): Promise<EnvironmentDto> {
@@ -126,7 +178,6 @@ export class ProjectService {
     return { name: record['name'], description: description ?? null };
   }
 
-
   private parseEnvironmentPayload(payload: unknown): CreateEnvironmentDto {
     if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
       throw new BadRequestException('Invalid environment payload.');
@@ -142,6 +193,27 @@ export class ProjectService {
       throw new BadRequestException('Invalid environment payload.');
     }
     return { name: record['name'], description: description ?? null };
+  }
+
+  private parseImagePayload(payload: unknown): SaveProjectImageDto {
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+      throw new BadRequestException('Invalid project image payload.');
+    }
+    const record = payload as Readonly<Record<string, unknown>>;
+    const keys = Object.keys(record);
+    const allowedKeys = new Set(['contentType', 'dataBase64']);
+    if (keys.some((key) => !allowedKeys.has(key)) || typeof record['contentType'] !== 'string' || typeof record['dataBase64'] !== 'string') {
+      throw new BadRequestException('Invalid project image payload.');
+    }
+    const allowedTypes = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml']);
+    if (!allowedTypes.has(record['contentType'])) {
+      throw new BadRequestException('Unsupported project image type.');
+    }
+    const data = Buffer.from(record['dataBase64'], 'base64');
+    if (data.length === 0 || data.length > 2 * 1024 * 1024) {
+      throw new BadRequestException('Invalid project image size.');
+    }
+    return { contentType: record['contentType'], dataBase64: record['dataBase64'] };
   }
 
   private mapProjectError(error: unknown): never {

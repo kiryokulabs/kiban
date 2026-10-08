@@ -9,6 +9,7 @@ import { InstallingServicesPageComponent } from './pages/installing-services-pag
 import { LogsPageComponent } from './pages/logs-page.component';
 import { ProfilePageComponent } from './pages/profile-page.component';
 import { ProjectDetailsPageComponent } from './pages/project-details-page.component';
+import { ProjectSettingsPageComponent } from './pages/project-settings-page.component';
 import { ProjectsPageComponent } from './pages/projects-page.component';
 import { ProjectsEnvironmentsPageComponent } from './pages/projects-environments-page.component';
 import { RemoteAccessPageComponent } from './pages/remote-access-page.component';
@@ -19,6 +20,7 @@ import { MonitoringPageComponent } from './pages/monitoring-page.component';
 export const routes: Routes = [
   { path: '', component: HomePageComponent, title: 'Kiban' },
   { path: 'projects', component: ProjectsPageComponent, title: 'Projects · Kiban' },
+  { path: 'projects/:id/settings', component: ProjectSettingsPageComponent, title: 'Project Settings · Kiban' },
   { path: 'projects/:id', component: ProjectDetailsPageComponent, title: 'Project · Kiban' },
   { path: 'profile', component: ProfilePageComponent, title: 'Profile · Kiban' },
   { path: 'catalog', component: CatalogPageComponent, title: 'Catalog · Kiban' },
