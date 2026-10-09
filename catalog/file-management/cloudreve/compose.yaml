@@ -1,0 +1,12 @@
+services:
+  cloudreve:
+    image: cloudreve/cloudreve:4.19.1
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_CLOUDREVE_PORT:-5212}:5212"
+    environment:
+      KIBAN_CLOUDREVE_PORT: ${KIBAN_CLOUDREVE_PORT:-5212}
+    volumes:
+      - cloudreve_data:/cloudreve/data
+volumes:
+  cloudreve_data:

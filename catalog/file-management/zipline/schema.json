@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_ZIPLINE_PORT": {
+      "type": "string",
+      "default": "${KIBAN_ZIPLINE_PORT:-3000}"
+    },
+    "KIBAN_ZIPLINE_DB_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_ZIPLINE_DB_PASSWORD:-zipline}"
+    },
+    "KIBAN_ZIPLINE_CORE_SECRET": {
+      "type": "string",
+      "default": "${KIBAN_ZIPLINE_CORE_SECRET:-change-me-zipline-secret}"
+    }
+  }
+}

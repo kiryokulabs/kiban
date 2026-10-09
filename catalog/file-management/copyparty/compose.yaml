@@ -1,0 +1,22 @@
+services:
+  copyparty:
+    image: copyparty/ac:1.20.25
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_COPYPARTY_PORT:-3923}:3923"
+    environment:
+      KIBAN_COPYPARTY_PORT: ${KIBAN_COPYPARTY_PORT:-3923}
+      KIBAN_COPYPARTY_PASSWORD: ${KIBAN_COPYPARTY_PASSWORD:-copyparty-password}
+    command:
+      - -i
+      - 0.0.0.0
+      - -p
+      - "3923"
+      - -a
+      - admin:${KIBAN_COPYPARTY_PASSWORD:-copyparty-password}
+      - -v
+      - /w::rwmda
+    volumes:
+      - copyparty_data:/w
+volumes:
+  copyparty_data:

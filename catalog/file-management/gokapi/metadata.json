@@ -1,0 +1,17 @@
+{
+  "id": "gokapi",
+  "name": "Gokapi",
+  "description": "Lightweight temporary file sharing service.",
+  "category": "file-management",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "gokapi",
+      "port": 53842
+    }
+  ]
+}

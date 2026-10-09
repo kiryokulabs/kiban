@@ -1,0 +1,17 @@
+{
+  "id": "copyparty",
+  "name": "copyparty",
+  "description": "Portable file server with uploads, sharing and media browsing.",
+  "category": "file-management",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "copyparty",
+      "port": 3923
+    }
+  ]
+}

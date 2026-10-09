@@ -1,0 +1,18 @@
+services:
+  filestash:
+    image: machines/filestash:0.5
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_FILESTASH_PORT:-8334}:8334"
+    environment:
+      KIBAN_FILESTASH_PORT: ${KIBAN_FILESTASH_PORT:-8334}
+    volumes:
+      - filestash_data:/app/data/state
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8334 || curl -f http://127.0.0.1:8334 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+volumes:
+  filestash_data:
