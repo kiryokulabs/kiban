@@ -1,0 +1,32 @@
+services:
+  friendica:
+    image: friendica:2026.05-apache
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_FRIENDICA_PORT:-80}:80"
+    environment:
+      MYSQL_HOST: friendica-db
+      MYSQL_DATABASE: friendica
+      MYSQL_USER: friendica
+      MYSQL_PASSWORD: ${KIBAN_FRIENDICA_DB_PASSWORD:-friendica}
+      FRIENDICA_ADMIN_MAIL: admin@localhost
+      FRIENDICA_TZ: UTC
+      KIBAN_FRIENDICA_PORT: ${KIBAN_FRIENDICA_PORT:-80}
+      KIBAN_FRIENDICA_DB_PASSWORD: ${KIBAN_FRIENDICA_DB_PASSWORD:-friendica}
+    depends_on:
+      - friendica-db
+    volumes:
+      - friendica_data:/var/www/html
+  friendica-db:
+    image: mariadb:11.4
+    restart: unless-stopped
+    environment:
+      MARIADB_RANDOM_ROOT_PASSWORD: "yes"
+      MARIADB_DATABASE: friendica
+      MARIADB_USER: friendica
+      MARIADB_PASSWORD: ${KIBAN_FRIENDICA_DB_PASSWORD:-friendica}
+    volumes:
+      - friendica_db:/var/lib/mysql
+volumes:
+  friendica_data:
+  friendica_db:

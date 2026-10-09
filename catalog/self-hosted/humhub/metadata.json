@@ -1,0 +1,17 @@
+{
+  "id": "humhub",
+  "name": "HumHub",
+  "description": "Private social network and intranet platform.",
+  "category": "self-hosted",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "humhub",
+      "port": 80
+    }
+  ]
+}

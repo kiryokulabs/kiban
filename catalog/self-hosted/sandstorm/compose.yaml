@@ -1,0 +1,24 @@
+services:
+  sandstorm:
+    image: buildpack-deps:bookworm
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_SANDSTORM_PORT:-6080}:6080"
+    environment:
+      KIBAN_SANDSTORM_PORT: ${KIBAN_SANDSTORM_PORT:-6080}
+    command:
+      - bash
+      - -c
+      - >-
+        set -e;
+        if ! id sandstorm >/dev/null 2>&1; then useradd --system --user-group sandstorm; fi;
+        if [ ! -x /opt/sandstorm/sandstorm ]; then
+          curl -fsSL https://install.sandstorm.io/ > /tmp/install.sh;
+          REPORT=no bash /tmp/install.sh -d -e;
+        fi;
+        /opt/sandstorm/sandstorm start;
+        tail -f /opt/sandstorm/var/log/sandstorm.log
+    volumes:
+      - sandstorm_data:/opt/sandstorm
+volumes:
+  sandstorm_data:

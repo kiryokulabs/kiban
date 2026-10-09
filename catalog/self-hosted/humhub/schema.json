@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_HUMHUB_PORT": {
+      "type": "string",
+      "default": "${KIBAN_HUMHUB_PORT:-80}"
+    },
+    "KIBAN_HUMHUB_DB_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_HUMHUB_DB_PASSWORD:-humhub-password}"
+    },
+    "KIBAN_HUMHUB_DB_ROOT_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_HUMHUB_DB_ROOT_PASSWORD:-humhub-root-password}"
+    }
+  }
+}
