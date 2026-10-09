@@ -1,0 +1,26 @@
+services:
+  neko:
+    image: ghcr.io/m1k1o/neko/firefox:3.1.6
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_NEKO_PORT:-8080}:8080"
+      - "${KIBAN_NEKO_WEBRTC_PORT:-52000}:52000/tcp"
+      - "${KIBAN_NEKO_WEBRTC_PORT:-52000}:52000/udp"
+    environment:
+      NEKO_MEMBER_PROVIDER: multiuser
+      NEKO_MEMBER_MULTIUSER_USER_PASSWORD: ${KIBAN_NEKO_USER_PASSWORD:-neko-user-password}
+      NEKO_MEMBER_MULTIUSER_ADMIN_PASSWORD: ${KIBAN_NEKO_ADMIN_PASSWORD:-neko-admin-password}
+      NEKO_WEBRTC_TCPMUX: "52000"
+      NEKO_WEBRTC_UDPMUX: "52000"
+      NEKO_WEBRTC_NAT1TO1: ${KIBAN_NEKO_NAT1TO1:-127.0.0.1}
+      NEKO_DESKTOP_SCREEN: ${KIBAN_NEKO_SCREEN:-1280x720@30}
+      KIBAN_NEKO_PORT: ${KIBAN_NEKO_PORT:-8080}
+      KIBAN_NEKO_WEBRTC_PORT: ${KIBAN_NEKO_WEBRTC_PORT:-52000}
+      KIBAN_NEKO_USER_PASSWORD: ${KIBAN_NEKO_USER_PASSWORD:-neko-user-password}
+      KIBAN_NEKO_ADMIN_PASSWORD: ${KIBAN_NEKO_ADMIN_PASSWORD:-neko-admin-password}
+      KIBAN_NEKO_NAT1TO1: ${KIBAN_NEKO_NAT1TO1:-127.0.0.1}
+      KIBAN_NEKO_SCREEN: ${KIBAN_NEKO_SCREEN:-1280x720@30}
+    volumes:
+      - neko_profile:/home/neko/.mozilla/firefox
+volumes:
+  neko_profile:

@@ -1,0 +1,17 @@
+{
+  "id": "neko",
+  "name": "Neko",
+  "description": "Self-hosted virtual browser streamed through WebRTC.",
+  "category": "browsers",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "neko",
+      "port": 8080
+    }
+  ]
+}
