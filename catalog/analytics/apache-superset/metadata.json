@@ -1,0 +1,17 @@
+{
+  "id": "apache-superset",
+  "name": "Apache Superset",
+  "description": "Modern data exploration and visualization platform.",
+  "category": "analytics",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "apache-superset",
+      "port": 8088
+    }
+  ]
+}
