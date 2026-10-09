@@ -1,0 +1,19 @@
+services:
+  redis-commander:
+    image: rediscommander/redis-commander:redis-commander-210
+    restart: unless-stopped
+    depends_on:
+      redis-commander-redis:
+        condition: service_started
+    ports:
+      - "${KIBAN_REDIS_COMMANDER_PORT:-8081}:8081"
+    environment:
+      REDIS_HOSTS: local:redis-commander-redis:6379
+      KIBAN_REDIS_COMMANDER_PORT: ${KIBAN_REDIS_COMMANDER_PORT:-8081}
+  redis-commander-redis:
+    image: redis:8.2.1-alpine
+    restart: unless-stopped
+    volumes:
+      - redis_commander_redis:/data
+volumes:
+  redis_commander_redis:
