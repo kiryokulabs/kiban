@@ -1,0 +1,17 @@
+{
+  "id": "bunkerweb",
+  "name": "BunkerWeb",
+  "description": "Open-source web application firewall and reverse proxy.",
+  "category": "security",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "bunkerweb",
+      "port": 7000
+    }
+  ]
+}

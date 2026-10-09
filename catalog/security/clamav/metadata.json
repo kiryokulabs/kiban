@@ -1,0 +1,17 @@
+{
+  "id": "clamav",
+  "name": "ClamAV",
+  "description": "Open-source antivirus scanning service.",
+  "category": "security",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "ClamAV clamd",
+      "kind": "tcp",
+      "service": "clamav",
+      "port": 3310
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+services:
+  clamav:
+    image: clamav/clamav-debian:stable
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_CLAMAV_PORT:-3310}:3310"
+    environment:
+      CLAMD_CONF_MaxFileSize: 100M
+      CLAMD_CONF_MaxScanSize: 100M
+      KIBAN_CLAMAV_PORT: ${KIBAN_CLAMAV_PORT:-3310}
+    volumes:
+      - clamav_data:/var/lib/clamav
+volumes:
+  clamav_data:

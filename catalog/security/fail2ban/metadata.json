@@ -1,0 +1,17 @@
+{
+  "id": "fail2ban",
+  "name": "Fail2Ban",
+  "description": "Intrusion prevention service for blocking abusive clients.",
+  "category": "security",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "fail2ban",
+      "port": 8080
+    }
+  ]
+}
