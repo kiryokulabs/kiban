@@ -1,0 +1,17 @@
+{
+  "id": "limesurvey",
+  "name": "LimeSurvey",
+  "description": "Survey creation and response collection platform.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "limesurvey",
+      "port": 8080
+    }
+  ]
+}

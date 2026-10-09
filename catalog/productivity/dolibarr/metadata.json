@@ -1,0 +1,17 @@
+{
+  "id": "dolibarr",
+  "name": "Dolibarr",
+  "description": "ERP and CRM suite for small businesses.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "dolibarr",
+      "port": 80
+    }
+  ]
+}

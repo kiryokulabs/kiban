@@ -1,0 +1,31 @@
+services:
+  habitica:
+    image: awinterstein/habitica-server:5.50.6
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_HABITICA_PORT:-3000}:3000"
+    environment:
+      NODE_DB_URI: mongodb://habitica-mongo:27017/habitica?replicaSet=rs
+      BASE_URL: http://localhost:${KIBAN_HABITICA_PORT:-3000}
+      INVITE_ONLY: "false"
+      KIBAN_HABITICA_PORT: ${KIBAN_HABITICA_PORT:-3000}
+    depends_on:
+      - habitica-mongo
+      - habitica-mongo-init
+  habitica-mongo:
+    image: mongo:7.0
+    restart: unless-stopped
+    command: ["mongod", "--bind_ip_all", "--port", "27017", "--replSet", "rs"]
+    volumes:
+      - habitica_mongo:/data/db
+      - habitica_mongo_config:/data/configdb
+  habitica-mongo-init:
+    image: mongo:7.0
+    restart: on-failure
+    command: >
+      sh -c "sleep 8; mongosh --host habitica-mongo:27017 --eval 'try { rs.status() } catch (e) { rs.initiate({_id:\"rs\",members:[{_id:0,host:\"habitica-mongo:27017\"}]}) }'"
+    depends_on:
+      - habitica-mongo
+volumes:
+  habitica_mongo:
+  habitica_mongo_config:

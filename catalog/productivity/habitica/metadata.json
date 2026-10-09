@@ -1,0 +1,17 @@
+{
+  "id": "habitica",
+  "name": "Habitica",
+  "description": "Habit and task management with role-playing game mechanics.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "habitica",
+      "port": 3000
+    }
+  ]
+}

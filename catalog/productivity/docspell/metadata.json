@@ -1,0 +1,17 @@
+{
+  "id": "docspell",
+  "name": "Docspell",
+  "description": "Document organizer with OCR, tagging, and full-text search.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "docspell",
+      "port": 7880
+    }
+  ]
+}

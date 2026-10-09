@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_OPENSIGN_PORT": {
+      "type": "string",
+      "default": "${KIBAN_OPENSIGN_PORT:-3000}"
+    },
+    "KIBAN_OPENSIGN_JWT_SECRET": {
+      "type": "string",
+      "default": "${KIBAN_OPENSIGN_JWT_SECRET:-change-me-opensign-jwt}"
+    },
+    "KIBAN_OPENSIGN_REFRESH_TOKEN_SECRET": {
+      "type": "string",
+      "default": "${KIBAN_OPENSIGN_REFRESH_TOKEN_SECRET:-change-me-opensign-refresh}"
+    }
+  }
+}

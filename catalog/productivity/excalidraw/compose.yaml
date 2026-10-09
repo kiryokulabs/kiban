@@ -1,0 +1,12 @@
+services:
+  excalidraw:
+    image: excalidraw/excalidraw:sha-4a05c25
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_EXCALIDRAW_PORT:-80}:80"
+    environment:
+      KIBAN_EXCALIDRAW_PORT: ${KIBAN_EXCALIDRAW_PORT:-80}
+    volumes:
+      - excalidraw_data:/data
+volumes:
+  excalidraw_data:

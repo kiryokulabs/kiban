@@ -1,0 +1,36 @@
+services:
+  firefly-iii:
+    image: fireflyiii/core:version-6.2.21
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_FIREFLY_III_PORT:-8080}:8080"
+    environment:
+      APP_KEY: ${KIBAN_FIREFLY_III_APP_KEY:-base64:a2liYW5maXJlZmx5aWlpYXBwa2V5MzJieXRlczAwMDA=}
+      DB_CONNECTION: mysql
+      DB_HOST: firefly-iii-db
+      DB_PORT: 3306
+      DB_DATABASE: firefly
+      DB_USERNAME: firefly
+      DB_PASSWORD: ${KIBAN_FIREFLY_III_DB_PASSWORD:-firefly}
+      TRUSTED_PROXIES: "**"
+      APP_URL: http://localhost:${KIBAN_FIREFLY_III_PORT:-8080}
+      KIBAN_FIREFLY_III_PORT: ${KIBAN_FIREFLY_III_PORT:-8080}
+      KIBAN_FIREFLY_III_APP_KEY: ${KIBAN_FIREFLY_III_APP_KEY:-base64:a2liYW5maXJlZmx5aWlpYXBwa2V5MzJieXRlczAwMDA=}
+      KIBAN_FIREFLY_III_DB_PASSWORD: ${KIBAN_FIREFLY_III_DB_PASSWORD:-firefly}
+    depends_on:
+      - firefly-iii-db
+    volumes:
+      - firefly-iii_upload:/var/www/html/storage/upload
+  firefly-iii-db:
+    image: mariadb:11.4
+    restart: unless-stopped
+    environment:
+      MARIADB_RANDOM_ROOT_PASSWORD: "yes"
+      MARIADB_DATABASE: firefly
+      MARIADB_USER: firefly
+      MARIADB_PASSWORD: ${KIBAN_FIREFLY_III_DB_PASSWORD:-firefly}
+    volumes:
+      - firefly-iii_db:/var/lib/mysql
+volumes:
+  firefly-iii_upload:
+  firefly-iii_db:

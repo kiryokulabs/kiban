@@ -1,0 +1,76 @@
+services:
+  affine:
+    image: ghcr.io/toeverything/affine:0.24.1
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_AFFINE_PORT:-3010}:3010"
+    environment:
+      REDIS_SERVER_HOST: redis
+      DATABASE_URL: postgresql://affine:${KIBAN_AFFINE_DB_PASSWORD:-affine}@postgres:5432/affine
+      DEPLOYMENT_TYPE: selfhosted
+      AFFINE_SERVER_HOST: 0.0.0.0
+      AFFINE_SERVER_PORT: 3010
+      AFFINE_SERVER_HTTPS: "false"
+      AFFINE_SERVER_EXTERNAL_URL: http://localhost:${KIBAN_AFFINE_PORT:-3010}
+      AFFINE_INDEXER_ENABLED: "false"
+      KIBAN_AFFINE_PORT: ${KIBAN_AFFINE_PORT:-3010}
+      KIBAN_AFFINE_DB_PASSWORD: ${KIBAN_AFFINE_DB_PASSWORD:-affine}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      affine-migration:
+        condition: service_completed_successfully
+    volumes:
+      - affine_config:/root/.affine/config
+      - affine_storage:/root/.affine/storage
+  affine-migration:
+    image: ghcr.io/toeverything/affine:0.24.1
+    restart: "no"
+    command: ["sh", "-c", "node ./scripts/self-host-predeploy.js"]
+    environment:
+      REDIS_SERVER_HOST: redis
+      DATABASE_URL: postgresql://affine:${KIBAN_AFFINE_DB_PASSWORD:-affine}@postgres:5432/affine
+      DEPLOYMENT_TYPE: selfhosted
+      AFFINE_INDEXER_ENABLED: "false"
+      KIBAN_AFFINE_DB_PASSWORD: ${KIBAN_AFFINE_DB_PASSWORD:-affine}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - affine_config:/root/.affine/config
+      - affine_storage:/root/.affine/storage
+  postgres:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: affine
+      POSTGRES_USER: affine
+      POSTGRES_PASSWORD: ${KIBAN_AFFINE_DB_PASSWORD:-affine}
+      POSTGRES_INITDB_ARGS: --data-checksums
+      KIBAN_AFFINE_DB_PASSWORD: ${KIBAN_AFFINE_DB_PASSWORD:-affine}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U affine -d affine"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - affine_db:/var/lib/postgresql/data
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - affine_redis:/data
+volumes:
+  affine_config:
+  affine_storage:
+  affine_db:
+  affine_redis:

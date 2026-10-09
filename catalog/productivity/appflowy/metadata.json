@@ -1,0 +1,17 @@
+{
+  "id": "appflowy",
+  "name": "AppFlowy",
+  "description": "Open-source workspace for notes, projects and knowledge.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "appflowy",
+      "port": 80
+    }
+  ]
+}

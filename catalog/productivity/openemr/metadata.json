@@ -1,0 +1,17 @@
+{
+  "id": "openemr",
+  "name": "OpenEMR",
+  "description": "Open-source electronic health records and medical practice management.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "openemr",
+      "port": 80
+    }
+  ]
+}

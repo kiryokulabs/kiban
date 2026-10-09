@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_OSTICKET_PORT": {
+      "type": "string",
+      "default": "${KIBAN_OSTICKET_PORT:-80}"
+    },
+    "KIBAN_OSTICKET_DB_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_OSTICKET_DB_PASSWORD:-osticket-password}"
+    },
+    "KIBAN_OSTICKET_DB_ROOT_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_OSTICKET_DB_ROOT_PASSWORD:-osticket-root-password}"
+    }
+  }
+}

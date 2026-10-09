@@ -1,0 +1,17 @@
+{
+  "id": "joplin",
+  "name": "Joplin",
+  "description": "Self-hosted sync server for Joplin notes.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "tcp",
+      "service": "joplin",
+      "port": 22300
+    }
+  ]
+}

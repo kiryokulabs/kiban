@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_BOOKSTACK_PORT": {
+      "type": "string",
+      "default": "${KIBAN_BOOKSTACK_PORT:-8080}"
+    },
+    "KIBAN_BOOKSTACK_DB_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_BOOKSTACK_DB_PASSWORD:-bookstack}"
+    },
+    "KIBAN_BOOKSTACK_DB_ROOT_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_BOOKSTACK_DB_ROOT_PASSWORD:-root}"
+    },
+    "KIBAN_BOOKSTACK_APP_KEY": {
+      "type": "string",
+      "default": "${KIBAN_BOOKSTACK_APP_KEY:-base64:MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTI=}"
+    }
+  }
+}

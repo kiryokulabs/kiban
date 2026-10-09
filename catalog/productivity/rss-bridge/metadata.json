@@ -1,0 +1,17 @@
+{
+  "id": "rss-bridge",
+  "name": "RSS Bridge",
+  "description": "RSS feed generator for websites that do not provide feeds.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "rss-bridge",
+      "port": 80
+    }
+  ]
+}

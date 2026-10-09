@@ -1,0 +1,17 @@
+{
+  "id": "leantime",
+  "name": "Leantime",
+  "description": "Project management system for non-project managers.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "leantime",
+      "port": 8080
+    }
+  ]
+}

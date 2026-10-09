@@ -1,0 +1,8 @@
+services:
+  logseq:
+    image: ghcr.io/logseq/logseq-webapp@sha256:de87c4a26986278b52f778d4d28c03e32d68a7c7f42bae128614bcaa3f26c231
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_LOGSEQ_PORT:-80}:80"
+    environment:
+      KIBAN_LOGSEQ_PORT: ${KIBAN_LOGSEQ_PORT:-80}

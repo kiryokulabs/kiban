@@ -1,0 +1,44 @@
+services:
+  weblate:
+    image: weblate/weblate:2026.10
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_WEBLATE_PORT:-8080}:8080"
+    environment:
+      WEBLATE_SITE_DOMAIN: localhost:${KIBAN_WEBLATE_PORT:-8080}
+      WEBLATE_ADMIN_NAME: admin
+      WEBLATE_ADMIN_EMAIL: admin@localhost
+      WEBLATE_ADMIN_PASSWORD: ${KIBAN_WEBLATE_ADMIN_PASSWORD:-admin123456}
+      POSTGRES_HOST: weblate-db
+      POSTGRES_DATABASE: weblate
+      POSTGRES_USER: weblate
+      POSTGRES_PASSWORD: ${KIBAN_WEBLATE_DB_PASSWORD:-weblate}
+      REDIS_HOST: weblate-cache
+      KIBAN_WEBLATE_PORT: ${KIBAN_WEBLATE_PORT:-8080}
+      KIBAN_WEBLATE_DB_PASSWORD: ${KIBAN_WEBLATE_DB_PASSWORD:-weblate}
+      KIBAN_WEBLATE_ADMIN_PASSWORD: ${KIBAN_WEBLATE_ADMIN_PASSWORD:-admin123456}
+    depends_on:
+      - weblate-db
+      - weblate-cache
+    volumes:
+      - weblate_data:/app/data
+      - weblate_cache:/app/cache
+  weblate-db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: weblate
+      POSTGRES_USER: weblate
+      POSTGRES_PASSWORD: ${KIBAN_WEBLATE_DB_PASSWORD:-weblate}
+    volumes:
+      - weblate_db:/var/lib/postgresql/data
+  weblate-cache:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - weblate_redis:/data
+volumes:
+  weblate_data:
+  weblate_cache:
+  weblate_db:
+  weblate_redis:

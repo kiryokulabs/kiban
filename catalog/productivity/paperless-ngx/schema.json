@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_PAPERLESS_NGX_PORT": {
+      "type": "string",
+      "default": "${KIBAN_PAPERLESS_NGX_PORT:-8000}"
+    },
+    "KIBAN_PAPERLESS_NGX_SECRET_KEY": {
+      "type": "string",
+      "default": "${KIBAN_PAPERLESS_NGX_SECRET_KEY:-change-me-paperless-secret}"
+    },
+    "KIBAN_PAPERLESS_NGX_ADMIN_USER": {
+      "type": "string",
+      "default": "${KIBAN_PAPERLESS_NGX_ADMIN_USER:-admin}"
+    },
+    "KIBAN_PAPERLESS_NGX_ADMIN_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_PAPERLESS_NGX_ADMIN_PASSWORD:-admin}"
+    }
+  }
+}

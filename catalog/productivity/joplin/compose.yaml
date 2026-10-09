@@ -1,0 +1,30 @@
+services:
+  joplin:
+    image: joplin/server:3.4.3
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_JOPLIN_PORT:-22300}:22300"
+    environment:
+      APP_BASE_URL: http://localhost:${KIBAN_JOPLIN_PORT:-22300}
+      APP_PORT: 22300
+      DB_CLIENT: pg
+      POSTGRES_HOST: joplin-db
+      POSTGRES_PORT: 5432
+      POSTGRES_DATABASE: joplin
+      POSTGRES_USER: joplin
+      POSTGRES_PASSWORD: ${KIBAN_JOPLIN_DB_PASSWORD:-joplin}
+      KIBAN_JOPLIN_PORT: ${KIBAN_JOPLIN_PORT:-22300}
+      KIBAN_JOPLIN_DB_PASSWORD: ${KIBAN_JOPLIN_DB_PASSWORD:-joplin}
+    depends_on:
+      - joplin-db
+  joplin-db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: joplin
+      POSTGRES_USER: joplin
+      POSTGRES_PASSWORD: ${KIBAN_JOPLIN_DB_PASSWORD:-joplin}
+    volumes:
+      - joplin_db:/var/lib/postgresql/data
+volumes:
+  joplin_db:

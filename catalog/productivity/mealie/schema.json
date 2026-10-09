@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_MEALIE_PORT": {
+      "type": "string",
+      "default": "${KIBAN_MEALIE_PORT:-9925}"
+    },
+    "KIBAN_MEALIE_ALLOW_SIGNUP": {
+      "type": "string",
+      "default": "${KIBAN_MEALIE_ALLOW_SIGNUP:-false}"
+    },
+    "KIBAN_MEALIE_TZ": {
+      "type": "string",
+      "default": "${KIBAN_MEALIE_TZ:-UTC}"
+    },
+    "KIBAN_MEALIE_DB_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_MEALIE_DB_PASSWORD:-mealie-password}"
+    }
+  }
+}

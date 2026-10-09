@@ -1,0 +1,17 @@
+{
+  "id": "kanboard",
+  "name": "Kanboard",
+  "description": "Simple Kanban project management board.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "kanboard",
+      "port": 80
+    }
+  ]
+}

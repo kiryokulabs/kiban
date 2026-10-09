@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_CAL_COM_PORT": {
+      "type": "string",
+      "default": "${KIBAN_CAL_COM_PORT:-3000}"
+    },
+    "KIBAN_CAL_COM_DB_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_CAL_COM_DB_PASSWORD:-calcom}"
+    },
+    "KIBAN_CAL_COM_NEXTAUTH_SECRET": {
+      "type": "string",
+      "default": "${KIBAN_CAL_COM_NEXTAUTH_SECRET:-change-me-nextauth-secret}"
+    },
+    "KIBAN_CAL_COM_ENCRYPTION_KEY": {
+      "type": "string",
+      "default": "${KIBAN_CAL_COM_ENCRYPTION_KEY:-change-me-encryption-key}"
+    }
+  }
+}

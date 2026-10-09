@@ -1,0 +1,39 @@
+services:
+  paperless-ngx:
+    image: ghcr.io/paperless-ngx/paperless-ngx:2.18.4
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_PAPERLESS_NGX_PORT:-8000}:8000"
+    environment:
+      PAPERLESS_REDIS: redis://paperless-ngx-redis:6379
+      PAPERLESS_SECRET_KEY: ${KIBAN_PAPERLESS_NGX_SECRET_KEY:-change-me-paperless-secret}
+      PAPERLESS_ADMIN_USER: ${KIBAN_PAPERLESS_NGX_ADMIN_USER:-admin}
+      PAPERLESS_ADMIN_PASSWORD: ${KIBAN_PAPERLESS_NGX_ADMIN_PASSWORD:-admin}
+      KIBAN_PAPERLESS_NGX_PORT: ${KIBAN_PAPERLESS_NGX_PORT:-8000}
+      KIBAN_PAPERLESS_NGX_SECRET_KEY: ${KIBAN_PAPERLESS_NGX_SECRET_KEY:-change-me-paperless-secret}
+      KIBAN_PAPERLESS_NGX_ADMIN_USER: ${KIBAN_PAPERLESS_NGX_ADMIN_USER:-admin}
+      KIBAN_PAPERLESS_NGX_ADMIN_PASSWORD: ${KIBAN_PAPERLESS_NGX_ADMIN_PASSWORD:-admin}
+    depends_on:
+      - paperless-ngx-redis
+    volumes:
+      - paperless_ngx_data:/usr/src/paperless/data
+      - paperless_ngx_media:/usr/src/paperless/media
+      - paperless_ngx_export:/usr/src/paperless/export
+      - paperless_ngx_consume:/usr/src/paperless/consume
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8000 || curl -f http://127.0.0.1:8000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+  paperless-ngx-redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - paperless_ngx_redis_data:/data
+volumes:
+  paperless_ngx_consume:
+  paperless_ngx_data:
+  paperless_ngx_export:
+  paperless_ngx_media:
+  paperless_ngx_redis_data:

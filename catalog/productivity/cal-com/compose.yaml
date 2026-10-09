@@ -1,0 +1,34 @@
+services:
+  cal-com:
+    image: calcom/cal.com:v5.6.8
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_CAL_COM_PORT:-3000}:3000"
+    environment:
+      DATABASE_URL: postgresql://calcom:${KIBAN_CAL_COM_DB_PASSWORD:-calcom}@cal-com-db:5432/calcom
+      NEXTAUTH_SECRET: ${KIBAN_CAL_COM_NEXTAUTH_SECRET:-change-me-nextauth-secret}
+      CALENDSO_ENCRYPTION_KEY: ${KIBAN_CAL_COM_ENCRYPTION_KEY:-change-me-encryption-key}
+      NEXT_PUBLIC_WEBAPP_URL: http://localhost:${KIBAN_CAL_COM_PORT:-3000}
+      KIBAN_CAL_COM_PORT: ${KIBAN_CAL_COM_PORT:-3000}
+      KIBAN_CAL_COM_DB_PASSWORD: ${KIBAN_CAL_COM_DB_PASSWORD:-calcom}
+      KIBAN_CAL_COM_NEXTAUTH_SECRET: ${KIBAN_CAL_COM_NEXTAUTH_SECRET:-change-me-nextauth-secret}
+      KIBAN_CAL_COM_ENCRYPTION_KEY: ${KIBAN_CAL_COM_ENCRYPTION_KEY:-change-me-encryption-key}
+    depends_on:
+      - cal-com-db
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:3000 || curl -f http://127.0.0.1:3000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+  cal-com-db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: calcom
+      POSTGRES_USER: calcom
+      POSTGRES_PASSWORD: ${KIBAN_CAL_COM_DB_PASSWORD:-calcom}
+    volumes:
+      - cal_com_db_data:/var/lib/postgresql/data
+volumes:
+  cal_com_db_data:

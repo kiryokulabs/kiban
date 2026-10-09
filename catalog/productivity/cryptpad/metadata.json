@@ -1,0 +1,17 @@
+{
+  "id": "cryptpad",
+  "name": "CryptPad",
+  "description": "End-to-end encrypted collaborative office suite.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "cryptpad",
+      "port": 3000
+    }
+  ]
+}

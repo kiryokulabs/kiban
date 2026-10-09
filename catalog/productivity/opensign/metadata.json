@@ -1,0 +1,17 @@
+{
+  "id": "opensign",
+  "name": "OpenSign",
+  "description": "Open-source platform for signing, organizing, and delivering PDF documents.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "opensign",
+      "port": 3000
+    }
+  ]
+}

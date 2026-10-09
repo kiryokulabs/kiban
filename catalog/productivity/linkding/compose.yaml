@@ -1,0 +1,16 @@
+services:
+  linkding:
+    image: sissbruecker/linkding:1.47.0
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_LINKDING_PORT:-9090}:9090"
+    environment:
+      LD_SUPERUSER_NAME: ${KIBAN_LINKDING_SUPERUSER_NAME:-admin}
+      LD_SUPERUSER_PASSWORD: ${KIBAN_LINKDING_SUPERUSER_PASSWORD:-linkding-admin-password}
+      KIBAN_LINKDING_PORT: ${KIBAN_LINKDING_PORT:-9090}
+      KIBAN_LINKDING_SUPERUSER_NAME: ${KIBAN_LINKDING_SUPERUSER_NAME:-admin}
+      KIBAN_LINKDING_SUPERUSER_PASSWORD: ${KIBAN_LINKDING_SUPERUSER_PASSWORD:-linkding-admin-password}
+    volumes:
+      - linkding_data:/etc/linkding/data
+volumes:
+  linkding_data:

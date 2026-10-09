@@ -1,0 +1,42 @@
+services:
+  papermerge:
+    image: papermerge/papermerge:3.5.3
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_PAPERMERGE_PORT:-8000}:8000"
+    environment:
+      PAPERMERGE__SECURITY__SECRET_KEY: ${KIBAN_PAPERMERGE_SECRET_KEY:-change-me-papermerge-secret}
+      PAPERMERGE__DATABASE__URL: postgresql://papermerge:${KIBAN_PAPERMERGE_DB_PASSWORD:-papermerge}@papermerge-db:5432/papermerge
+      PAPERMERGE__REDIS__URL: redis://papermerge-redis:6379/0
+      KIBAN_PAPERMERGE_PORT: ${KIBAN_PAPERMERGE_PORT:-8000}
+      KIBAN_PAPERMERGE_SECRET_KEY: ${KIBAN_PAPERMERGE_SECRET_KEY:-change-me-papermerge-secret}
+      KIBAN_PAPERMERGE_DB_PASSWORD: ${KIBAN_PAPERMERGE_DB_PASSWORD:-papermerge}
+    depends_on:
+      - papermerge-db
+      - papermerge-redis
+    volumes:
+      - papermerge_media:/core_app/media
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8000 || curl -f http://127.0.0.1:8000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+  papermerge-db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: papermerge
+      POSTGRES_USER: papermerge
+      POSTGRES_PASSWORD: ${KIBAN_PAPERMERGE_DB_PASSWORD:-papermerge}
+    volumes:
+      - papermerge_db_data:/var/lib/postgresql/data
+  papermerge-redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - papermerge_redis_data:/data
+volumes:
+  papermerge_db_data:
+  papermerge_media:
+  papermerge_redis_data:

@@ -1,0 +1,17 @@
+{
+  "id": "superproductivity",
+  "name": "Super Productivity",
+  "description": "Personal task and time tracking app.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "superproductivity",
+      "port": 80
+    }
+  ]
+}

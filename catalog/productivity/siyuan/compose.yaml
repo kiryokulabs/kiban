@@ -1,0 +1,17 @@
+services:
+  siyuan:
+    image: b3log/siyuan:v3.8.6
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_SIYUAN_PORT:-6806}:6806"
+    environment:
+      KIBAN_SIYUAN_PORT: ${KIBAN_SIYUAN_PORT:-6806}
+      KIBAN_SIYUAN_AUTH_CODE: ${KIBAN_SIYUAN_AUTH_CODE:-siyuan-auth-code}
+    command:
+      - serve
+      - --workspace=/siyuan/workspace/
+      - --accessAuthCode=${KIBAN_SIYUAN_AUTH_CODE:-siyuan-auth-code}
+    volumes:
+      - siyuan_workspace:/siyuan/workspace
+volumes:
+  siyuan_workspace:

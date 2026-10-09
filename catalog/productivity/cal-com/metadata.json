@@ -1,0 +1,17 @@
+{
+  "id": "cal-com",
+  "name": "Cal.com",
+  "description": "Open scheduling infrastructure for bookings and calendar workflows.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "cal-com",
+      "port": 3000
+    }
+  ]
+}

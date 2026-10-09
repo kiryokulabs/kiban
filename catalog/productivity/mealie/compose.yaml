@@ -1,0 +1,44 @@
+services:
+  mealie:
+    image: ghcr.io/mealie-recipes/mealie:v3.28.0
+    restart: unless-stopped
+    depends_on:
+      mealie-db:
+        condition: service_healthy
+    ports:
+      - "${KIBAN_MEALIE_PORT:-9925}:9000"
+    environment:
+      ALLOW_SIGNUP: ${KIBAN_MEALIE_ALLOW_SIGNUP:-false}
+      PUID: "1000"
+      PGID: "1000"
+      TZ: ${KIBAN_MEALIE_TZ:-UTC}
+      BASE_URL: ${SERVICE_URL_MEALIE:-http://localhost:9000}
+      DB_ENGINE: postgres
+      POSTGRES_SERVER: mealie-db
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: mealie
+      POSTGRES_USER: mealie
+      POSTGRES_PASSWORD: ${KIBAN_MEALIE_DB_PASSWORD:-mealie-password}
+      KIBAN_MEALIE_PORT: ${KIBAN_MEALIE_PORT:-9925}
+      KIBAN_MEALIE_ALLOW_SIGNUP: ${KIBAN_MEALIE_ALLOW_SIGNUP:-false}
+      KIBAN_MEALIE_TZ: ${KIBAN_MEALIE_TZ:-UTC}
+      KIBAN_MEALIE_DB_PASSWORD: ${KIBAN_MEALIE_DB_PASSWORD:-mealie-password}
+    volumes:
+      - mealie_data:/app/data
+  mealie-db:
+    image: postgres:17.6-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: mealie
+      POSTGRES_USER: mealie
+      POSTGRES_PASSWORD: ${KIBAN_MEALIE_DB_PASSWORD:-mealie-password}
+    volumes:
+      - mealie_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+volumes:
+  mealie_data:
+  mealie_db:

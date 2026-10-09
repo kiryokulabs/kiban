@@ -1,0 +1,39 @@
+services:
+  opensign:
+    image: opensign/opensignserver:v2.4.0
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_OPENSIGN_PORT:-3000}:3000"
+    environment:
+      DB_URI: mongodb://opensign-mongo:27017/opensign
+      REDIS_HOST: opensign-redis
+      REDIS_PORT: 6379
+      JWT_SECRET: ${KIBAN_OPENSIGN_JWT_SECRET:-change-me-opensign-jwt}
+      REFRESH_TOKEN_SECRET: ${KIBAN_OPENSIGN_REFRESH_TOKEN_SECRET:-change-me-opensign-refresh}
+      CLIENT_URL: http://localhost:${KIBAN_OPENSIGN_PORT:-3000}
+      SERVER_URL: http://localhost:${KIBAN_OPENSIGN_PORT:-3000}
+      KIBAN_OPENSIGN_PORT: ${KIBAN_OPENSIGN_PORT:-3000}
+      KIBAN_OPENSIGN_JWT_SECRET: ${KIBAN_OPENSIGN_JWT_SECRET:-change-me-opensign-jwt}
+      KIBAN_OPENSIGN_REFRESH_TOKEN_SECRET: ${KIBAN_OPENSIGN_REFRESH_TOKEN_SECRET:-change-me-opensign-refresh}
+    depends_on:
+      - opensign-mongo
+      - opensign-redis
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:3000 || curl -f http://127.0.0.1:3000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+  opensign-mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - opensign_mongo_data:/data/db
+  opensign-redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - opensign_redis_data:/data
+volumes:
+  opensign_mongo_data:
+  opensign_redis_data:

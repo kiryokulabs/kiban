@@ -1,0 +1,17 @@
+{
+  "id": "linkding",
+  "name": "linkding",
+  "description": "Minimal bookmark manager.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "linkding",
+      "port": 9090
+    }
+  ]
+}

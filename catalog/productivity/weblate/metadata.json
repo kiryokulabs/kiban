@@ -1,0 +1,17 @@
+{
+  "id": "weblate",
+  "name": "Weblate",
+  "description": "Libre web-based continuous localization and translation management platform.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "weblate",
+      "port": 8080
+    }
+  ]
+}

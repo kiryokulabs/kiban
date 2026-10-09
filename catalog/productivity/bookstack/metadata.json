@@ -1,0 +1,17 @@
+{
+  "id": "bookstack",
+  "name": "BookStack",
+  "description": "Simple wiki and documentation platform for teams.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "bookstack",
+      "port": 80
+    }
+  ]
+}
