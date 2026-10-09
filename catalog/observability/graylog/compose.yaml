@@ -1,0 +1,39 @@
+services:
+  graylog:
+    image: graylog/graylog:6.3.3
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_GRAYLOG_PORT:-9000}:9000"
+    environment:
+      GRAYLOG_PASSWORD_SECRET: ${KIBAN_GRAYLOG_PASSWORD_SECRET:-kibangraylogpasswordsecret000000000000000000000000}
+      GRAYLOG_ROOT_PASSWORD_SHA2: ${KIBAN_GRAYLOG_ROOT_PASSWORD_SHA2:-8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918}
+      GRAYLOG_HTTP_EXTERNAL_URI: http://localhost:${KIBAN_GRAYLOG_PORT:-9000}/
+      GRAYLOG_MONGODB_URI: mongodb://mongo:27017/graylog
+      GRAYLOG_ELASTICSEARCH_HOSTS: http://opensearch:9200
+      KIBAN_GRAYLOG_PORT: ${KIBAN_GRAYLOG_PORT:-9000}
+      KIBAN_GRAYLOG_PASSWORD_SECRET: ${KIBAN_GRAYLOG_PASSWORD_SECRET:-kibangraylogpasswordsecret000000000000000000000000}
+      KIBAN_GRAYLOG_ROOT_PASSWORD_SHA2: ${KIBAN_GRAYLOG_ROOT_PASSWORD_SHA2:-8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918}
+    depends_on:
+      - mongo
+      - opensearch
+    volumes:
+      - graylog_data:/usr/share/graylog/data
+  mongo:
+    image: mongo:7.0
+    restart: unless-stopped
+    volumes:
+      - graylog_mongo:/data/db
+  opensearch:
+    image: opensearchproject/opensearch:2.15.0
+    restart: unless-stopped
+    environment:
+      discovery.type: single-node
+      plugins.security.disabled: "true"
+      DISABLE_INSTALL_DEMO_CONFIG: "true"
+      OPENSEARCH_JAVA_OPTS: -Xms512m -Xmx512m
+    volumes:
+      - graylog_opensearch:/usr/share/opensearch/data
+volumes:
+  graylog_data:
+  graylog_mongo:
+  graylog_opensearch:

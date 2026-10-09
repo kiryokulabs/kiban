@@ -1,0 +1,81 @@
+services:
+  glitchtip:
+    image: glitchtip/glitchtip:v5.1.7
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_GLITCHTIP_PORT:-8000}:8000"
+    environment: &glitchtip-env
+      DATABASE_URL: postgres://glitchtip:${KIBAN_GLITCHTIP_DB_PASSWORD:-glitchtip}@glitchtip-db:5432/glitchtip
+      REDIS_URL: redis://glitchtip-redis:6379/0
+      SECRET_KEY: ${KIBAN_GLITCHTIP_SECRET_KEY:-change-me-glitchtip-secret}
+      EMAIL_URL: ${KIBAN_GLITCHTIP_EMAIL_URL:-consolemail://}
+      GLITCHTIP_DOMAIN: http://localhost:${KIBAN_GLITCHTIP_PORT:-8000}
+      ALLOWED_HOSTS: ${KIBAN_GLITCHTIP_ALLOWED_HOSTS:-localhost,glitchtip}
+      GLITCHTIP_EMBED_WORKER: "true"
+      KIBAN_GLITCHTIP_PORT: ${KIBAN_GLITCHTIP_PORT:-8000}
+      KIBAN_GLITCHTIP_DB_PASSWORD: ${KIBAN_GLITCHTIP_DB_PASSWORD:-glitchtip}
+      KIBAN_GLITCHTIP_SECRET_KEY: ${KIBAN_GLITCHTIP_SECRET_KEY:-change-me-glitchtip-secret}
+      KIBAN_GLITCHTIP_EMAIL_URL: ${KIBAN_GLITCHTIP_EMAIL_URL:-consolemail://}
+      KIBAN_GLITCHTIP_ALLOWED_HOSTS: ${KIBAN_GLITCHTIP_ALLOWED_HOSTS:-localhost,glitchtip}
+    depends_on:
+      glitchtip-db:
+        condition: service_healthy
+      glitchtip-redis:
+        condition: service_healthy
+      glitchtip-migration:
+        condition: service_completed_successfully
+    volumes:
+      - glitchtip_uploads:/code/uploads
+    healthcheck:
+      test: ["CMD-SHELL", "python3 /code/healthcheck.py || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+  glitchtip-migration:
+    image: glitchtip/glitchtip:v5.1.7
+    restart: "no"
+    command: >
+      sh -c "./manage.py migrate --no-input --skip-checks &&
+             ./manage.py createcachetable &&
+             ./manage.py maintain_partitions"
+    environment: *glitchtip-env
+    depends_on:
+      glitchtip-db:
+        condition: service_healthy
+      glitchtip-redis:
+        condition: service_healthy
+
+  glitchtip-db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: glitchtip
+      POSTGRES_USER: glitchtip
+      POSTGRES_PASSWORD: ${KIBAN_GLITCHTIP_DB_PASSWORD:-glitchtip}
+    volumes:
+      - glitchtip_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d glitchtip -U glitchtip"]
+      interval: 10s
+      timeout: 30s
+      retries: 10
+      start_period: 20s
+
+  glitchtip-redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - glitchtip_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+volumes:
+  glitchtip_db_data:
+  glitchtip_redis_data:
+  glitchtip_uploads:
