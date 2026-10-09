@@ -32,6 +32,8 @@ export class RoutedRuntimeProvider implements RuntimeProvider {
     return this.delegate.install({ ...plan, publicEndpoints });
   }
 
+  /** Delegates non-destructive runtime redeploys. */
+  public redeploy(service: InstalledService, plan: InstallationPlan): Promise<RuntimeResult> { return this.delegate.redeploy(service, plan); }
   /** Delegates runtime removal. */
   public uninstall(service: InstalledService): Promise<RuntimeResult> { return this.delegate.uninstall(service); }
   /** Delegates runtime start. */

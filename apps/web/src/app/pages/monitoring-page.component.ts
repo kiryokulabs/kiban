@@ -8,6 +8,7 @@ import { MonitoringPresenter } from '../monitoring/monitoring.presenter';
 import type { MonitoringHistory, MonitoringOverview } from '../monitoring/monitoring.models';
 import { SystemMetricsPresenter } from '../system/system-metrics.presenter';
 import { IconsComponent } from '../shared/icons.component';
+import { SkeletonComponent } from '../shared/skeleton.component';
 
 const OVERVIEW_REFRESH_MS = 10_000;
 const HISTORY_REFRESH_MS = 60_000;
@@ -17,7 +18,7 @@ const RECENT_CHANGES_LIMIT = 5;
 @Component({
   selector: 'kiban-monitoring-page',
   standalone: true,
-  imports: [RouterLink, IconsComponent, MonitoringChartComponent],
+  imports: [RouterLink, IconsComponent, MonitoringChartComponent, SkeletonComponent],
   template: `
     <div class="space-y-6">
       <div>
@@ -53,21 +54,21 @@ const RECENT_CHANGES_LIMIT = 5;
                 <p class="text-xs c-muted">CPU</p>
                 <p class="text-sm font-semibold kb-text">{{ hostPresenter.percentLabel(current.host.cpu.usagePercent) }}</p>
               </div>
-              <kiban-monitoring-chart [points]="cpuPoints()" [max]="100" maxLabel="100%" label="CPU" [valueFormatter]="percentFormatter" />
+              <kiban-monitoring-chart [points]="cpuPoints()" [max]="100" maxLabel="100%" label="CPU" [valueFormatter]="hostPresenter.percentLabel" />
             </div>
             <div class="card p-4">
               <div class="flex items-baseline justify-between gap-2">
                 <p class="text-xs c-muted">Memory</p>
                 <p class="text-sm font-semibold kb-text">{{ hostPresenter.percentLabel(current.host.memory.usagePercent) }} · {{ hostPresenter.bytesLabel(current.host.memory.usedBytes) }} of {{ hostPresenter.bytesLabel(current.host.memory.totalBytes) }}</p>
               </div>
-              <kiban-monitoring-chart [points]="memoryPoints()" [max]="current.host.memory.totalBytes" [maxLabel]="hostPresenter.bytesLabel(current.host.memory.totalBytes)" label="Memory" [valueFormatter]="bytesFormatter" />
+              <kiban-monitoring-chart [points]="memoryPoints()" [max]="current.host.memory.totalBytes" [maxLabel]="hostPresenter.bytesLabel(current.host.memory.totalBytes)" label="Memory" [valueFormatter]="hostPresenter.bytesLabel" />
             </div>
             <div class="card p-4">
               <div class="flex items-baseline justify-between gap-2">
                 <p class="text-xs c-muted">Disk</p>
                 <p class="text-sm font-semibold kb-text">{{ hostPresenter.percentLabel(current.host.disk.usagePercent) }} · {{ hostPresenter.bytesLabel(current.host.disk.usedBytes) }} of {{ hostPresenter.bytesLabel(current.host.disk.totalBytes) }}</p>
               </div>
-              <kiban-monitoring-chart [points]="diskPoints()" [max]="current.host.disk.totalBytes" [maxLabel]="hostPresenter.bytesLabel(current.host.disk.totalBytes)" label="Disk" [valueFormatter]="bytesFormatter" />
+              <kiban-monitoring-chart [points]="diskPoints()" [max]="current.host.disk.totalBytes" [maxLabel]="hostPresenter.bytesLabel(current.host.disk.totalBytes)" label="Disk" [valueFormatter]="hostPresenter.bytesLabel" />
             </div>
           </div>
           <p class="mt-2 text-xs c-muted">IP {{ hostPresenter.localIpLabel(current.host.network.localIp) }}</p>
@@ -135,6 +136,65 @@ const RECENT_CHANGES_LIMIT = 5;
         <div class="card-subtle px-4 py-3 text-xs c-muted" title="Monitoring data is temporarily unavailable">
           Monitoring data is temporarily unavailable.
         </div>
+      } @else {
+        <div class="space-y-6" aria-label="Loading monitoring data">
+          <div>
+            <div class="flex items-center gap-2">
+              <kiban-skeleton width="7rem" height="0.875rem" />
+            </div>
+            <kiban-skeleton width="14rem" height="0.625rem" blockClass="mt-2" />
+            <div class="mt-3 grid grid-cols-1 gap-4 md:grid-cols-3">
+              @for (i of [1, 2, 3]; track i) {
+                <div class="card p-4 space-y-4">
+                  <div class="flex items-baseline justify-between gap-2">
+                    <kiban-skeleton width="3rem" height="0.625rem" />
+                    <kiban-skeleton width="4rem" height="0.875rem" />
+                  </div>
+                  <kiban-skeleton width="100%" height="6rem" blockClass="rounded-lg" />
+                </div>
+              }
+            </div>
+          </div>
+
+          <div>
+            <kiban-skeleton width="7rem" height="0.875rem" />
+            <kiban-skeleton width="12rem" height="0.625rem" blockClass="mt-2" />
+            <ul class="mt-3 space-y-2">
+              @for (i of [1, 2, 3]; track i) {
+                <li class="card flex flex-col gap-2 p-3 sm:flex-row sm:items-center">
+                  <div class="min-w-0 flex-1 space-y-2">
+                    <kiban-skeleton width="40%" height="0.875rem" />
+                    <div class="flex gap-1.5">
+                      <kiban-skeleton width="4rem" height="1.25rem" blockClass="rounded-full" />
+                      <kiban-skeleton width="4rem" height="1.25rem" blockClass="rounded-full" />
+                    </div>
+                  </div>
+                  <div class="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-4">
+                    @for (metric of [1, 2, 3, 4]; track metric) {
+                      <kiban-skeleton width="4.5rem" height="0.625rem" />
+                    }
+                  </div>
+                  <kiban-skeleton width="4rem" height="1.5rem" blockClass="rounded-lg" />
+                </li>
+              }
+            </ul>
+          </div>
+
+          <div>
+            <kiban-skeleton width="7rem" height="0.875rem" />
+            <ul class="mt-3 space-y-2">
+              @for (i of [1, 2]; track i) {
+                <li class="card flex items-center justify-between gap-2 p-3">
+                  <kiban-skeleton width="45%" height="0.875rem" />
+                  <div class="flex shrink-0 items-center gap-2">
+                    <kiban-skeleton width="4rem" height="1.25rem" blockClass="rounded-full" />
+                    <kiban-skeleton width="3rem" height="0.625rem" />
+                  </div>
+                </li>
+              }
+            </ul>
+          </div>
+        </div>
       }
 
       @if (history(); as stored) {
@@ -151,8 +211,6 @@ export class MonitoringPageComponent {
   protected readonly presenter = new MonitoringPresenter();
   protected readonly hostPresenter = new SystemMetricsPresenter();
   protected readonly historyHours = HISTORY_HOURS;
-  protected readonly percentFormatter = (value: number): string => this.hostPresenter.percentLabel(value);
-  protected readonly bytesFormatter = (value: number): string => this.hostPresenter.bytesLabel(value);
 
   protected readonly overview = signal<MonitoringOverview | null>(null);
   protected readonly overviewUnavailable = signal(false);

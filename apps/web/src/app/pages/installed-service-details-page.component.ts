@@ -188,6 +188,7 @@ import { SkeletonInstalledDetailComponent } from '../shared/skeleton-installed-d
             <button class="btn-secondary btn gap-1.5" type="button" [disabled]="!!actionInProgress()" (click)="runAction('start')"><kiban-icon name="play" [size]="14" /> Start</button>
             <button class="btn-secondary btn gap-1.5" type="button" [disabled]="!!actionInProgress()" (click)="runAction('stop')"><kiban-icon name="stop" [size]="14" /> Stop</button>
             <button class="btn-secondary btn gap-1.5" type="button" [disabled]="!!actionInProgress()" (click)="runAction('restart')"><kiban-icon name="restart" [size]="14" /> Restart</button>
+            <button class="btn-secondary btn gap-1.5" type="button" [disabled]="!!actionInProgress()" (click)="confirmRecreate.set(true)"><kiban-icon name="refresh" [size]="14" /> Redeploy</button>
           </div>
         </section>
 
@@ -195,7 +196,7 @@ import { SkeletonInstalledDetailComponent } from '../shared/skeleton-installed-d
           <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <h2 class="flex items-center gap-2 text-sm font-semibold kb-text"><kiban-icon name="settings" [size]="14" /> Configuration</h2>
             @if (presenter.schemaFields(d).length > 0) {
-              <button class="btn-primary btn text-xs" type="button" [disabled]="actionInProgress()" (click)="confirmSaveConfiguration.set(true)"> Save & recreate</button>
+              <button class="btn-primary btn text-xs" type="button" [disabled]="actionInProgress()" (click)="confirmSaveConfiguration.set(true)"> Save & redeploy</button>
             }
           </div>
           @if (presenter.schemaFields(d).length === 0) {
@@ -206,7 +207,7 @@ import { SkeletonInstalledDetailComponent } from '../shared/skeleton-installed-d
             <div class="mt-3 grid grid-cols-[minmax(0,1fr)] gap-3 md:grid-cols-2">
               @for (field of presenter.schemaFields(d); track field.key) {
                 <label class="block">
-                  <span class="text-xs c-muted">{{ field.label }} @if (field.required) { <span>*</span> }</span>
+                  <span class="text-xs c-muted">{{ field.secret ? 'Initial ' + field.label : field.label }} @if (field.required) { <span>*</span> }</span>
                   <div class="relative mt-1">
                     <input class="input pr-10" [type]="configurationInputType(field)" [ngModel]="configurationValues()[field.key]" (ngModelChange)="updateConfigurationValue(field.key, $event)" />
                     @if (field.secret) {
@@ -218,6 +219,7 @@ import { SkeletonInstalledDetailComponent } from '../shared/skeleton-installed-d
                 </label>
               }
             </div>
+            <p class="mt-3 text-xs c-muted">Some values are only used during the first installation. Existing app users or passwords may need to be changed inside the service itself.</p>
           }
         </section>
         <section class="grid grid-cols-[minmax(0,1fr)] gap-4 xl:grid-cols-2">
@@ -247,9 +249,13 @@ import { SkeletonInstalledDetailComponent } from '../shared/skeleton-installed-d
                 No persistent data configured for this service.
               </div>
             } @else {
+              <p class="mt-3 text-xs c-muted">This data is kept during restart and redeploy. Deleting the service removes it.</p>
               <div class="mt-3 space-y-2">
                 @for (v of presenter.volumes(d); track v.name) {
-                  <div class="flex flex-col gap-1 rounded-lg border kb-border p-3 text-sm sm:flex-row sm:justify-between"><span class="break-all kb-text">{{ v.name }}</span><span class="break-all c-muted">{{ v.mountPath }}</span></div>
+                  <div class="rounded-lg border kb-border p-3 text-sm">
+                    <span class="block break-all font-medium kb-text">{{ v.name }}</span>
+                    <span class="mt-1 block break-all text-xs c-muted">Persistent path: {{ v.mountPath }}</span>
+                  </div>
                 }
               </div>
             }
@@ -298,16 +304,9 @@ import { SkeletonInstalledDetailComponent } from '../shared/skeleton-installed-d
           <h2 class="flex items-center gap-2 text-sm font-semibold" style="color: var(--color-danger);"><kiban-icon name="warning" [size]="14" style="color: var(--color-danger);" /> Danger Zone</h2>
           <div class="mt-3 space-y-3">
             <div class="flex flex-col gap-3 rounded-lg border border-danger/30 p-3 sm:flex-row sm:items-center sm:justify-between">
-              <div class="min-w-0">
-                <p class="text-sm font-medium kb-text">Recreate this service</p>
-                <p class="mt-1 text-xs c-muted">This rebuilds the runtime units and may delete any data stored inside containers but not persisted in volumes.</p>
-              </div>
-              <button class="btn-danger btn gap-1.5" type="button" [disabled]="!!actionInProgress()" (click)="confirmRecreate.set(true)"><kiban-icon name="refresh" [size]="14" style="color: var(--color-danger);" /> Recreate</button>
-            </div>
-            <div class="flex flex-col gap-3 rounded-lg border border-danger/30 p-3 sm:flex-row sm:items-center sm:justify-between">
             <div class="min-w-0">
               <p class="text-sm font-medium kb-text">Delete this service</p>
-              <p class="mt-1 text-xs c-muted">This removes the service from Kiban and deletes its runtime resources.</p>
+              <p class="mt-1 text-xs c-muted">This removes the service and deletes its persistent data.</p>
             </div>
             <button class="btn-danger btn gap-1.5" type="button" [disabled]="!!actionInProgress()" (click)="confirmDelete.set(true)"><kiban-icon name="trash" [size]="14" style="color: var(--color-danger);" /> Delete</button>
             </div>
@@ -318,13 +317,13 @@ import { SkeletonInstalledDetailComponent } from '../shared/skeleton-installed-d
     </div>
 
     @if (confirmDelete()) {
-      <kiban-confirm-modal title="Delete service" message="This will remove the service from Kiban and delete its runtime resources." confirmLabel="Delete service" [destructive]="true" (cancel)="confirmDelete.set(false)" (confirm)="deleteService()" />
+      <kiban-confirm-modal title="Delete service" message="This removes the service and deletes its persistent data. This cannot be undone." confirmLabel="Delete service" [destructive]="true" (cancel)="confirmDelete.set(false)" (confirm)="deleteService()" />
     }
     @if (confirmRecreate()) {
-      <kiban-confirm-modal title="Recreate service" message="This will recreate the service runtime units. Any data stored inside containers and not persisted in volumes may be lost. Are you sure you want to continue?" confirmLabel="Recreate service" [destructive]="true" (cancel)="confirmRecreate.set(false)" (confirm)="recreateService()" />
+      <kiban-confirm-modal title="Redeploy service" message="This applies the saved configuration and restarts runtime units without deleting persistent data." confirmLabel="Redeploy service" [destructive]="false" (cancel)="confirmRecreate.set(false)" (confirm)="recreateService()" />
     }
     @if (confirmSaveConfiguration()) {
-      <kiban-confirm-modal title="Save configuration and recreate service" message="Saving this configuration will recreate the service runtime units. Any data stored inside containers and not persisted in volumes may be lost. Are you sure you want to continue?" confirmLabel="Save and recreate" [destructive]="true" (cancel)="confirmSaveConfiguration.set(false)" (confirm)="saveConfiguration()" />
+      <kiban-confirm-modal title="Save configuration and redeploy service" message="Saving this configuration will redeploy the service without deleting persistent volumes. Containers may restart to apply changes." confirmLabel="Save and redeploy" [destructive]="false" (cancel)="confirmSaveConfiguration.set(false)" (confirm)="saveConfiguration()" />
     }
   `
 })
@@ -401,7 +400,7 @@ export class InstalledServiceDetailsPageComponent implements OnDestroy {
   }
 
   protected runAction(action: 'start' | 'stop' | 'restart' | 'recreate'): void {
-    this.actionInProgress.set(`${action} in progress…`);
+    this.actionInProgress.set(`${action === 'recreate' ? 'redeploy' : action} in progress…`);
     const request = action === 'start' ? this.installedServices.start(this.serviceId) : action === 'stop' ? this.installedServices.stop(this.serviceId) : action === 'restart' ? this.installedServices.restart(this.serviceId) : this.installedServices.recreate(this.serviceId);
     request.subscribe({ next: () => { this.actionInProgress.set(null); this.load(); }, error: () => { this.actionInProgress.set(null); this.message.set(`Could not ${action} service.`); } });
   }

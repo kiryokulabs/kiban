@@ -1,5 +1,5 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post } from '@nestjs/common';
-import type { EnvironmentDto, ProjectDetailsDto, ProjectSummaryDto } from '../dto/project.dto';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, StreamableFile } from '@nestjs/common';
+import type { EnvironmentDto, ProjectDetailsDto, ProjectSettingsDto, ProjectSummaryDto } from '../dto/project.dto';
 import { ProjectService } from '../services/project.service';
 
 @Controller('projects')
@@ -10,6 +10,26 @@ export class ProjectController {
   @Get()
   public list(): Promise<readonly ProjectSummaryDto[]> {
     return this.projects.list();
+  }
+
+  /** Gets project settings and aggregate information. */
+  @Get(':id/settings')
+  public settings(@Param('id') id: string): Promise<ProjectSettingsDto> {
+    return this.projects.getSettings(id);
+  }
+
+  /** Gets the stored project image. */
+  @Get(':id/image')
+  public async image(@Param('id') id: string): Promise<StreamableFile> {
+    const image = await this.projects.getImage(id);
+    return new StreamableFile(image.data, { type: image.contentType });
+  }
+
+  /** Stores or replaces the project image. */
+  @Put(':id/image')
+  @HttpCode(204)
+  public saveImage(@Param('id') id: string, @Body() body: unknown): Promise<void> {
+    return this.projects.saveImage(id, body);
   }
 
   /** Gets one project including environments. */

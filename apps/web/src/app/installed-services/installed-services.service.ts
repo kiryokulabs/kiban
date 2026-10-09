@@ -63,7 +63,7 @@ export class InstalledServicesService {
     return this.http.patch<InstalledService>(`${this.apiUrl}/services/${id}/restart`, {}, { withCredentials: true });
   }
 
-  /** Deletes an installed service record. */
+  /** Deletes an installed service and its runtime data. */
   public delete(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/services/${id}`, { withCredentials: true });
   }

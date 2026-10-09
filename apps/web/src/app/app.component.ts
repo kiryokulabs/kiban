@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { AuthShellComponent } from './auth/auth-shell.component';
 import { AuthService } from './auth/auth.service';
@@ -46,7 +46,7 @@ import { ViewportService } from './shared/viewport.service';
 
         <!-- Main content -->
         <div
-          [class]="mainContentClass()"
+          [class]="layout.mainContentClass()"
           [style.--sidebar-offset]="layout.sidebarOffset(sidebarCollapsed())"
         >
           <!-- Top header -->
@@ -104,6 +104,14 @@ import { ViewportService } from './shared/viewport.service';
           <section class="flex-1 min-w-0 p-4 md:p-6">
             <router-outlet />
           </section>
+
+          <!-- Global footer -->
+          <footer class="text-left border-t kb-border px-4 py-4 text-xs c-subtle md:px-6">
+            Developed and maintained by
+            <a href="https://arlee.dev" target="_blank" rel="noopener noreferrer" class="c-muted hover:c-text transition-colors">Arlee</a>
+            at
+            <a href="https://kiryokulabs.com" target="_blank" rel="noopener noreferrer" class="c-muted hover:c-text transition-colors">Kiryoku Labs</a>
+          </footer>
         </div>
       </div>
 
@@ -129,7 +137,6 @@ export class AppComponent {
   protected readonly sidebarCollapsed = signal(false);
   protected readonly mobileMenuOpen = signal(false);
   protected readonly layout = new AppLayoutPresenter();
-  protected readonly mainContentClass = computed(() => this.layout.mainContentClass());
 
   protected readonly navItems = signal<readonly NavItem[]>([
     { label: 'Dashboard', path: '/', icon: 'home' },

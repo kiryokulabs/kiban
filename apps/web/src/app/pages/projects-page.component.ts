@@ -66,8 +66,12 @@ import { IconsComponent } from '../shared/icons.component';
               <!-- Mobile: name + date | Desktop: name -->
               <div class="md:flex md:items-center">
                 <a [routerLink]="['/projects', project.id]" class="flex items-center gap-2.5 group cursor-pointer">
-                  <div class="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-brand/10 text-brand-light group-hover:bg-brand/20 transition-colors">
-                    <kiban-icon name="folder" [size]="14" />
+                  <div class="grid h-7 w-7 shrink-0 place-items-center overflow-hidden rounded-md bg-brand/10 text-brand-light group-hover:bg-brand/20 transition-colors">
+                    @if (!projectImageFailed(project.id)) {
+                      <img [src]="projectImageUrl(project.id)" alt="Project image" class="h-full w-full object-cover" (error)="markProjectImageFailed(project.id)" />
+                    } @else {
+                      <kiban-icon name="folder" [size]="14" />
+                    }
                   </div>
                   <div>
                     <p class="text-sm font-medium kb-text group-hover:text-brand-light transition-colors">{{ project.name }}</p>
@@ -119,15 +123,24 @@ import { IconsComponent } from '../shared/icons.component';
       </kiban-modal>
     }
 
-    @if (projectPendingDelete()) {
-      <kiban-confirm-modal
-        title="Delete project"
-        [message]="deleteProjectMessage()"
-        confirmLabel="Delete project"
-        [destructive]="true"
-        (cancel)="cancelDeleteProject()"
-        (confirm)="confirmDeleteProject()"
-      />
+    @if (projectPendingDelete(); as project) {
+      @if (project.serviceCount > 0) {
+        <kiban-modal title="Delete project" (close)="cancelDeleteProject()">
+          <p class="text-sm leading-6 c-muted">{{ deleteProjectMessage() }}</p>
+          <div class="mt-5 flex justify-end">
+            <button class="btn-primary btn" type="button" (click)="cancelDeleteProject()">Close</button>
+          </div>
+        </kiban-modal>
+      } @else {
+        <kiban-confirm-modal
+          title="Delete project"
+          [message]="deleteProjectMessage()"
+          confirmLabel="Delete project"
+          [destructive]="true"
+          (cancel)="cancelDeleteProject()"
+          (confirm)="confirmDeleteProject()"
+        />
+      }
     }
   `
 })
@@ -141,6 +154,7 @@ export class ProjectsPageComponent {
   protected readonly modalOpen = signal(false);
   protected readonly editingProject = signal<ProjectSummary | null>(null);
   protected readonly projectPendingDelete = signal<ProjectSummary | null>(null);
+  private readonly failedProjectImages = signal<ReadonlySet<string>>(new Set());
 
   protected name = '';
   protected description = '';
@@ -151,7 +165,19 @@ export class ProjectsPageComponent {
 
   protected loadProjects(): void {
     this.loading.set(true);
-    this.projectsService.listProjects().subscribe({ next: (projects) => { this.projects.set(projects); this.loading.set(false); }, error: () => { this.message.set('Could not load projects.'); this.loading.set(false); } });
+    this.projectsService.listProjects().subscribe({ next: (projects) => { this.projects.set(projects); this.failedProjectImages.set(new Set()); this.loading.set(false); }, error: () => { this.message.set('Could not load projects.'); this.loading.set(false); } });
+  }
+
+  protected projectImageUrl(projectId: string): string {
+    return this.projectsService.projectImageUrl(projectId);
+  }
+
+  protected projectImageFailed(projectId: string): boolean {
+    return this.failedProjectImages().has(projectId);
+  }
+
+  protected markProjectImageFailed(projectId: string): void {
+    this.failedProjectImages.set(new Set([...this.failedProjectImages(), projectId]));
   }
 
   protected openCreateModal(): void {
@@ -189,12 +215,14 @@ export class ProjectsPageComponent {
 
   protected deleteProjectMessage(): string {
     const project = this.projectPendingDelete();
-    return project ? `Delete project "${project.name}"? This will delete all environments and cannot be undone.` : '';
+    if (!project) return '';
+    if (project.serviceCount > 0) return `Project "${project.name}" has installed services. Delete those services before deleting the project.`;
+    return `Delete project "${project.name}"? This will delete all environments and cannot be undone.`;
   }
 
   protected confirmDeleteProject(): void {
     const project = this.projectPendingDelete();
-    if (!project) {
+    if (!project || project.serviceCount > 0) {
       return;
     }
     this.projectsService.deleteProject(project.id).subscribe({ next: () => { this.projectPendingDelete.set(null); this.loadProjects(); }, error: () => this.message.set('Could not delete project.') });

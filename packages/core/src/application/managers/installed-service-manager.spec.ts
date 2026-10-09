@@ -100,6 +100,7 @@ const createManager = (catalog: CatalogRepository = new MemoryCatalogRepository(
   const runtime: RuntimeProvider = {
     install: vi.fn(async () => ({ status: 'running' as const, runtime: { provider: 'test' } })),
     uninstall: vi.fn(async () => ({ status: 'stopped' as const, runtime: { provider: 'test' } })),
+    redeploy: vi.fn(async () => ({ status: 'running' as const, runtime: { provider: 'test', redeployed: true } })),
     start: vi.fn(async () => ({ status: 'running' as const, runtime: { provider: 'test' } })),
     stop: vi.fn(async () => ({ status: 'stopped' as const, runtime: { provider: 'test' } })),
     restart: vi.fn(async () => ({ status: 'running' as const, runtime: { provider: 'test' } })),
@@ -174,13 +175,13 @@ describe('InstalledServiceManager', () => {
 
 
 
-  it('saves configuration by recreating runtime resources', async () => {
+  it('saves configuration by redeploying runtime resources without uninstalling or deleting volumes', async () => {
     const { manager, runtime } = createManager();
     const service = await manager.install('project-1', 'env-1', { serviceId: 'postgresql', configuration: { POSTGRES_PASSWORD: 'old' } });
     await expect(manager.updateConfiguration(service.id, { POSTGRES_PASSWORD: 'new' })).resolves.toMatchObject({ configuration: { POSTGRES_PASSWORD: 'new' }, status: 'running' });
-    expect(runtime.uninstall).toHaveBeenCalledWith(expect.objectContaining({ id: service.id }));
-    expect(runtime.install).toHaveBeenCalledTimes(2);
-    expect(runtime.install).toHaveBeenLastCalledWith(expect.objectContaining({ variables: { POSTGRES_PASSWORD: 'new' } }));
+    expect(runtime.uninstall).not.toHaveBeenCalled();
+    expect(runtime.install).toHaveBeenCalledTimes(1);
+    expect(runtime.redeploy).toHaveBeenCalledWith(expect.objectContaining({ id: service.id }), expect.objectContaining({ variables: { POSTGRES_PASSWORD: 'new' } }));
   });
 
   it('preserves existing public endpoints when saving configuration', async () => {
@@ -191,7 +192,7 @@ describe('InstalledServiceManager', () => {
 
     await manager.updateConfiguration(service.id, { POSTGRES_PASSWORD: 'new' });
 
-    const lastPlan = vi.mocked(runtime.install).mock.calls.at(-1)?.[0] as InstallationPlan | undefined;
+    const lastPlan = vi.mocked(runtime.redeploy).mock.calls.at(-1)?.[1] as InstallationPlan | undefined;
     expect(lastPlan?.publicEndpoints).toEqual(publicEndpoints);
   });
 
@@ -203,16 +204,17 @@ describe('InstalledServiceManager', () => {
 
     await manager.recreate(service.id);
 
-    const lastPlan = vi.mocked(runtime.install).mock.calls.at(-1)?.[0] as InstallationPlan | undefined;
+    const lastPlan = vi.mocked(runtime.redeploy).mock.calls.at(-1)?.[1] as InstallationPlan | undefined;
     expect(lastPlan?.publicEndpoints).toEqual(publicEndpoints);
   });
 
-  it('recreates a service using the existing configuration', async () => {
+  it('recreates a service using the existing configuration without deleting volumes', async () => {
     const { manager, runtime } = createManager();
     const service = await manager.install('project-1', 'env-1', { serviceId: 'postgresql', configuration: { POSTGRES_PASSWORD: 'secret' } });
     await expect(manager.recreate(service.id)).resolves.toMatchObject({ configuration: { POSTGRES_PASSWORD: 'secret' }, status: 'running' });
-    expect(runtime.uninstall).toHaveBeenCalledWith(expect.objectContaining({ id: service.id }));
-    expect(runtime.install).toHaveBeenCalledTimes(2);
+    expect(runtime.uninstall).not.toHaveBeenCalled();
+    expect(runtime.install).toHaveBeenCalledTimes(1);
+    expect(runtime.redeploy).toHaveBeenCalledWith(expect.objectContaining({ id: service.id }), expect.objectContaining({ variables: { POSTGRES_PASSWORD: 'secret' } }));
   });
 
   it('rejects invalid status transitions', async () => {

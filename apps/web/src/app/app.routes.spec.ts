@@ -9,6 +9,16 @@ describe('app routes', () => {
     expect(source).toContain("{ path: '', component: HomePageComponent, title: 'Kiban' }");
   });
 
+
+  it('defines project settings before project details route', () => {
+    const settingsIndex = source.indexOf("path: 'projects/:id/settings'");
+    const detailsIndex = source.indexOf("path: 'projects/:id'");
+
+    expect(settingsIndex).toBeGreaterThan(-1);
+    expect(detailsIndex).toBeGreaterThan(-1);
+    expect(settingsIndex).toBeLessThan(detailsIndex);
+  });
+
   it('keeps the Angular wildcard fallback as the last route', () => {
     const routeLines = source
       .split('\n')

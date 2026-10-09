@@ -76,6 +76,14 @@ class JsonLinesPsRunner extends FakeRunner {
   }
 }
 
+class FailingUpRunner extends FakeRunner {
+  public override async run(command: string, args: readonly string[], options: { readonly cwd: string }): Promise<{ readonly stdout: string; readonly stderr: string }> {
+    this.calls.push({ command, args, cwd: options.cwd });
+    if (args.includes('up') && !options.cwd.includes('traefik')) throw new Error('Forum url must be set');
+    return super.run(command, args, options);
+  }
+}
+
 class StoppedAfterStopRunner extends FakeRunner {
   private stopped = false;
 
@@ -457,6 +465,33 @@ describe('DockerComposeRuntimeProvider', () => {
     ]);
   });
 
+
+  it('redeploys changed configuration without down -v or removing the workspace', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'kiban-compose-runtime-'));
+    const runner = new FakeRunner();
+    const provider = DockerComposeRuntimeProvider.withRunner(runner, root, new FakePortAllocator());
+    const installedResult = await provider.install(plan);
+    const service = installed(installedResult.runtime!);
+
+    const result = await provider.redeploy(service, { ...plan, variables: { KIBAN_MONGOEXPRESS_MONGODB_URL: 'mongodb://changed:secret@mongo:27017/' } });
+
+    const workingDirectory = String(installedResult.runtime?.['workingDirectory']);
+    await expect(readFile(join(workingDirectory, '.env'), 'utf8')).resolves.toContain('KIBAN_MONGOEXPRESS_MONGODB_URL=mongodb://changed:secret@mongo:27017/');
+    await expect(access(workingDirectory)).resolves.toBeUndefined();
+    expect(result.status).toBe('running');
+    expect(runner.calls.some((call) => call.args.includes('down') || call.args.includes('-v'))).toBe(false);
+    expect(runner.calls.filter((call) => call.args.includes('up') && call.args.includes('-d')).length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('stores deployment errors in runtime metadata when compose up fails', async () => {
+    const provider = DockerComposeRuntimeProvider.withRunner(new FailingUpRunner(), await mkdtemp(join(tmpdir(), 'kiban-compose-runtime-')), new FakePortAllocator());
+
+    const result = await provider.install(plan);
+
+    expect(result.status).toBe('failed');
+    expect(result.runtime).toMatchObject({ status: 'failed', state: 'deployment_failed', lastError: 'Forum url must be set', health: 'unhealthy', healthSource: 'deployment', healthMessage: 'Forum url must be set' });
+  });
+
   it('maps compose ps output into runtime container metadata and access ports', async () => {
     const provider = DockerComposeRuntimeProvider.withRunner(new FakeRunner(), await mkdtemp(join(tmpdir(), 'kiban-compose-runtime-')), new FakePortAllocator());
     const result = await provider.install(plan);
@@ -538,6 +573,18 @@ describe('DockerComposeRuntimeProvider', () => {
       { id: 'container-1', name: 'app', status: 'running', health: 'healthy', image: '', restartCount: 0, assignedPorts: [] }
     ]);
     expect(runner.calls.some((call) => call.args.join(' ') === 'inspect container-1')).toBe(true);
+  });
+
+  it('removes persistent volumes when uninstalling a service', async () => {
+    const runner = new FakeRunner();
+    const provider = DockerComposeRuntimeProvider.withRunner(runner, await mkdtemp(join(tmpdir(), 'kiban-compose-runtime-')), new FakePortAllocator());
+    const runtime = (await provider.install(plan)).runtime!;
+
+    await provider.uninstall(installed(runtime));
+
+    const downCall = runner.calls.find((call) => call.args.includes('down'));
+    expect(downCall?.args).toContain('down');
+    expect(downCall?.args).toContain('-v');
   });
 
   it('removes the service runtime workspace after uninstalling the compose project', async () => {

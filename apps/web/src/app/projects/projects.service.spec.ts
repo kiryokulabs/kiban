@@ -11,6 +11,7 @@ const createHttpClient = (response: unknown) => {
     get: vi.fn((url: string, options?: unknown) => { calls.push({ method: 'GET', url, options }); return of(response); }),
     post: vi.fn((url: string, body: unknown, options?: unknown) => { calls.push({ method: 'POST', url, body, options }); return of(response); }),
     patch: vi.fn((url: string, body: unknown, options?: unknown) => { calls.push({ method: 'PATCH', url, body, options }); return of(response); }),
+    put: vi.fn((url: string, body: unknown, options?: unknown) => { calls.push({ method: 'PUT', url, body, options }); return of(response); }),
     delete: vi.fn((url: string, options?: unknown) => { calls.push({ method: 'DELETE', url, options }); return of(response); })
   };
   return { http: http as unknown as HttpClient, calls };
@@ -45,6 +46,29 @@ describe('Web ProjectsService', () => {
     const service = new ProjectsService(http);
     service.updateProject('project-1', payload).subscribe();
     expect(calls).toEqual([{ method: 'PATCH', url: '/api/projects/project-1', body: payload, options: { withCredentials: true } }]);
+  });
+
+
+
+  it('gets project settings with credentials', () => {
+    const { http, calls } = createHttpClient({ id: 'project-1' });
+    const service = new ProjectsService(http);
+    service.getProjectSettings('project-1').subscribe();
+    expect(calls).toEqual([{ method: 'GET', url: '/api/projects/project-1/settings', options: { withCredentials: true } }]);
+  });
+
+  it('saves a project image with credentials', () => {
+    const payload = { contentType: 'image/png', dataBase64: 'aW1hZ2U=' };
+    const { http, calls } = createHttpClient(null);
+    const service = new ProjectsService(http);
+    service.saveProjectImage('project-1', payload).subscribe();
+    expect(calls).toEqual([{ method: 'PUT', url: '/api/projects/project-1/image', body: payload, options: { withCredentials: true } }]);
+  });
+
+  it('builds project image URLs', () => {
+    const { http } = createHttpClient(null);
+    const service = new ProjectsService(http);
+    expect(service.projectImageUrl('project-1')).toBe('/api/projects/project-1/image');
   });
 
   it('deletes a project with credentials', () => {

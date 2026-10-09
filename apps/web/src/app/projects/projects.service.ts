@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import type { Observable } from 'rxjs';
-import type { CreateEnvironmentRequest, CreateProjectRequest, EnvironmentItem, ProjectDetails, ProjectSummary, UpdateProjectRequest } from './projects.models';
+import type { CreateEnvironmentRequest, CreateProjectRequest, EnvironmentItem, ProjectDetails, ProjectSettings, ProjectSummary, SaveProjectImageRequest, UpdateProjectRequest } from './projects.models';
 
 @Injectable({ providedIn: 'root' })
 export class ProjectsService {
@@ -27,6 +27,22 @@ export class ProjectsService {
   /** Updates a project. */
   public updateProject(id: string, request: UpdateProjectRequest): Observable<ProjectDetails> {
     return this.http.patch<ProjectDetails>(`${this.apiUrl}/projects/${id}`, request, { withCredentials: true });
+  }
+
+
+  /** Gets settings and aggregate information for one project. */
+  public getProjectSettings(id: string): Observable<ProjectSettings> {
+    return this.http.get<ProjectSettings>(`${this.apiUrl}/projects/${id}/settings`, { withCredentials: true });
+  }
+
+  /** Stores or replaces a project image. */
+  public saveProjectImage(id: string, request: SaveProjectImageRequest): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/projects/${id}/image`, request, { withCredentials: true });
+  }
+
+  /** Builds the image URL for a project. */
+  public projectImageUrl(id: string): string {
+    return `${this.apiUrl}/projects/${id}/image`;
   }
 
   /** Deletes a project. */
