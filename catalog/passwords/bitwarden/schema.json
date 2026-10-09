@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_BITWARDEN_PORT": {
+      "type": "string",
+      "default": "${KIBAN_BITWARDEN_PORT:-8080}"
+    },
+    "KIBAN_BITWARDEN_DB_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_BITWARDEN_DB_PASSWORD:-bitwarden-password}"
+    },
+    "KIBAN_BITWARDEN_INSTALLATION_ID": {
+      "type": "string",
+      "default": "${KIBAN_BITWARDEN_INSTALLATION_ID:-00000000-0000-0000-0000-000000000000}"
+    },
+    "KIBAN_BITWARDEN_INSTALLATION_KEY": {
+      "type": "string",
+      "default": "${KIBAN_BITWARDEN_INSTALLATION_KEY:-change-me-installation-key}"
+    }
+  }
+}

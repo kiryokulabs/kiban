@@ -1,0 +1,15 @@
+services:
+  keepassxc:
+    image: lscr.io/linuxserver/keepassxc:2.7.12-r1-ls131
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_KEEPASSXC_PORT:-3000}:3000"
+    environment:
+      PUID: "1000"
+      PGID: "1000"
+      TZ: Etc/UTC
+      KIBAN_KEEPASSXC_PORT: ${KIBAN_KEEPASSXC_PORT:-3000}
+    volumes:
+      - keepassxc_config:/config
+volumes:
+  keepassxc_config:
