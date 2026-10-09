@@ -1,0 +1,15 @@
+services:
+  rclone:
+    image: rclone/rclone:1.71.1
+    restart: unless-stopped
+    command: ["serve", "webdav", "/data", "--addr", ":5572", "--user", "${KIBAN_RCLONE_USER:-admin}", "--pass", "${KIBAN_RCLONE_PASSWORD:-admin}"]
+    ports:
+      - "${KIBAN_RCLONE_PORT:-5572}:5572"
+    environment:
+      KIBAN_RCLONE_PORT: ${KIBAN_RCLONE_PORT:-5572}
+      KIBAN_RCLONE_USER: ${KIBAN_RCLONE_USER:-admin}
+      KIBAN_RCLONE_PASSWORD: ${KIBAN_RCLONE_PASSWORD:-admin}
+    volumes:
+      - rclone_data:/data
+volumes:
+  rclone_data:
