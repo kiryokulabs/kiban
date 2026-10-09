@@ -1,0 +1,12 @@
+services:
+  portainer:
+    image: portainer/portainer-ce:2.33.1
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_PORTAINER_PORT:-9000}:9000"
+    environment:
+      KIBAN_PORTAINER_PORT: ${KIBAN_PORTAINER_PORT:-9000}
+    volumes:
+      - portainer_data:/data
+volumes:
+  portainer_data:

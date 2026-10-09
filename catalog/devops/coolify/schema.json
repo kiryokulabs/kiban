@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_COOLIFY_PORT": {
+      "type": "string",
+      "default": "${KIBAN_COOLIFY_PORT:-8000}"
+    },
+    "KIBAN_COOLIFY_REALTIME_PORT": {
+      "type": "string",
+      "default": "${KIBAN_COOLIFY_REALTIME_PORT:-6001}"
+    },
+    "KIBAN_COOLIFY_DB_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_COOLIFY_DB_PASSWORD:-coolify-password}"
+    },
+    "KIBAN_COOLIFY_REDIS_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_COOLIFY_REDIS_PASSWORD:-coolify-redis-password}"
+    }
+  }
+}

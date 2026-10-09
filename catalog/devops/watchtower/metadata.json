@@ -1,0 +1,10 @@
+{
+  "id": "watchtower",
+  "name": "Watchtower",
+  "description": "Automated service image update monitor.",
+  "category": "devops",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": []
+}

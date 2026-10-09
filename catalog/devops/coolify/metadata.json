@@ -1,0 +1,17 @@
+{
+  "id": "coolify",
+  "name": "Coolify",
+  "description": "Self-hosted deployment and operations platform.",
+  "category": "devops",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "coolify",
+      "port": 8080
+    }
+  ]
+}

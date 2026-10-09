@@ -1,0 +1,129 @@
+services:
+  netbox:
+    image: netboxcommunity/netbox:v4.7-5.1.1
+    restart: unless-stopped
+    depends_on:
+      netbox-db:
+        condition: service_healthy
+      netbox-redis:
+        condition: service_healthy
+      netbox-redis-cache:
+        condition: service_healthy
+    ports:
+      - "${KIBAN_NETBOX_PORT:-8080}:8080"
+    environment:
+      CORS_ORIGIN_ALLOW_ALL: "True"
+      DB_HOST: netbox-db
+      DB_NAME: netbox
+      DB_USER: netbox
+      DB_PASSWORD: ${KIBAN_NETBOX_DB_PASSWORD:-netbox-password}
+      REDIS_HOST: netbox-redis
+      REDIS_PASSWORD: ${KIBAN_NETBOX_REDIS_PASSWORD:-netbox-redis-password}
+      REDIS_DATABASE: "0"
+      REDIS_CACHE_HOST: netbox-redis-cache
+      REDIS_CACHE_PASSWORD: ${KIBAN_NETBOX_REDIS_CACHE_PASSWORD:-netbox-cache-password}
+      REDIS_CACHE_DATABASE: "1"
+      SECRET_KEY: ${KIBAN_NETBOX_SECRET_KEY:-netbox-secret-key-change-me-000000000000000000000000}
+      SUPERUSER_NAME: ${KIBAN_NETBOX_SUPERUSER_NAME:-admin}
+      SUPERUSER_EMAIL: ${KIBAN_NETBOX_SUPERUSER_EMAIL:-admin@example.com}
+      SUPERUSER_PASSWORD: ${KIBAN_NETBOX_SUPERUSER_PASSWORD:-netbox-admin-password}
+      SKIP_SUPERUSER: "false"
+      KIBAN_NETBOX_PORT: ${KIBAN_NETBOX_PORT:-8080}
+      KIBAN_NETBOX_DB_PASSWORD: ${KIBAN_NETBOX_DB_PASSWORD:-netbox-password}
+      KIBAN_NETBOX_REDIS_PASSWORD: ${KIBAN_NETBOX_REDIS_PASSWORD:-netbox-redis-password}
+      KIBAN_NETBOX_REDIS_CACHE_PASSWORD: ${KIBAN_NETBOX_REDIS_CACHE_PASSWORD:-netbox-cache-password}
+      KIBAN_NETBOX_SECRET_KEY: ${KIBAN_NETBOX_SECRET_KEY:-netbox-secret-key-change-me-000000000000000000000000}
+      KIBAN_NETBOX_SUPERUSER_NAME: ${KIBAN_NETBOX_SUPERUSER_NAME:-admin}
+      KIBAN_NETBOX_SUPERUSER_EMAIL: ${KIBAN_NETBOX_SUPERUSER_EMAIL:-admin@example.com}
+      KIBAN_NETBOX_SUPERUSER_PASSWORD: ${KIBAN_NETBOX_SUPERUSER_PASSWORD:-netbox-admin-password}
+    volumes:
+      - netbox_media:/opt/netbox/netbox/media
+      - netbox_reports:/opt/netbox/netbox/reports
+      - netbox_scripts:/opt/netbox/netbox/scripts
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/netbox/health.sh"]
+      interval: 15s
+      timeout: 5s
+      retries: 40
+      start_period: 120s
+  netbox-worker:
+    image: netboxcommunity/netbox:v4.7-5.1.1
+    restart: unless-stopped
+    depends_on:
+      netbox:
+        condition: service_healthy
+    command:
+      - /opt/netbox/venv/bin/python
+      - /opt/netbox/netbox/manage.py
+      - rqworker
+    environment:
+      CORS_ORIGIN_ALLOW_ALL: "True"
+      DB_HOST: netbox-db
+      DB_NAME: netbox
+      DB_USER: netbox
+      DB_PASSWORD: ${KIBAN_NETBOX_DB_PASSWORD:-netbox-password}
+      REDIS_HOST: netbox-redis
+      REDIS_PASSWORD: ${KIBAN_NETBOX_REDIS_PASSWORD:-netbox-redis-password}
+      REDIS_DATABASE: "0"
+      REDIS_CACHE_HOST: netbox-redis-cache
+      REDIS_CACHE_PASSWORD: ${KIBAN_NETBOX_REDIS_CACHE_PASSWORD:-netbox-cache-password}
+      REDIS_CACHE_DATABASE: "1"
+      SECRET_KEY: ${KIBAN_NETBOX_SECRET_KEY:-netbox-secret-key-change-me-000000000000000000000000}
+      SKIP_SUPERUSER: "true"
+    volumes:
+      - netbox_media:/opt/netbox/netbox/media
+      - netbox_reports:/opt/netbox/netbox/reports
+      - netbox_scripts:/opt/netbox/netbox/scripts
+  netbox-db:
+    image: postgres:17.6-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: netbox
+      POSTGRES_USER: netbox
+      POSTGRES_PASSWORD: ${KIBAN_NETBOX_DB_PASSWORD:-netbox-password}
+    volumes:
+      - netbox_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+  netbox-redis:
+    image: valkey/valkey:9.1-alpine
+    restart: unless-stopped
+    command:
+      - sh
+      - -c
+      - valkey-server --appendonly yes --requirepass "$${REDIS_PASSWORD}"
+    environment:
+      REDIS_PASSWORD: ${KIBAN_NETBOX_REDIS_PASSWORD:-netbox-redis-password}
+    volumes:
+      - netbox_redis:/data
+    healthcheck:
+      test: ["CMD-SHELL", "valkey-cli -a $${REDIS_PASSWORD} ping | grep -q PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+  netbox-redis-cache:
+    image: valkey/valkey:9.1-alpine
+    restart: unless-stopped
+    command:
+      - sh
+      - -c
+      - valkey-server --requirepass "$${REDIS_PASSWORD}"
+    environment:
+      REDIS_PASSWORD: ${KIBAN_NETBOX_REDIS_CACHE_PASSWORD:-netbox-cache-password}
+    volumes:
+      - netbox_redis_cache:/data
+    healthcheck:
+      test: ["CMD-SHELL", "valkey-cli -a $${REDIS_PASSWORD} ping | grep -q PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+volumes:
+  netbox_media:
+  netbox_reports:
+  netbox_scripts:
+  netbox_db:
+  netbox_redis:
+  netbox_redis_cache:

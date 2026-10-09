@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_NETBOX_PORT": {
+      "type": "string",
+      "default": "${KIBAN_NETBOX_PORT:-8080}"
+    },
+    "KIBAN_NETBOX_DB_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_NETBOX_DB_PASSWORD:-netbox-password}"
+    },
+    "KIBAN_NETBOX_REDIS_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_NETBOX_REDIS_PASSWORD:-netbox-redis-password}"
+    },
+    "KIBAN_NETBOX_REDIS_CACHE_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_NETBOX_REDIS_CACHE_PASSWORD:-netbox-cache-password}"
+    },
+    "KIBAN_NETBOX_SECRET_KEY": {
+      "type": "string",
+      "default": "${KIBAN_NETBOX_SECRET_KEY:-netbox-secret-key-change-me-000000000000000000000000}"
+    },
+    "KIBAN_NETBOX_SUPERUSER_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_NETBOX_SUPERUSER_PASSWORD:-netbox-admin-password}"
+    },
+    "KIBAN_NETBOX_SUPERUSER_NAME": {
+      "type": "string",
+      "default": "${KIBAN_NETBOX_SUPERUSER_NAME:-admin}"
+    },
+    "KIBAN_NETBOX_SUPERUSER_EMAIL": {
+      "type": "string",
+      "default": "${KIBAN_NETBOX_SUPERUSER_EMAIL:-admin@example.com}"
+    }
+  }
+}

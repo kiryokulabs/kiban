@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_WATCHTOWER_REPO_USER": { "type": "string", "default": "${KIBAN_WATCHTOWER_REPO_USER:-}" },
+    "KIBAN_WATCHTOWER_REPO_PASS": { "type": "string", "default": "${KIBAN_WATCHTOWER_REPO_PASS:-}" }
+  }
+}
