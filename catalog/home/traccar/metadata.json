@@ -1,0 +1,17 @@
+{
+  "id": "traccar",
+  "name": "Traccar",
+  "description": "GPS tracking platform.",
+  "category": "home",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "traccar",
+      "port": 8082
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+services:
+  frigate:
+    image: ghcr.io/blakeblackshear/frigate:0.16.2
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_FRIGATE_PORT:-5000}:5000"
+      - "${KIBAN_FRIGATE_RTSP_PORT:-8554}:8554"
+      - "${KIBAN_FRIGATE_WEBRTC_PORT:-8555}:8555/tcp"
+      - "${KIBAN_FRIGATE_WEBRTC_PORT:-8555}:8555/udp"
+    environment:
+      FRIGATE_RTSP_PASSWORD: ${KIBAN_FRIGATE_RTSP_PASSWORD:-frigate-rtsp-password}
+      KIBAN_FRIGATE_PORT: ${KIBAN_FRIGATE_PORT:-5000}
+      KIBAN_FRIGATE_RTSP_PORT: ${KIBAN_FRIGATE_RTSP_PORT:-8554}
+      KIBAN_FRIGATE_WEBRTC_PORT: ${KIBAN_FRIGATE_WEBRTC_PORT:-8555}
+      KIBAN_FRIGATE_RTSP_PASSWORD: ${KIBAN_FRIGATE_RTSP_PASSWORD:-frigate-rtsp-password}
+    volumes:
+      - frigate_config:/config
+      - frigate_media:/media/frigate
+      - type: bind
+        source: ./config.yml
+        target: /config/config.yml
+        content: |
+          mqtt:
+            enabled: false
+          cameras: {}
+volumes:
+  frigate_config:
+  frigate_media:

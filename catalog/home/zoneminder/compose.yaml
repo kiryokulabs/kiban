@@ -1,0 +1,42 @@
+services:
+  zoneminder:
+    image: ghcr.io/zoneminder-containers/zoneminder-base:1.38.3
+    restart: unless-stopped
+    depends_on:
+      zoneminder-db:
+        condition: service_healthy
+    ports:
+      - "${KIBAN_ZONEMINDER_PORT:-80}:80"
+    environment:
+      TZ: Etc/UTC
+      MYSQL_HOST: zoneminder-db
+      MYSQL_DATABASE: zm
+      MYSQL_USER: zmuser
+      MYSQL_PASSWORD: ${KIBAN_ZONEMINDER_DB_PASSWORD:-zmpassword}
+      KIBAN_ZONEMINDER_PORT: ${KIBAN_ZONEMINDER_PORT:-80}
+      KIBAN_ZONEMINDER_DB_PASSWORD: ${KIBAN_ZONEMINDER_DB_PASSWORD:-zmpassword}
+      KIBAN_ZONEMINDER_DB_ROOT_PASSWORD: ${KIBAN_ZONEMINDER_DB_ROOT_PASSWORD:-zmrootpassword}
+    volumes:
+      - zoneminder_data:/data
+      - zoneminder_config:/config
+      - zoneminder_logs:/log
+  zoneminder-db:
+    image: mariadb:11.8.3
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: zm
+      MARIADB_USER: zmuser
+      MARIADB_PASSWORD: ${KIBAN_ZONEMINDER_DB_PASSWORD:-zmpassword}
+      MARIADB_ROOT_PASSWORD: ${KIBAN_ZONEMINDER_DB_ROOT_PASSWORD:-zmrootpassword}
+    volumes:
+      - zoneminder_db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin ping -h 127.0.0.1 -u root -p$${MARIADB_ROOT_PASSWORD} --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+volumes:
+  zoneminder_data:
+  zoneminder_config:
+  zoneminder_logs:
+  zoneminder_db:

@@ -1,0 +1,17 @@
+{
+  "id": "zoneminder",
+  "name": "ZoneMinder",
+  "description": "Video surveillance and camera monitoring system.",
+  "category": "home",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "zoneminder",
+      "port": 80
+    }
+  ]
+}

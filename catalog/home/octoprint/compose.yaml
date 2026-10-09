@@ -1,0 +1,13 @@
+services:
+  octoprint:
+    image: octoprint/octoprint:1.11.2
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_OCTOPRINT_PORT:-80}:80"
+    environment:
+      ENABLE_MJPG_STREAMER: "false"
+      KIBAN_OCTOPRINT_PORT: ${KIBAN_OCTOPRINT_PORT:-80}
+    volumes:
+      - octoprint_data:/octoprint
+volumes:
+  octoprint_data:

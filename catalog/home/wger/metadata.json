@@ -1,0 +1,17 @@
+{
+  "id": "wger",
+  "name": "wger",
+  "description": "Workout, nutrition and weight tracking platform.",
+  "category": "home",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "wger",
+      "port": 8000
+    }
+  ]
+}

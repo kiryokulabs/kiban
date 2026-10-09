@@ -1,0 +1,17 @@
+{
+  "id": "octoprint",
+  "name": "OctoPrint",
+  "description": "Web interface for controlling 3D printers.",
+  "category": "home",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "octoprint",
+      "port": 80
+    }
+  ]
+}

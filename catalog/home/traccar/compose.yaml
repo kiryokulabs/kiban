@@ -1,0 +1,12 @@
+services:
+  traccar:
+    image: traccar/traccar:6.8
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_TRACCAR_PORT:-8082}:8082"
+    environment:
+      KIBAN_TRACCAR_PORT: ${KIBAN_TRACCAR_PORT:-8082}
+    volumes:
+      - traccar_data:/data
+volumes:
+  traccar_data:
