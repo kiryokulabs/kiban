@@ -1,0 +1,42 @@
+services:
+  bitwarden:
+    image: ghcr.io/bitwarden/lite:2026.9.2
+    restart: unless-stopped
+    depends_on:
+      bitwarden-db:
+        condition: service_started
+    ports:
+      - "${KIBAN_BITWARDEN_PORT:-8080}:8080"
+    environment:
+      BW_DOMAIN: ${SERVICE_FQDN_BITWARDEN:-localhost}
+      BW_PORT_HTTP: "8080"
+      BW_ENABLE_SSL: "false"
+      BW_DB_PROVIDER: mysql
+      BW_DB_SERVER: bitwarden-db
+      BW_DB_DATABASE: bitwarden_vault
+      BW_DB_USERNAME: bitwarden
+      BW_DB_PASSWORD: ${KIBAN_BITWARDEN_DB_PASSWORD:-bitwarden-password}
+      BW_INSTALLATION_ID: ${KIBAN_BITWARDEN_INSTALLATION_ID:-00000000-0000-0000-0000-000000000000}
+      BW_INSTALLATION_KEY: ${KIBAN_BITWARDEN_INSTALLATION_KEY:-change-me-installation-key}
+      globalSettings__disableUserRegistration: "false"
+      KIBAN_BITWARDEN_PORT: ${KIBAN_BITWARDEN_PORT:-8080}
+      KIBAN_BITWARDEN_DB_PASSWORD: ${KIBAN_BITWARDEN_DB_PASSWORD:-bitwarden-password}
+      KIBAN_BITWARDEN_INSTALLATION_ID: ${KIBAN_BITWARDEN_INSTALLATION_ID:-00000000-0000-0000-0000-000000000000}
+      KIBAN_BITWARDEN_INSTALLATION_KEY: ${KIBAN_BITWARDEN_INSTALLATION_KEY:-change-me-installation-key}
+    volumes:
+      - bitwarden_config:/etc/bitwarden
+      - bitwarden_logs:/var/log/bitwarden
+  bitwarden-db:
+    image: mariadb:10.11.14
+    restart: unless-stopped
+    environment:
+      MARIADB_USER: bitwarden
+      MARIADB_PASSWORD: ${KIBAN_BITWARDEN_DB_PASSWORD:-bitwarden-password}
+      MARIADB_DATABASE: bitwarden_vault
+      MARIADB_RANDOM_ROOT_PASSWORD: "true"
+    volumes:
+      - bitwarden_db:/var/lib/mysql
+volumes:
+  bitwarden_config:
+  bitwarden_logs:
+  bitwarden_db:

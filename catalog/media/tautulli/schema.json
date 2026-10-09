@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_TAUTULLI_PORT": {
+      "type": "string",
+      "default": "${KIBAN_TAUTULLI_PORT:-8181}"
+    },
+    "KIBAN_TAUTULLI_TZ": {
+      "type": "string",
+      "default": "${KIBAN_TAUTULLI_TZ:-UTC}"
+    }
+  }
+}

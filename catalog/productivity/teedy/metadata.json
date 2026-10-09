@@ -1,0 +1,17 @@
+{
+  "id": "teedy",
+  "name": "Teedy",
+  "description": "Lightweight document management system.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "teedy",
+      "port": 8080
+    }
+  ]
+}

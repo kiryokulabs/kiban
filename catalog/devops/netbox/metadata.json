@@ -1,0 +1,17 @@
+{
+  "id": "netbox",
+  "name": "NetBox",
+  "description": "Infrastructure resource modeling and IP address management.",
+  "category": "devops",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "netbox",
+      "port": 8080
+    }
+  ]
+}

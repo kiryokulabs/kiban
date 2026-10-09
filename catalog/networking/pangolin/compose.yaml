@@ -1,0 +1,18 @@
+services:
+  pangolin:
+    image: fosrl/pangolin:1.10.0
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_PANGOLIN_PORT:-3000}:3000"
+    environment:
+      KIBAN_PANGOLIN_PORT: ${KIBAN_PANGOLIN_PORT:-3000}
+    volumes:
+      - pangolin_config:/app/config
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:3000 || curl -f http://127.0.0.1:3000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+volumes:
+  pangolin_config:

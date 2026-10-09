@@ -1,0 +1,12 @@
+services:
+  rundeck:
+    image: rundeck/rundeck:5.13.0
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_RUNDECK_PORT:-4440}:4440"
+    environment:
+      KIBAN_RUNDECK_PORT: ${KIBAN_RUNDECK_PORT:-4440}
+    volumes:
+      - rundeck_data:/data
+volumes:
+  rundeck_data:

@@ -1,0 +1,17 @@
+{
+  "id": "baikal",
+  "name": "Baikal",
+  "description": "Lightweight CalDAV and CardDAV server.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "baikal",
+      "port": 80
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "id": "privatebin",
+  "name": "PrivateBin",
+  "description": "Zero-knowledge pastebin for sharing encrypted text.",
+  "category": "security",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "privatebin",
+      "port": 8080
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_LIBRESPEED_PORT": {
+      "type": "string",
+      "default": "${KIBAN_LIBRESPEED_PORT:-80}"
+    },
+    "KIBAN_LIBRESPEED_STATS_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_LIBRESPEED_STATS_PASSWORD:-librespeed-stats-password}"
+    }
+  }
+}

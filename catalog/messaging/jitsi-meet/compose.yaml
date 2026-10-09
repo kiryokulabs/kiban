@@ -1,0 +1,20 @@
+services:
+  jitsi-meet:
+    image: jitsi/web:stable
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_JITSI_MEET_PORT:-80}:80"
+    environment:
+      KIBAN_JITSI_MEET_PORT: ${KIBAN_JITSI_MEET_PORT:-80}
+    volumes:
+      - jitsi_meet_web_config:/config
+      - jitsi_meet_transcripts:/usr/share/jitsi-meet/transcripts
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:80 || curl -f http://127.0.0.1:80 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+volumes:
+  jitsi_meet_transcripts:
+  jitsi_meet_web_config:

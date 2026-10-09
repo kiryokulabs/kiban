@@ -1,0 +1,17 @@
+{
+  "id": "ansible",
+  "name": "Ansible",
+  "description": "Web UI for running and scheduling Ansible automation.",
+  "category": "automation",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "ansible",
+      "port": 3000
+    }
+  ]
+}

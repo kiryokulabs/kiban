@@ -1,0 +1,18 @@
+services:
+  docuseal:
+    image: docuseal/docuseal:2.3.1
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_DOCUSEAL_PORT:-3000}:3000"
+    environment:
+      KIBAN_DOCUSEAL_PORT: ${KIBAN_DOCUSEAL_PORT:-3000}
+    volumes:
+      - docuseal_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:3000 || curl -f http://127.0.0.1:3000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+volumes:
+  docuseal_data:

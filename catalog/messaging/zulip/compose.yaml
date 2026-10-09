@@ -1,0 +1,118 @@
+services:
+  zulip:
+    image: ghcr.io/zulip/zulip-server:12.3-0
+    restart: unless-stopped
+    depends_on:
+      - zulip-database
+      - zulip-memcached
+      - zulip-rabbitmq
+      - zulip-redis
+    ports:
+      - "${KIBAN_ZULIP_PORT:-80}:80"
+    environment:
+      SETTING_EXTERNAL_HOST: ${SERVICE_FQDN_ZULIP:-localhost.localdomain}
+      SETTING_ZULIP_ADMINISTRATOR: admin@example.com
+      SETTING_REMOTE_POSTGRES_HOST: zulip-database
+      SETTING_MEMCACHED_LOCATION: zulip-memcached:11211
+      SETTING_RABBITMQ_HOST: zulip-rabbitmq
+      SETTING_REDIS_HOST: zulip-redis
+      KIBAN_ZULIP_PORT: ${KIBAN_ZULIP_PORT:-80}
+    volumes:
+      - zulip_data:/data
+      - type: bind
+        source: ./zulip-postgres-password
+        target: /run/secrets/zulip__postgres_password
+        content: zulip-postgres-password
+      - type: bind
+        source: ./zulip-memcached-password
+        target: /run/secrets/zulip__memcached_password
+        content: zulip-memcached-password
+      - type: bind
+        source: ./zulip-rabbitmq-password
+        target: /run/secrets/zulip__rabbitmq_password
+        content: zulip-rabbitmq-password
+      - type: bind
+        source: ./zulip-redis-password
+        target: /run/secrets/zulip__redis_password
+        content: zulip-redis-password
+      - type: bind
+        source: ./zulip-secret-key
+        target: /run/secrets/zulip__secret_key
+        content: zulip-secret-key-change-me-000000000000000000000000000000
+      - type: bind
+        source: ./zulip-email-password
+        target: /run/secrets/zulip__email_password
+        content: zulip-email-password
+  zulip-database:
+    image: zulip/zulip-postgresql:14
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: zulip
+      POSTGRES_USER: zulip
+      POSTGRES_PASSWORD_FILE: /run/secrets/zulip__postgres_password
+    volumes:
+      - zulip_postgresql:/var/lib/postgresql/data
+      - type: bind
+        source: ./zulip-postgres-password
+        target: /run/secrets/zulip__postgres_password
+        content: zulip-postgres-password
+  zulip-memcached:
+    image: memcached:1.6.39-alpine
+    restart: unless-stopped
+    command:
+      - sh
+      - -euc
+      - >-
+        echo 'mech_list: plain' > "$${SASL_CONF_PATH}" &&
+        echo "zulip@$${HOSTNAME}:$$(cat $${MEMCACHED_PASSWORD_FILE})" > "$${MEMCACHED_SASL_PWDB}" &&
+        echo "zulip@localhost:$$(cat $${MEMCACHED_PASSWORD_FILE})" >> "$${MEMCACHED_SASL_PWDB}" &&
+        exec memcached -S
+    environment:
+      SASL_CONF_PATH: /home/memcache/memcached.conf
+      MEMCACHED_SASL_PWDB: /home/memcache/memcached-sasl-db
+      MEMCACHED_PASSWORD_FILE: /run/secrets/zulip__memcached_password
+    volumes:
+      - type: bind
+        source: ./zulip-memcached-password
+        target: /run/secrets/zulip__memcached_password
+        content: zulip-memcached-password
+  zulip-rabbitmq:
+    image: rabbitmq:4.2.0-alpine
+    restart: unless-stopped
+    command:
+      - sh
+      - -euc
+      - >-
+        export RABBITMQ_DEFAULT_PASS="$$(cat $${RABBITMQ_PASSWORD_FILE})" &&
+        echo "default_user = $${RABBITMQ_DEFAULT_USER}" >> /etc/rabbitmq/rabbitmq.conf &&
+        echo "default_pass = $${RABBITMQ_DEFAULT_PASS}" >> /etc/rabbitmq/rabbitmq.conf &&
+        exec docker-entrypoint.sh rabbitmq-server
+    environment:
+      RABBITMQ_DEFAULT_USER: zulip
+      RABBITMQ_PASSWORD_FILE: /run/secrets/zulip__rabbitmq_password
+    volumes:
+      - zulip_rabbitmq:/var/lib/rabbitmq
+      - type: bind
+        source: ./zulip-rabbitmq-password
+        target: /run/secrets/zulip__rabbitmq_password
+        content: zulip-rabbitmq-password
+  zulip-redis:
+    image: redis:8.2.1-alpine
+    restart: unless-stopped
+    command:
+      - sh
+      - -euc
+      - /usr/local/bin/docker-entrypoint.sh --requirepass "$$(cat $${REDIS_PASSWORD_FILE})"
+    environment:
+      REDIS_PASSWORD_FILE: /run/secrets/zulip__redis_password
+    volumes:
+      - zulip_redis:/data
+      - type: bind
+        source: ./zulip-redis-password
+        target: /run/secrets/zulip__redis_password
+        content: zulip-redis-password
+volumes:
+  zulip_data:
+  zulip_postgresql:
+  zulip_rabbitmq:
+  zulip_redis:

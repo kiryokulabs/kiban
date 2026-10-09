@@ -1,0 +1,79 @@
+services:
+  appflowy:
+    image: appflowyinc/appflowy_web:0.19.6
+    restart: unless-stopped
+    depends_on:
+      appflowy-cloud:
+        condition: service_started
+    ports:
+      - "${KIBAN_APPFLOWY_PORT:-80}:80"
+    environment:
+      APPFLOWY_BASE_URL: ${SERVICE_URL_APPFLOWY:-http://localhost:80}
+      APPFLOWY_GOTRUE_BASE_URL: http://appflowy-gotrue:9999
+      APPFLOWY_WS_BASE_URL: ws://appflowy-cloud:8000
+      KIBAN_APPFLOWY_PORT: ${KIBAN_APPFLOWY_PORT:-80}
+  appflowy-cloud:
+    image: appflowyinc/appflowy_cloud:0.19.1
+    restart: unless-stopped
+    depends_on:
+      appflowy-db:
+        condition: service_healthy
+      appflowy-redis:
+        condition: service_started
+      appflowy-gotrue:
+        condition: service_started
+    environment:
+      RUST_LOG: info
+      APPFLOWY_ENVIRONMENT: production
+      APPFLOWY_DATABASE_URL: postgres://appflowy:appflowy-password@appflowy-db:5432/appflowy
+      APPFLOWY_REDIS_URI: redis://appflowy-redis:6379
+      APPFLOWY_GOTRUE_BASE_URL: http://appflowy-gotrue:9999
+      APPFLOWY_GOTRUE_JWT_SECRET: appflowy-jwt-secret-change-me-0000000000000000
+      APPFLOWY_BASE_URL: ${SERVICE_URL_APPFLOWY:-http://localhost:80}
+      APPFLOWY_WEB_URL: ${SERVICE_URL_APPFLOWY:-http://localhost:80}
+      APPFLOWY_S3_CREATE_BUCKET: "false"
+      APPFLOWY_S3_USE_MINIO: "false"
+      APPFLOWY_ACCESS_CONTROL: "false"
+      AI_ENABLED: "false"
+  appflowy-gotrue:
+    image: appflowyinc/gotrue:0.18.11
+    restart: unless-stopped
+    depends_on:
+      appflowy-db:
+        condition: service_healthy
+    environment:
+      GOTRUE_ADMIN_EMAIL: admin@example.com
+      GOTRUE_ADMIN_PASSWORD: appflowy-admin-password
+      GOTRUE_DISABLE_SIGNUP: "false"
+      GOTRUE_SITE_URL: appflowy-flutter://
+      GOTRUE_URI_ALLOW_LIST: "**"
+      GOTRUE_JWT_SECRET: appflowy-jwt-secret-change-me-0000000000000000
+      GOTRUE_JWT_EXP: "7200"
+      GOTRUE_JWT_ADMIN_GROUP_NAME: supabase_admin
+      GOTRUE_DB_DRIVER: postgres
+      DATABASE_URL: postgres://appflowy:appflowy-password@appflowy-db:5432/appflowy
+      API_EXTERNAL_URL: ${SERVICE_URL_APPFLOWY:-http://localhost:80}
+      PORT: "9999"
+      GOTRUE_MAILER_AUTOCONFIRM: "true"
+  appflowy-db:
+    image: pgvector/pgvector:0.8.7-pg16-trixie
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: appflowy
+      POSTGRES_USER: appflowy
+      POSTGRES_PASSWORD: appflowy-password
+    volumes:
+      - appflowy_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U appflowy -d appflowy"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+  appflowy-redis:
+    image: redis:8.2.1-alpine
+    restart: unless-stopped
+    volumes:
+      - appflowy_redis:/data
+volumes:
+  appflowy_db:
+  appflowy_redis:

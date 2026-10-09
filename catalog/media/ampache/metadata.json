@@ -1,0 +1,17 @@
+{
+  "id": "ampache",
+  "name": "Ampache",
+  "description": "Web-based audio and video streaming server.",
+  "category": "media",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "ampache",
+      "port": 80
+    }
+  ]
+}

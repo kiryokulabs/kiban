@@ -1,0 +1,17 @@
+{
+  "id": "mumble",
+  "name": "Mumble",
+  "description": "Low-latency voice chat server.",
+  "category": "messaging",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Mumble Server",
+      "kind": "tcp",
+      "service": "mumble",
+      "port": 64738
+    }
+  ]
+}

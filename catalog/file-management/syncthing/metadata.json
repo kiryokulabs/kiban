@@ -1,0 +1,17 @@
+{
+  "id": "syncthing",
+  "name": "Syncthing",
+  "description": "Continuous file synchronization for private devices and servers.",
+  "category": "file-management",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "syncthing",
+      "port": 8384
+    }
+  ]
+}

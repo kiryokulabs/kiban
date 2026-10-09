@@ -1,0 +1,18 @@
+services:
+  dozzle:
+    image: amir20/dozzle:v8.14.4
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_DOZZLE_PORT:-8080}:8080"
+    environment:
+      DOZZLE_USERNAME: ${KIBAN_DOZZLE_USERNAME:-admin}
+      DOZZLE_PASSWORD: ${KIBAN_DOZZLE_PASSWORD:-admin}
+      KIBAN_DOZZLE_PORT: ${KIBAN_DOZZLE_PORT:-8080}
+      KIBAN_DOZZLE_USERNAME: ${KIBAN_DOZZLE_USERNAME:-admin}
+      KIBAN_DOZZLE_PASSWORD: ${KIBAN_DOZZLE_PASSWORD:-admin}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8080 || curl -f http://127.0.0.1:8080 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s

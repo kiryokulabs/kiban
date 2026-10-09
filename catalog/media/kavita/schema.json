@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_KAVITA_PORT": {
+      "type": "string",
+      "default": "${KIBAN_KAVITA_PORT:-5000}"
+    },
+    "KIBAN_KAVITA_TZ": {
+      "type": "string",
+      "default": "${KIBAN_KAVITA_TZ:-UTC}"
+    }
+  }
+}

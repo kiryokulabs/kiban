@@ -1,0 +1,22 @@
+services:
+  countly:
+    image: countly/countly-server:25.05.4
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_COUNTLY_PORT:-6001}:6001"
+    environment:
+      COUNTLY_CONFIG__MONGODB_HOST: countly-mongodb
+      COUNTLY_CONFIG__MONGODB_PORT: 27017
+      KIBAN_COUNTLY_PORT: ${KIBAN_COUNTLY_PORT:-6001}
+    depends_on:
+      - countly-mongodb
+    volumes:
+      - countly_data:/opt/countly
+  countly-mongodb:
+    image: mongo:6.0
+    restart: unless-stopped
+    volumes:
+      - countly_mongodb:/data/db
+volumes:
+  countly_data:
+  countly_mongodb:

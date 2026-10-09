@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_ZONEMINDER_PORT": {
+      "type": "string",
+      "default": "${KIBAN_ZONEMINDER_PORT:-80}"
+    },
+    "KIBAN_ZONEMINDER_DB_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_ZONEMINDER_DB_PASSWORD:-zmpassword}"
+    },
+    "KIBAN_ZONEMINDER_DB_ROOT_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_ZONEMINDER_DB_ROOT_PASSWORD:-zmrootpassword}"
+    }
+  }
+}

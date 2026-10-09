@@ -1,0 +1,12 @@
+services:
+  rss-bridge:
+    image: rssbridge/rss-bridge:sha-f4aa9e0
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_RSS_BRIDGE_PORT:-80}:80"
+    environment:
+      KIBAN_RSS_BRIDGE_PORT: ${KIBAN_RSS_BRIDGE_PORT:-80}
+    volumes:
+      - rss_bridge_cache:/app/cache
+volumes:
+  rss_bridge_cache:

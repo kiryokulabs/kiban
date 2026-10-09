@@ -1,0 +1,12 @@
+services:
+  radicale:
+    image: tomsquest/docker-radicale:3.5.7.0
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_RADICALE_PORT:-5232}:5232"
+    environment:
+      KIBAN_RADICALE_PORT: ${KIBAN_RADICALE_PORT:-5232}
+    volumes:
+      - radicale_data:/data
+volumes:
+  radicale_data:

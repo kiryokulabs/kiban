@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_KOMODO_PORT": {
+      "type": "string",
+      "default": "${KIBAN_KOMODO_PORT:-9120}"
+    },
+    "KIBAN_KOMODO_JWT_SECRET": {
+      "type": "string",
+      "default": "${KIBAN_KOMODO_JWT_SECRET:-change-me-komodo-jwt-secret}"
+    }
+  }
+}

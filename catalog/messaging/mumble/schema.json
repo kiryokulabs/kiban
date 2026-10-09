@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_MUMBLE_PORT": {
+      "type": "string",
+      "default": "${KIBAN_MUMBLE_PORT:-64738}"
+    },
+    "KIBAN_MUMBLE_SERVER_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_MUMBLE_SERVER_PASSWORD:-}"
+    }
+  }
+}

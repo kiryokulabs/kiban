@@ -1,0 +1,17 @@
+{
+  "id": "keepassxc",
+  "name": "KeePassXC",
+  "description": "Password manager available through a web-accessible desktop session.",
+  "category": "passwords",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "keepassxc",
+      "port": 3000
+    }
+  ]
+}

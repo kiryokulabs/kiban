@@ -1,0 +1,17 @@
+{
+  "id": "cloudreve",
+  "name": "Cloudreve",
+  "description": "File management and cloud storage platform.",
+  "category": "file-management",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "cloudreve",
+      "port": 5212
+    }
+  ]
+}

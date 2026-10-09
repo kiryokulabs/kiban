@@ -1,0 +1,17 @@
+{
+  "id": "storybook",
+  "name": "Storybook",
+  "description": "Isolated UI component workshop and documentation environment.",
+  "category": "development",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "storybook",
+      "port": 6006
+    }
+  ]
+}

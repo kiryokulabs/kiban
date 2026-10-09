@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_BUNKERWEB_HTTP_PORT": {
+      "type": "string",
+      "default": "${KIBAN_BUNKERWEB_HTTP_PORT:-8080}"
+    },
+    "KIBAN_BUNKERWEB_HTTPS_PORT": {
+      "type": "string",
+      "default": "${KIBAN_BUNKERWEB_HTTPS_PORT:-8443}"
+    },
+    "KIBAN_BUNKERWEB_UI_PORT": {
+      "type": "string",
+      "default": "${KIBAN_BUNKERWEB_UI_PORT:-7000}"
+    }
+  }
+}

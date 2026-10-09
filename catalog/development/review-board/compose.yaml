@@ -1,0 +1,35 @@
+services:
+  review-board:
+    image: beanbag/reviewboard:7.0.6
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_REVIEW_BOARD_PORT:-8080}:8080"
+    environment:
+      DATABASE_TYPE: postgresql
+      DATABASE_SERVER: review-board-db
+      DATABASE_NAME: reviewboard
+      DATABASE_USERNAME: reviewboard
+      DATABASE_PASSWORD: ${KIBAN_REVIEW_BOARD_DB_PASSWORD:-reviewboard}
+      MEMCACHED_SERVER: review-board-memcached:11211
+      KIBAN_REVIEW_BOARD_PORT: ${KIBAN_REVIEW_BOARD_PORT:-8080}
+      KIBAN_REVIEW_BOARD_DB_PASSWORD: ${KIBAN_REVIEW_BOARD_DB_PASSWORD:-reviewboard}
+    depends_on:
+      - review-board-db
+      - review-board-memcached
+    volumes:
+      - review_board_data:/site
+  review-board-db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: reviewboard
+      POSTGRES_USER: reviewboard
+      POSTGRES_PASSWORD: ${KIBAN_REVIEW_BOARD_DB_PASSWORD:-reviewboard}
+    volumes:
+      - review_board_db:/var/lib/postgresql/data
+  review-board-memcached:
+    image: memcached:1.6-alpine
+    restart: unless-stopped
+volumes:
+  review_board_data:
+  review_board_db:

@@ -1,0 +1,17 @@
+{
+  "id": "wireguard-portal",
+  "name": "WireGuard Portal",
+  "description": "Web portal for managing WireGuard peers and VPN access.",
+  "category": "network",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "wireguard-portal",
+      "port": 8888
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "id": "snapdrop",
+  "name": "Snapdrop",
+  "description": "Local file sharing inspired by AirDrop.",
+  "category": "file-management",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "snapdrop",
+      "port": 80
+    }
+  ]
+}

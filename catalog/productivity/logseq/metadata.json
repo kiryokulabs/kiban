@@ -1,0 +1,17 @@
+{
+  "id": "logseq",
+  "name": "Logseq",
+  "description": "Privacy-first knowledge base and outliner.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "logseq",
+      "port": 80
+    }
+  ]
+}

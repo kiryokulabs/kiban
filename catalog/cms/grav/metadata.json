@@ -1,0 +1,17 @@
+{
+  "id": "grav",
+  "name": "Grav",
+  "description": "Flat-file content management system.",
+  "category": "cms",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "grav",
+      "port": 80
+    }
+  ]
+}

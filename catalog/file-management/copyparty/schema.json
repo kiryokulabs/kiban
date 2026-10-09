@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_COPYPARTY_PORT": {
+      "type": "string",
+      "default": "${KIBAN_COPYPARTY_PORT:-3923}"
+    },
+    "KIBAN_COPYPARTY_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_COPYPARTY_PASSWORD:-copyparty-password}"
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "id": "openvpn",
+  "name": "OpenVPN",
+  "description": "Self-hosted VPN service.",
+  "category": "networking",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "tcp",
+      "service": "openvpn",
+      "port": 943
+    }
+  ]
+}

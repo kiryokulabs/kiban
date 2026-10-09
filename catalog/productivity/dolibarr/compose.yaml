@@ -1,0 +1,32 @@
+services:
+  dolibarr:
+    image: dolibarr/dolibarr:21.0.4
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_DOLIBARR_PORT:-80}:80"
+    environment:
+      DOLI_DB_HOST: dolibarr-db
+      DOLI_DB_NAME: dolibarr
+      DOLI_DB_USER: dolibarr
+      DOLI_DB_PASSWORD: ${KIBAN_DOLIBARR_DB_PASSWORD:-dolibarr}
+      DOLI_URL_ROOT: http://localhost:${KIBAN_DOLIBARR_PORT:-80}
+      PHP_INI_DATE_TIMEZONE: UTC
+      KIBAN_DOLIBARR_PORT: ${KIBAN_DOLIBARR_PORT:-80}
+      KIBAN_DOLIBARR_DB_PASSWORD: ${KIBAN_DOLIBARR_DB_PASSWORD:-dolibarr}
+    depends_on:
+      - dolibarr-db
+    volumes:
+      - dolibarr_documents:/var/www/documents
+  dolibarr-db:
+    image: mariadb:11.4
+    restart: unless-stopped
+    environment:
+      MARIADB_RANDOM_ROOT_PASSWORD: "yes"
+      MARIADB_DATABASE: dolibarr
+      MARIADB_USER: dolibarr
+      MARIADB_PASSWORD: ${KIBAN_DOLIBARR_DB_PASSWORD:-dolibarr}
+    volumes:
+      - dolibarr_db:/var/lib/mysql
+volumes:
+  dolibarr_documents:
+  dolibarr_db:

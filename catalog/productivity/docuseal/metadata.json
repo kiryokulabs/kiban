@@ -1,0 +1,17 @@
+{
+  "id": "docuseal",
+  "name": "DocuSeal",
+  "description": "Open-source document signing and form workflow platform.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "docuseal",
+      "port": 3000
+    }
+  ]
+}

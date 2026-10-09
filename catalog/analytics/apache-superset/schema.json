@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_APACHE_SUPERSET_PORT": {
+      "type": "string",
+      "default": "${KIBAN_APACHE_SUPERSET_PORT:-8088}"
+    },
+    "KIBAN_APACHE_SUPERSET_SECRET_KEY": {
+      "type": "string",
+      "default": "${KIBAN_APACHE_SUPERSET_SECRET_KEY:-kiban-superset-change-this-secret-key-000000000000}"
+    }
+  }
+}

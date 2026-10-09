@@ -1,0 +1,17 @@
+{
+  "id": "glitchtip",
+  "name": "GlitchTip",
+  "description": "Open-source error tracking and performance monitoring platform.",
+  "category": "observability",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "glitchtip",
+      "port": 8000
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "id": "papermerge",
+  "name": "Papermerge",
+  "description": "Document management system for scanned documents and PDFs.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "papermerge",
+      "port": 8000
+    }
+  ]
+}

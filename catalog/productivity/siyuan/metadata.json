@@ -1,0 +1,17 @@
+{
+  "id": "siyuan",
+  "name": "SiYuan",
+  "description": "Privacy-first personal knowledge management system.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "siyuan",
+      "port": 6806
+    }
+  ]
+}

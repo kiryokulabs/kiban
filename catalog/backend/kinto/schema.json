@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_KINTO_PORT": {
+      "type": "string",
+      "default": "${KIBAN_KINTO_PORT:-8888}"
+    },
+    "KIBAN_KINTO_DB_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_KINTO_DB_PASSWORD:-kinto-password}"
+    },
+    "KIBAN_KINTO_USERID_HMAC_SECRET": {
+      "type": "string",
+      "default": "${KIBAN_KINTO_USERID_HMAC_SECRET:-kinto-userid-hmac-secret-change-me}"
+    }
+  }
+}

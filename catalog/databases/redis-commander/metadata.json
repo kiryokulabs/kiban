@@ -1,0 +1,17 @@
+{
+  "id": "redis-commander",
+  "name": "Redis Commander",
+  "description": "Web UI for inspecting and managing Redis data.",
+  "category": "databases",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "redis-commander",
+      "port": 8081
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+services:
+  metube:
+    image: ghcr.io/alexta69/metube:2026.09.29
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_METUBE_PORT:-8081}:8081"
+    environment:
+      PUID: "1000"
+      PGID: "1000"
+      DEFAULT_THEME: ${KIBAN_METUBE_THEME:-auto}
+      KIBAN_METUBE_PORT: ${KIBAN_METUBE_PORT:-8081}
+      KIBAN_METUBE_THEME: ${KIBAN_METUBE_THEME:-auto}
+    volumes:
+      - metube_downloads:/downloads
+volumes:
+  metube_downloads:

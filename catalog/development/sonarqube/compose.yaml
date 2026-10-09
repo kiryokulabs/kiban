@@ -1,0 +1,12 @@
+services:
+  sonarqube:
+    image: sonarqube:community
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_SONARQUBE_PORT:-9000}:9000"
+    environment:
+      KIBAN_SONARQUBE_PORT: ${KIBAN_SONARQUBE_PORT:-9000}
+    volumes:
+      - sonarqube_data:/data
+volumes:
+  sonarqube_data:

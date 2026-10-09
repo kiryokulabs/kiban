@@ -1,0 +1,17 @@
+{
+  "id": "asciinema",
+  "name": "Asciinema",
+  "description": "Terminal session recording and sharing server.",
+  "category": "development",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "asciinema",
+      "port": 4000
+    }
+  ]
+}

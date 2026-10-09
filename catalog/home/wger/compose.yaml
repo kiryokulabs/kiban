@@ -1,0 +1,52 @@
+services:
+  wger:
+    image: wger/server:2.7.0
+    restart: unless-stopped
+    depends_on:
+      wger-db:
+        condition: service_healthy
+      wger-cache:
+        condition: service_started
+    ports:
+      - "${KIBAN_WGER_PORT:-8000}:8000"
+    environment:
+      SECRET_KEY: kiban-wger-secret-key-change-after-install
+      SIGNING_KEY: kiban-wger-signing-key-change-after-install
+      DJANGO_DEBUG: "False"
+      DJANGO_DB_ENGINE: django.db.backends.postgresql
+      DJANGO_DB_DATABASE: wger
+      DJANGO_DB_USER: wger
+      DJANGO_DB_PASSWORD: wger-password
+      DJANGO_DB_HOST: wger-db
+      DJANGO_DB_PORT: "5432"
+      DJANGO_CACHE_BACKEND: django_redis.cache.RedisCache
+      DJANGO_CACHE_LOCATION: redis://wger-cache:6379/1
+      CSRF_TRUSTED_ORIGINS: ${SERVICE_URL_WGER:-http://localhost:8000}
+      KIBAN_WGER_PORT: ${KIBAN_WGER_PORT:-8000}
+    volumes:
+      - wger_static:/home/wger/static
+      - wger_media:/home/wger/media
+  wger-db:
+    image: postgres:16.10-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: wger
+      POSTGRES_USER: wger
+      POSTGRES_PASSWORD: wger-password
+    volumes:
+      - wger_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wger -d wger"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+  wger-cache:
+    image: redis:8.2.1-alpine
+    restart: unless-stopped
+    volumes:
+      - wger_cache:/data
+volumes:
+  wger_static:
+  wger_media:
+  wger_db:
+  wger_cache:

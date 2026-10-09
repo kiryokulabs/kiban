@@ -1,0 +1,17 @@
+{
+  "id": "kinto",
+  "name": "Kinto",
+  "description": "JSON storage service with sync and sharing APIs.",
+  "category": "backend",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "kinto",
+      "port": 8888
+    }
+  ]
+}

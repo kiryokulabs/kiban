@@ -1,0 +1,22 @@
+services:
+  ntfy:
+    image: binwiederhier/ntfy:v2.14.0
+    restart: unless-stopped
+    command:
+      - "serve"
+    ports:
+      - "${KIBAN_NTFY_PORT:-8080}:80"
+    environment:
+      KIBAN_NTFY_PORT: ${KIBAN_NTFY_PORT:-8080}
+    volumes:
+      - ntfy_cache:/var/cache/ntfy
+      - ntfy_config:/etc/ntfy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:80 || curl -f http://127.0.0.1:80 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+volumes:
+  ntfy_cache:
+  ntfy_config:

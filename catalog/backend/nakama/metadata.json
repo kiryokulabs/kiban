@@ -1,0 +1,17 @@
+{
+  "id": "nakama",
+  "name": "Nakama",
+  "description": "Realtime game server and social backend.",
+  "category": "backend",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "nakama",
+      "port": 7351
+    }
+  ]
+}

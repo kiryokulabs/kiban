@@ -1,0 +1,40 @@
+services:
+  bookstack:
+    image: lscr.io/linuxserver/bookstack:25.07.20250901-ls212
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_BOOKSTACK_PORT:-8080}:80"
+    environment:
+      APP_URL: http://localhost:${KIBAN_BOOKSTACK_PORT:-8080}
+      APP_KEY: ${KIBAN_BOOKSTACK_APP_KEY:-base64:MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTI=}
+      DB_HOST: bookstack-db
+      DB_DATABASE: bookstack
+      DB_USERNAME: bookstack
+      DB_PASSWORD: ${KIBAN_BOOKSTACK_DB_PASSWORD:-bookstack}
+      KIBAN_BOOKSTACK_PORT: ${KIBAN_BOOKSTACK_PORT:-8080}
+      KIBAN_BOOKSTACK_DB_PASSWORD: ${KIBAN_BOOKSTACK_DB_PASSWORD:-bookstack}
+      KIBAN_BOOKSTACK_DB_ROOT_PASSWORD: ${KIBAN_BOOKSTACK_DB_ROOT_PASSWORD:-root}
+      KIBAN_BOOKSTACK_APP_KEY: ${KIBAN_BOOKSTACK_APP_KEY:-base64:MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTI=}
+    depends_on:
+      - bookstack-db
+    volumes:
+      - bookstack_config:/config
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:80 || curl -f http://127.0.0.1:80 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+  bookstack-db:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: bookstack
+      MYSQL_USER: bookstack
+      MYSQL_PASSWORD: ${KIBAN_BOOKSTACK_DB_PASSWORD:-bookstack}
+      MYSQL_ROOT_PASSWORD: ${KIBAN_BOOKSTACK_DB_ROOT_PASSWORD:-root}
+    volumes:
+      - bookstack_db_data:/var/lib/mysql
+volumes:
+  bookstack_config:
+  bookstack_db_data:

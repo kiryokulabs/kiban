@@ -1,0 +1,17 @@
+{
+  "id": "countly",
+  "name": "Countly",
+  "description": "Product analytics and user behavior platform.",
+  "category": "analytics",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "countly",
+      "port": 6001
+    }
+  ]
+}

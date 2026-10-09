@@ -1,0 +1,17 @@
+{
+  "id": "huginn",
+  "name": "Huginn",
+  "description": "Automation agents that watch for events and act on your behalf.",
+  "category": "automation",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "huginn",
+      "port": 3000
+    }
+  ]
+}

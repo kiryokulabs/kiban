@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_PEERTUBE_PORT": {
+      "type": "string",
+      "default": "${KIBAN_PEERTUBE_PORT:-9000}"
+    },
+    "KIBAN_PEERTUBE_RTMP_PORT": {
+      "type": "string",
+      "default": "${KIBAN_PEERTUBE_RTMP_PORT:-1935}"
+    },
+    "KIBAN_PEERTUBE_DB_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_PEERTUBE_DB_PASSWORD:-peertube-password}"
+    },
+    "KIBAN_PEERTUBE_SECRET": {
+      "type": "string",
+      "default": "${KIBAN_PEERTUBE_SECRET:-peertube-secret-change-me-000000000000000000000000}"
+    },
+    "KIBAN_PEERTUBE_ADMIN_EMAIL": {
+      "type": "string",
+      "default": "${KIBAN_PEERTUBE_ADMIN_EMAIL:-admin@example.com}"
+    }
+  }
+}

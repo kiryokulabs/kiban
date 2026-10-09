@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_LEANTIME_PORT": {
+      "type": "string",
+      "default": "${KIBAN_LEANTIME_PORT:-8080}"
+    },
+    "KIBAN_LEANTIME_DB_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_LEANTIME_DB_PASSWORD:-leantime-password}"
+    },
+    "KIBAN_LEANTIME_DB_ROOT_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_LEANTIME_DB_ROOT_PASSWORD:-leantime-root-password}"
+    },
+    "KIBAN_LEANTIME_SESSION_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_LEANTIME_SESSION_PASSWORD:-leantime-session-password-change-me-0000000000}"
+    }
+  }
+}

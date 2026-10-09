@@ -1,0 +1,17 @@
+{
+  "id": "tautulli",
+  "name": "Tautulli",
+  "description": "Monitoring and statistics for Plex Media Server.",
+  "category": "media",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "tautulli",
+      "port": 8181
+    }
+  ]
+}

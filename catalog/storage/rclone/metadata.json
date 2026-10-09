@@ -1,0 +1,17 @@
+{
+  "id": "rclone",
+  "name": "Rclone",
+  "description": "Cloud storage sync and management service with remote control API.",
+  "category": "storage",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "rclone",
+      "port": 5572
+    }
+  ]
+}

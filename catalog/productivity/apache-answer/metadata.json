@@ -1,0 +1,17 @@
+{
+  "id": "apache-answer",
+  "name": "Apache Answer",
+  "description": "Open-source question and answer platform for communities and teams.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "apache-answer",
+      "port": 80
+    }
+  ]
+}

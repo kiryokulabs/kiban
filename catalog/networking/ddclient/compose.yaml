@@ -1,0 +1,12 @@
+services:
+  ddclient:
+    image: lscr.io/linuxserver/ddclient:v4.0.0-ls230
+    restart: unless-stopped
+    environment:
+      PUID: "1000"
+      PGID: "1000"
+      TZ: Etc/UTC
+    volumes:
+      - ddclient_config:/config
+volumes:
+  ddclient_config:

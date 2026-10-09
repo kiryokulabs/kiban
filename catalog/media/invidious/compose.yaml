@@ -1,0 +1,41 @@
+services:
+  invidious:
+    image: quay.io/invidious/invidious@sha256:fa52f3d9d654deb540e30f7cd2c5d32dd1857da8fbe0b6fe225f6ac9e94d9d39
+    restart: unless-stopped
+    depends_on:
+      invidious-db:
+        condition: service_healthy
+    ports:
+      - "${KIBAN_INVIDIOUS_PORT:-3000}:3000"
+    environment:
+      INVIDIOUS_CONFIG: |
+        db:
+          dbname: invidious
+          user: invidious
+          password: ${KIBAN_INVIDIOUS_DB_PASSWORD:-invidious-password}
+          host: invidious-db
+          port: 5432
+        check_tables: true
+        domain: ${SERVICE_FQDN_INVIDIOUS:-localhost}
+        external_port: ${KIBAN_INVIDIOUS_PORT:-3000}
+        https_only: false
+        hmac_key: ${KIBAN_INVIDIOUS_HMAC_KEY:-invidious-hmac-key-change-me-000000000000}
+      KIBAN_INVIDIOUS_PORT: ${KIBAN_INVIDIOUS_PORT:-3000}
+      KIBAN_INVIDIOUS_DB_PASSWORD: ${KIBAN_INVIDIOUS_DB_PASSWORD:-invidious-password}
+      KIBAN_INVIDIOUS_HMAC_KEY: ${KIBAN_INVIDIOUS_HMAC_KEY:-invidious-hmac-key-change-me-000000000000}
+  invidious-db:
+    image: postgres:17.6-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: invidious
+      POSTGRES_USER: invidious
+      POSTGRES_PASSWORD: ${KIBAN_INVIDIOUS_DB_PASSWORD:-invidious-password}
+    volumes:
+      - invidious_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+volumes:
+  invidious_db:

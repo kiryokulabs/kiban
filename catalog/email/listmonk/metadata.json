@@ -1,0 +1,17 @@
+{
+  "id": "listmonk",
+  "name": "listmonk",
+  "description": "Newsletter, mailing list, and transactional email manager.",
+  "category": "email",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "listmonk",
+      "port": 9000
+    }
+  ]
+}

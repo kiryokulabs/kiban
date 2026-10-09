@@ -1,0 +1,10 @@
+{
+  "id": "ddclient",
+  "name": "ddclient",
+  "description": "Dynamic DNS update client.",
+  "category": "networking",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": []
+}

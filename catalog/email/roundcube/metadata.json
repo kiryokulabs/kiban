@@ -1,0 +1,17 @@
+{
+  "id": "roundcube",
+  "name": "Roundcube",
+  "description": "Browser-based IMAP email client.",
+  "category": "email",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "roundcube",
+      "port": 80
+    }
+  ]
+}

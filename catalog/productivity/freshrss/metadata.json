@@ -1,0 +1,17 @@
+{
+  "id": "freshrss",
+  "name": "FreshRSS",
+  "description": "Lightweight RSS and Atom feed reader.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "freshrss",
+      "port": 80
+    }
+  ]
+}

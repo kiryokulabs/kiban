@@ -1,0 +1,17 @@
+{
+  "id": "jitsi-meet",
+  "name": "Jitsi Meet",
+  "description": "Secure video meetings and conferencing for teams.",
+  "category": "messaging",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "jitsi-meet",
+      "port": 80
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+services:
+  cryptpad:
+    image: cryptpad/cryptpad:version-2026.5.1
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_CRYPTPAD_PORT:-3000}:3000"
+      - "${KIBAN_CRYPTPAD_SANDBOX_PORT:-3003}:3003"
+    environment:
+      CPAD_MAIN_DOMAIN: ${SERVICE_URL_CRYPTPAD:-http://localhost:3000}
+      CPAD_SANDBOX_DOMAIN: ${SERVICE_URL_CRYPTPAD_3003:-http://localhost:3003}
+      CPAD_CONF: /cryptpad/config/config.js
+      KIBAN_CRYPTPAD_PORT: ${KIBAN_CRYPTPAD_PORT:-3000}
+      KIBAN_CRYPTPAD_SANDBOX_PORT: ${KIBAN_CRYPTPAD_SANDBOX_PORT:-3003}
+    volumes:
+      - cryptpad_blob:/cryptpad/blob
+      - cryptpad_block:/cryptpad/block
+      - cryptpad_customize:/cryptpad/customize
+      - cryptpad_data:/cryptpad/data
+      - cryptpad_datastore:/cryptpad/datastore
+      - cryptpad_onlyoffice_dist:/cryptpad/www/common/onlyoffice/dist
+      - cryptpad_onlyoffice_conf:/cryptpad/onlyoffice-conf
+volumes:
+  cryptpad_blob:
+  cryptpad_block:
+  cryptpad_customize:
+  cryptpad_data:
+  cryptpad_datastore:
+  cryptpad_onlyoffice_dist:
+  cryptpad_onlyoffice_conf:

@@ -1,0 +1,15 @@
+services:
+  mumble:
+    image: mumblevoip/mumble-server:v1.6.870-5-acme
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_MUMBLE_PORT:-64738}:64738/tcp"
+      - "${KIBAN_MUMBLE_PORT:-64738}:64738/udp"
+    environment:
+      MUMBLE_CONFIG_SERVER_PASSWORD: ${KIBAN_MUMBLE_SERVER_PASSWORD:-}
+      KIBAN_MUMBLE_PORT: ${KIBAN_MUMBLE_PORT:-64738}
+      KIBAN_MUMBLE_SERVER_PASSWORD: ${KIBAN_MUMBLE_SERVER_PASSWORD:-}
+    volumes:
+      - mumble_data:/data
+volumes:
+  mumble_data:

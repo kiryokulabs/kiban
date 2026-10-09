@@ -1,0 +1,17 @@
+{
+  "id": "zipline",
+  "name": "Zipline",
+  "description": "ShareX-compatible file upload and link sharing service.",
+  "category": "file-management",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "zipline",
+      "port": 3000
+    }
+  ]
+}

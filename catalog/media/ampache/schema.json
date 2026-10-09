@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_AMPACHE_PORT": {
+      "type": "string",
+      "default": "${KIBAN_AMPACHE_PORT:-80}"
+    },
+    "KIBAN_AMPACHE_MYSQL_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_AMPACHE_MYSQL_PASSWORD:-ampache-mysql-password}"
+    },
+    "KIBAN_AMPACHE_ADMIN_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_AMPACHE_ADMIN_PASSWORD:-ampache-admin-password}"
+    }
+  }
+}

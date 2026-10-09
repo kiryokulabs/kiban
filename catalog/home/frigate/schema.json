@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_FRIGATE_PORT": {
+      "type": "string",
+      "default": "${KIBAN_FRIGATE_PORT:-5000}"
+    },
+    "KIBAN_FRIGATE_RTSP_PORT": {
+      "type": "string",
+      "default": "${KIBAN_FRIGATE_RTSP_PORT:-8554}"
+    },
+    "KIBAN_FRIGATE_WEBRTC_PORT": {
+      "type": "string",
+      "default": "${KIBAN_FRIGATE_WEBRTC_PORT:-8555}"
+    },
+    "KIBAN_FRIGATE_RTSP_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_FRIGATE_RTSP_PASSWORD:-frigate-rtsp-password}"
+    }
+  }
+}

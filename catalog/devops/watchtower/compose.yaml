@@ -1,0 +1,13 @@
+services:
+  watchtower:
+    image: containrrr/watchtower:1.7.1
+    restart: unless-stopped
+    command:
+      - "--cleanup"
+    environment:
+      WATCHTOWER_CLEANUP: "true"
+      WATCHTOWER_POLL_INTERVAL: "86400"
+      REPO_USER: ${KIBAN_WATCHTOWER_REPO_USER:-}
+      REPO_PASS: ${KIBAN_WATCHTOWER_REPO_PASS:-}
+      KIBAN_WATCHTOWER_REPO_USER: ${KIBAN_WATCHTOWER_REPO_USER:-}
+      KIBAN_WATCHTOWER_REPO_PASS: ${KIBAN_WATCHTOWER_REPO_PASS:-}

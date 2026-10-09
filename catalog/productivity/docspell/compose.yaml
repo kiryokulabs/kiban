@@ -1,0 +1,37 @@
+services:
+  docspell:
+    image: docspell/restserver:0.43.0
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_DOCSPELL_PORT:-7880}:7880"
+    environment:
+      DOCSPELL_SERVER_INTERNAL__URL: http://docspell:7880
+      DOCSPELL_SERVER_BIND_ADDRESS: 0.0.0.0
+      DOCSPELL_SERVER_FULL__TEXT__SEARCH_ENABLED: false
+      DOCSPELL_STORE_JDBC_URL: jdbc:postgresql://docspell-db:5432/docspell
+      DOCSPELL_STORE_JDBC_USER: docspell
+      DOCSPELL_STORE_JDBC_PASSWORD: ${KIBAN_DOCSPELL_DB_PASSWORD:-docspell}
+      KIBAN_DOCSPELL_PORT: ${KIBAN_DOCSPELL_PORT:-7880}
+      KIBAN_DOCSPELL_DB_PASSWORD: ${KIBAN_DOCSPELL_DB_PASSWORD:-docspell}
+    depends_on:
+      - docspell-db
+    volumes:
+      - docspell_data:/opt/docspell/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:7880 || curl -f http://127.0.0.1:7880 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+  docspell-db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: docspell
+      POSTGRES_USER: docspell
+      POSTGRES_PASSWORD: ${KIBAN_DOCSPELL_DB_PASSWORD:-docspell}
+    volumes:
+      - docspell_db_data:/var/lib/postgresql/data
+volumes:
+  docspell_data:
+  docspell_db_data:

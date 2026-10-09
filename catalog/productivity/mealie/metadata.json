@@ -1,0 +1,17 @@
+{
+  "id": "mealie",
+  "name": "Mealie",
+  "description": "Self-hosted recipe manager and meal planner.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "mealie",
+      "port": 9000
+    }
+  ]
+}

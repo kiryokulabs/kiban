@@ -1,0 +1,17 @@
+{
+  "id": "affine",
+  "name": "AFFiNE",
+  "description": "Knowledge base and collaborative workspace.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "affine",
+      "port": 3010
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "id": "paperless-ngx",
+  "name": "Paperless-ngx",
+  "description": "Document management system for scanning, OCR, tagging, and archiving paperwork.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "paperless-ngx",
+      "port": 8000
+    }
+  ]
+}

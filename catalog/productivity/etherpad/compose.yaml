@@ -1,0 +1,12 @@
+services:
+  etherpad:
+    image: etherpad/etherpad:2.4.0
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_ETHERPAD_PORT:-9001}:9001"
+    environment:
+      KIBAN_ETHERPAD_PORT: ${KIBAN_ETHERPAD_PORT:-9001}
+    volumes:
+      - etherpad_data:/data
+volumes:
+  etherpad_data:

@@ -1,0 +1,21 @@
+services:
+  tiddlywiki:
+    image: node:22.20.0-alpine3.22
+    restart: unless-stopped
+    command: |
+      sh -ec '
+        npm install -g tiddlywiki@5.3.8
+        mkdir -p /data/wiki
+        if [ ! -f /data/wiki/tiddlywiki.info ]; then
+          tiddlywiki /data/wiki --init server
+        fi
+        tiddlywiki /data/wiki --listen host=0.0.0.0 port=8080 readers="(anon)" writers="(anon)"
+      '
+    ports:
+      - "${KIBAN_TIDDLYWIKI_PORT:-8080}:8080"
+    environment:
+      KIBAN_TIDDLYWIKI_PORT: ${KIBAN_TIDDLYWIKI_PORT:-8080}
+    volumes:
+      - tiddlywiki_data:/data/wiki
+volumes:
+  tiddlywiki_data:

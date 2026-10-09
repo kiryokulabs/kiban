@@ -1,0 +1,27 @@
+services:
+  centrifugo:
+    image: centrifugo/centrifugo:v6.3.0
+    restart: unless-stopped
+    command:
+      - "centrifugo"
+      - "--admin"
+      - "--health"
+      - "--client.allowed_origins=*"
+      - "--api.key=${KIBAN_CENTRIFUGO_API_KEY:-change-me-api-key}"
+      - "--token.hmac_secret_key=${KIBAN_CENTRIFUGO_TOKEN_SECRET:-change-me-token-secret}"
+    ports:
+      - "${KIBAN_CENTRIFUGO_PORT:-8000}:8000"
+    environment:
+      KIBAN_CENTRIFUGO_PORT: ${KIBAN_CENTRIFUGO_PORT:-8000}
+      KIBAN_CENTRIFUGO_API_KEY: ${KIBAN_CENTRIFUGO_API_KEY:-change-me-api-key}
+      KIBAN_CENTRIFUGO_TOKEN_SECRET: ${KIBAN_CENTRIFUGO_TOKEN_SECRET:-change-me-token-secret}
+    volumes:
+      - centrifugo_data:/centrifugo
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8000 || curl -f http://127.0.0.1:8000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+volumes:
+  centrifugo_data:

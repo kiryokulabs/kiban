@@ -1,0 +1,17 @@
+{
+  "id": "radicale",
+  "name": "Radicale",
+  "description": "CalDAV and CardDAV server for calendars and contacts.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "radicale",
+      "port": 5232
+    }
+  ]
+}

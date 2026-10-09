@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_CRYPTPAD_PORT": {
+      "type": "string",
+      "default": "${KIBAN_CRYPTPAD_PORT:-3000}"
+    },
+    "KIBAN_CRYPTPAD_SANDBOX_PORT": {
+      "type": "string",
+      "default": "${KIBAN_CRYPTPAD_SANDBOX_PORT:-3003}"
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "id": "filestash",
+  "name": "Filestash",
+  "description": "Web file manager for SFTP, S3, Git, WebDAV, and other backends.",
+  "category": "file-management",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "filestash",
+      "port": 8334
+    }
+  ]
+}

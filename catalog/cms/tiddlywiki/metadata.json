@@ -1,0 +1,17 @@
+{
+  "id": "tiddlywiki",
+  "name": "TiddlyWiki",
+  "description": "Personal, non-linear wiki notebook.",
+  "category": "cms",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "tiddlywiki",
+      "port": 8080
+    }
+  ]
+}

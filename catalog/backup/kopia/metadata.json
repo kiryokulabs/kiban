@@ -1,0 +1,17 @@
+{
+  "id": "kopia",
+  "name": "Kopia",
+  "description": "Fast encrypted backup tool with web UI.",
+  "category": "backup",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "kopia",
+      "port": 51515
+    }
+  ]
+}

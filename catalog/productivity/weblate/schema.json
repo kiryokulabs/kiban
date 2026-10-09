@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_WEBLATE_PORT": {
+      "type": "string",
+      "default": "${KIBAN_WEBLATE_PORT:-8080}"
+    },
+    "KIBAN_WEBLATE_DB_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_WEBLATE_DB_PASSWORD:-weblate}"
+    },
+    "KIBAN_WEBLATE_ADMIN_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_WEBLATE_ADMIN_PASSWORD:-admin123456}"
+    }
+  }
+}

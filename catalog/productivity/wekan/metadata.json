@@ -1,0 +1,17 @@
+{
+  "id": "wekan",
+  "name": "WeKan",
+  "description": "Kanban board for collaborative task management.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "wekan",
+      "port": 8080
+    }
+  ]
+}

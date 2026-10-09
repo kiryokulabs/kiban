@@ -1,0 +1,17 @@
+{
+  "id": "gatus",
+  "name": "Gatus",
+  "description": "Self-hosted service health dashboard and uptime monitor.",
+  "category": "monitoring",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "gatus",
+      "port": 8080
+    }
+  ]
+}

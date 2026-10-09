@@ -1,0 +1,17 @@
+{
+  "id": "pocket-id",
+  "name": "Pocket ID",
+  "description": "Simple OIDC identity provider with passkey-first authentication.",
+  "category": "authentication",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "pocket-id",
+      "port": 1411
+    }
+  ]
+}

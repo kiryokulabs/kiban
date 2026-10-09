@@ -1,0 +1,74 @@
+services:
+  mautic:
+    image: mautic/mautic:6.0.6-apache
+    restart: unless-stopped
+    depends_on:
+      mautic-db:
+        condition: service_healthy
+    ports:
+      - "${KIBAN_MAUTIC_PORT:-80}:80"
+    environment:
+      DOCKER_MAUTIC_ROLE: mautic_web
+      DOCKER_MAUTIC_RUN_MIGRATIONS: "true"
+      MAUTIC_DB_HOST: mautic-db
+      MAUTIC_DB_NAME: mautic
+      MAUTIC_DB_USER: mautic
+      MAUTIC_DB_PASSWORD: ${KIBAN_MAUTIC_DB_PASSWORD:-mautic-password}
+      MAUTIC_URL: ${SERVICE_URL_MAUTIC:-http://localhost:80}
+      KIBAN_MAUTIC_PORT: ${KIBAN_MAUTIC_PORT:-80}
+      KIBAN_MAUTIC_DB_PASSWORD: ${KIBAN_MAUTIC_DB_PASSWORD:-mautic-password}
+      KIBAN_MAUTIC_DB_ROOT_PASSWORD: ${KIBAN_MAUTIC_DB_ROOT_PASSWORD:-mautic-root-password}
+    volumes:
+      - mautic_data:/var/www/html
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:80 || curl -f http://127.0.0.1:80 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+  mautic-cron:
+    image: mautic/mautic:6.0.6-apache
+    restart: unless-stopped
+    depends_on:
+      mautic:
+        condition: service_started
+    environment:
+      DOCKER_MAUTIC_ROLE: mautic_cron
+      MAUTIC_DB_HOST: mautic-db
+      MAUTIC_DB_NAME: mautic
+      MAUTIC_DB_USER: mautic
+      MAUTIC_DB_PASSWORD: ${KIBAN_MAUTIC_DB_PASSWORD:-mautic-password}
+    volumes:
+      - mautic_data:/var/www/html
+  mautic-worker:
+    image: mautic/mautic:6.0.6-apache
+    restart: unless-stopped
+    depends_on:
+      mautic:
+        condition: service_started
+    environment:
+      DOCKER_MAUTIC_ROLE: mautic_worker
+      MAUTIC_DB_HOST: mautic-db
+      MAUTIC_DB_NAME: mautic
+      MAUTIC_DB_USER: mautic
+      MAUTIC_DB_PASSWORD: ${KIBAN_MAUTIC_DB_PASSWORD:-mautic-password}
+    volumes:
+      - mautic_data:/var/www/html
+  mautic-db:
+    image: mariadb:11.8.3
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: mautic
+      MARIADB_USER: mautic
+      MARIADB_PASSWORD: ${KIBAN_MAUTIC_DB_PASSWORD:-mautic-password}
+      MARIADB_ROOT_PASSWORD: ${KIBAN_MAUTIC_DB_ROOT_PASSWORD:-mautic-root-password}
+    volumes:
+      - mautic_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin ping -h 127.0.0.1 -u root -p$${MARIADB_ROOT_PASSWORD} --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+volumes:
+  mautic_data:
+  mautic_db_data:

@@ -1,0 +1,73 @@
+services:
+  rally:
+    image: lukevella/rallly:4.15.4
+    restart: unless-stopped
+    depends_on:
+      rally-db:
+        condition: service_healthy
+      rally-storage:
+        condition: service_started
+    ports:
+      - "${KIBAN_RALLY_PORT:-3000}:3000"
+    environment:
+      NEXT_PUBLIC_BASE_URL: ${SERVICE_URL_RALLY:-http://localhost:3000}
+      SECRET_PASSWORD: ${KIBAN_RALLY_SECRET_PASSWORD:-rallly-secret-password-change-me-000000000000}
+      SUPPORT_EMAIL: ${KIBAN_RALLY_SUPPORT_EMAIL:-admin@example.com}
+      NOREPLY_EMAIL: ${KIBAN_RALLY_NOREPLY_EMAIL:-admin@example.com}
+      SMTP_HOST: ${KIBAN_RALLY_SMTP_HOST:-localhost}
+      SMTP_PORT: ${KIBAN_RALLY_SMTP_PORT:-25}
+      SMTP_USER: ${KIBAN_RALLY_SMTP_USER:-}
+      SMTP_PWD: ${KIBAN_RALLY_SMTP_PASSWORD:-}
+      SMTP_SECURE: "false"
+      DATABASE_URL: postgres://postgres:${KIBAN_RALLY_DB_PASSWORD:-rallly-postgres-password}@rally-db:5432/rallly
+      S3_ENDPOINT: http://rally-storage:3900
+      S3_BUCKET_NAME: rallly
+      S3_REGION: garage
+      S3_ACCESS_KEY_ID: ${KIBAN_RALLY_S3_ACCESS_KEY:-rallly-access-key}
+      S3_SECRET_ACCESS_KEY: ${KIBAN_RALLY_S3_SECRET_KEY:-rallly-secret-key}
+      INITIAL_ADMIN_EMAIL: ${KIBAN_RALLY_INITIAL_ADMIN_EMAIL:-admin@example.com}
+      KIBAN_RALLY_PORT: ${KIBAN_RALLY_PORT:-3000}
+      KIBAN_RALLY_SECRET_PASSWORD: ${KIBAN_RALLY_SECRET_PASSWORD:-rallly-secret-password-change-me-000000000000}
+      KIBAN_RALLY_SUPPORT_EMAIL: ${KIBAN_RALLY_SUPPORT_EMAIL:-admin@example.com}
+      KIBAN_RALLY_NOREPLY_EMAIL: ${KIBAN_RALLY_NOREPLY_EMAIL:-admin@example.com}
+      KIBAN_RALLY_SMTP_HOST: ${KIBAN_RALLY_SMTP_HOST:-localhost}
+      KIBAN_RALLY_SMTP_PORT: ${KIBAN_RALLY_SMTP_PORT:-25}
+      KIBAN_RALLY_SMTP_USER: ${KIBAN_RALLY_SMTP_USER:-}
+      KIBAN_RALLY_SMTP_PASSWORD: ${KIBAN_RALLY_SMTP_PASSWORD:-}
+      KIBAN_RALLY_DB_PASSWORD: ${KIBAN_RALLY_DB_PASSWORD:-rallly-postgres-password}
+      KIBAN_RALLY_S3_ACCESS_KEY: ${KIBAN_RALLY_S3_ACCESS_KEY:-rallly-access-key}
+      KIBAN_RALLY_S3_SECRET_KEY: ${KIBAN_RALLY_S3_SECRET_KEY:-rallly-secret-key}
+      KIBAN_RALLY_INITIAL_ADMIN_EMAIL: ${KIBAN_RALLY_INITIAL_ADMIN_EMAIL:-admin@example.com}
+  rally-db:
+    image: postgres:17.6-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: rallly
+      POSTGRES_PASSWORD: ${KIBAN_RALLY_DB_PASSWORD:-rallly-postgres-password}
+    volumes:
+      - rally_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U postgres -d rallly"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+  rally-storage:
+    image: dxflrs/garage:v2.3.0
+    restart: unless-stopped
+    command:
+      - /garage
+      - server
+      - --single-node
+      - --default-bucket
+    environment:
+      GARAGE_RPC_SECRET: rallly-garage-rpc-secret-change-me-0000000000000000
+      GARAGE_DEFAULT_ACCESS_KEY: ${KIBAN_RALLY_S3_ACCESS_KEY:-rallly-access-key}
+      GARAGE_DEFAULT_SECRET_KEY: ${KIBAN_RALLY_S3_SECRET_KEY:-rallly-secret-key}
+      GARAGE_DEFAULT_BUCKET: rallly
+    volumes:
+      - rally_garage_meta:/var/lib/garage/meta
+      - rally_garage_data:/var/lib/garage/data
+volumes:
+  rally_db:
+  rally_garage_meta:
+  rally_garage_data:

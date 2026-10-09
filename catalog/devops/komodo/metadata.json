@@ -1,0 +1,17 @@
+{
+  "id": "komodo",
+  "name": "Komodo",
+  "description": "Infrastructure and deployment management dashboard.",
+  "category": "devops",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "komodo",
+      "port": 9120
+    }
+  ]
+}

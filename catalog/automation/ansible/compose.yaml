@@ -1,0 +1,21 @@
+services:
+  ansible:
+    image: semaphoreui/semaphore:v2.13.14
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_ANSIBLE_PORT:-3000}:3000"
+    environment:
+      SEMAPHORE_DB_DIALECT: bolt
+      SEMAPHORE_ADMIN: ${KIBAN_ANSIBLE_ADMIN_USER:-admin}
+      SEMAPHORE_ADMIN_PASSWORD: ${KIBAN_ANSIBLE_ADMIN_PASSWORD:-admin}
+      SEMAPHORE_ADMIN_NAME: Kiban Admin
+      SEMAPHORE_ADMIN_EMAIL: admin@localhost
+      SEMAPHORE_ACCESS_KEY_ENCRYPTION: ${KIBAN_ANSIBLE_ACCESS_KEY:-kibanansibleaccesskey32chars0000}
+      KIBAN_ANSIBLE_PORT: ${KIBAN_ANSIBLE_PORT:-3000}
+      KIBAN_ANSIBLE_ADMIN_USER: ${KIBAN_ANSIBLE_ADMIN_USER:-admin}
+      KIBAN_ANSIBLE_ADMIN_PASSWORD: ${KIBAN_ANSIBLE_ADMIN_PASSWORD:-admin}
+      KIBAN_ANSIBLE_ACCESS_KEY: ${KIBAN_ANSIBLE_ACCESS_KEY:-kibanansibleaccesskey32chars0000}
+    volumes:
+      - ansible_data:/var/lib/semaphore
+volumes:
+  ansible_data:

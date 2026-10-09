@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_FIREFLY_III_PORT": {
+      "type": "string",
+      "default": "${KIBAN_FIREFLY_III_PORT:-8080}"
+    },
+    "KIBAN_FIREFLY_III_APP_KEY": {
+      "type": "string",
+      "default": "${KIBAN_FIREFLY_III_APP_KEY:-base64:a2liYW5maXJlZmx5aWlpYXBwa2V5MzJieXRlczAwMDA=}"
+    },
+    "KIBAN_FIREFLY_III_DB_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_FIREFLY_III_DB_PASSWORD:-firefly}"
+    }
+  }
+}

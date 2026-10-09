@@ -1,0 +1,17 @@
+{
+  "id": "rundeck",
+  "name": "Rundeck",
+  "description": "Runbook automation and operations orchestration platform.",
+  "category": "automation",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "rundeck",
+      "port": 4440
+    }
+  ]
+}

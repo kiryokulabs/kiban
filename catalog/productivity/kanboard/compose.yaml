@@ -1,0 +1,17 @@
+services:
+  kanboard:
+    image: kanboard/kanboard:v1.2.46
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_KANBOARD_PORT:-80}:80"
+    environment:
+      PLUGIN_INSTALLER: "true"
+      KIBAN_KANBOARD_PORT: ${KIBAN_KANBOARD_PORT:-80}
+    volumes:
+      - kanboard_data:/var/www/app/data
+      - kanboard_plugins:/var/www/app/plugins
+      - kanboard_ssl:/etc/nginx/ssl
+volumes:
+  kanboard_data:
+  kanboard_plugins:
+  kanboard_ssl:

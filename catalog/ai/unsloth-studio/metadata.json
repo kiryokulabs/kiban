@@ -1,0 +1,17 @@
+{
+  "id": "unsloth-studio",
+  "name": "Unsloth Studio",
+  "description": "AI model fine-tuning workspace.",
+  "category": "ai",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "unsloth-studio",
+      "port": 8888
+    }
+  ]
+}

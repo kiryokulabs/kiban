@@ -1,0 +1,14 @@
+services:
+  unsloth-studio:
+    image: unsloth/unsloth@sha256:3a117262f2b0ce73f981a59f8b4662655c1f53b6fccfde5500c143fc89acc621
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_UNSLOTH_STUDIO_PORT:-8888}:8888"
+    environment:
+      KIBAN_UNSLOTH_STUDIO_PORT: ${KIBAN_UNSLOTH_STUDIO_PORT:-8888}
+    volumes:
+      - unsloth_studio_data:/workspace
+      - unsloth_hf_cache:/root/.cache/huggingface
+volumes:
+  unsloth_studio_data:
+  unsloth_hf_cache:

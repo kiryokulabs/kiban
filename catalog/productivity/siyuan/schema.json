@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_SIYUAN_PORT": {
+      "type": "string",
+      "default": "${KIBAN_SIYUAN_PORT:-6806}"
+    },
+    "KIBAN_SIYUAN_AUTH_CODE": {
+      "type": "string",
+      "default": "${KIBAN_SIYUAN_AUTH_CODE:-siyuan-auth-code}"
+    }
+  }
+}

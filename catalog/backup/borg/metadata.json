@@ -1,0 +1,10 @@
+{
+  "id": "borg",
+  "name": "Borg",
+  "description": "Deduplicating backup service based on BorgBackup.",
+  "category": "backup",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": []
+}

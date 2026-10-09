@@ -1,0 +1,15 @@
+services:
+  apache-superset:
+    image: apache/superset:4.1.2
+    restart: unless-stopped
+    command: ["/bin/sh", "-c", "superset db upgrade && (superset fab create-admin --username admin --firstname Kiban --lastname Admin --email admin@localhost --password admin || true) && superset init && superset run -h 0.0.0.0 -p 8088"]
+    ports:
+      - "${KIBAN_APACHE_SUPERSET_PORT:-8088}:8088"
+    environment:
+      SUPERSET_SECRET_KEY: ${KIBAN_APACHE_SUPERSET_SECRET_KEY:-kiban-superset-change-this-secret-key-000000000000}
+      KIBAN_APACHE_SUPERSET_PORT: ${KIBAN_APACHE_SUPERSET_PORT:-8088}
+      KIBAN_APACHE_SUPERSET_SECRET_KEY: ${KIBAN_APACHE_SUPERSET_SECRET_KEY:-kiban-superset-change-this-secret-key-000000000000}
+    volumes:
+      - apache-superset_data:/app/superset_home
+volumes:
+  apache-superset_data:

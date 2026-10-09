@@ -1,0 +1,12 @@
+services:
+  gogs:
+    image: gogs/gogs:0.13.3
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_GOGS_PORT:-3000}:3000"
+    environment:
+      KIBAN_GOGS_PORT: ${KIBAN_GOGS_PORT:-3000}
+    volumes:
+      - gogs_data:/data
+volumes:
+  gogs_data:

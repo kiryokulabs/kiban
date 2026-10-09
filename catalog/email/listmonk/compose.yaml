@@ -1,0 +1,41 @@
+services:
+  listmonk:
+    image: listmonk/listmonk:v5.0.3
+    restart: unless-stopped
+    command:
+      - "sh"
+      - "-c"
+      - "./listmonk --install --yes --config /listmonk/config.toml || true; ./listmonk --config /listmonk/config.toml"
+    ports:
+      - "${KIBAN_LISTMONK_PORT:-9000}:9000"
+    environment:
+      LISTMONK_app__address: 0.0.0.0:9000
+      LISTMONK_db__host: listmonk-db
+      LISTMONK_db__port: 5432
+      LISTMONK_db__user: listmonk
+      LISTMONK_db__password: ${KIBAN_LISTMONK_DB_PASSWORD:-listmonk}
+      LISTMONK_db__database: listmonk
+      KIBAN_LISTMONK_PORT: ${KIBAN_LISTMONK_PORT:-9000}
+      KIBAN_LISTMONK_DB_PASSWORD: ${KIBAN_LISTMONK_DB_PASSWORD:-listmonk}
+    depends_on:
+      - listmonk-db
+    volumes:
+      - listmonk_uploads:/listmonk/uploads
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:9000 || curl -f http://127.0.0.1:9000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+  listmonk-db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: listmonk
+      POSTGRES_USER: listmonk
+      POSTGRES_PASSWORD: ${KIBAN_LISTMONK_DB_PASSWORD:-listmonk}
+    volumes:
+      - listmonk_db_data:/var/lib/postgresql/data
+volumes:
+  listmonk_db_data:
+  listmonk_uploads:

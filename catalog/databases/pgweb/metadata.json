@@ -1,0 +1,17 @@
+{
+  "id": "pgweb",
+  "name": "pgweb",
+  "description": "Web-based PostgreSQL database browser.",
+  "category": "databases",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "pgweb",
+      "port": 8081
+    }
+  ]
+}

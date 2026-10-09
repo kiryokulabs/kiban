@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_PAPERMERGE_PORT": {
+      "type": "string",
+      "default": "${KIBAN_PAPERMERGE_PORT:-8000}"
+    },
+    "KIBAN_PAPERMERGE_SECRET_KEY": {
+      "type": "string",
+      "default": "${KIBAN_PAPERMERGE_SECRET_KEY:-change-me-papermerge-secret}"
+    },
+    "KIBAN_PAPERMERGE_DB_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_PAPERMERGE_DB_PASSWORD:-papermerge}"
+    }
+  }
+}

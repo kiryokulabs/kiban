@@ -1,0 +1,36 @@
+services:
+  mattermost:
+    image: mattermost/mattermost-team-edition:10.12.0
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_MATTERMOST_PORT:-8065}:8065"
+    environment:
+      MM_SQLSETTINGS_DRIVERNAME: postgres
+      MM_SQLSETTINGS_DATASOURCE: postgres://mattermost:${KIBAN_MATTERMOST_DB_PASSWORD:-mattermost}@mattermost-db:5432/mattermost?sslmode=disable&connect_timeout=10
+      MM_SERVICESETTINGS_SITEURL: http://localhost:${KIBAN_MATTERMOST_PORT:-8065}
+      KIBAN_MATTERMOST_PORT: ${KIBAN_MATTERMOST_PORT:-8065}
+      KIBAN_MATTERMOST_DB_PASSWORD: ${KIBAN_MATTERMOST_DB_PASSWORD:-mattermost}
+    depends_on:
+      - mattermost-db
+    volumes:
+      - mattermost_config:/mattermost/config
+      - mattermost_data:/mattermost/data
+      - mattermost_logs:/mattermost/logs
+      - mattermost_plugins:/mattermost/plugins
+      - mattermost_client_plugins:/mattermost/client/plugins
+  mattermost-db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: mattermost
+      POSTGRES_USER: mattermost
+      POSTGRES_PASSWORD: ${KIBAN_MATTERMOST_DB_PASSWORD:-mattermost}
+    volumes:
+      - mattermost_db:/var/lib/postgresql/data
+volumes:
+  mattermost_config:
+  mattermost_data:
+  mattermost_logs:
+  mattermost_plugins:
+  mattermost_client_plugins:
+  mattermost_db:

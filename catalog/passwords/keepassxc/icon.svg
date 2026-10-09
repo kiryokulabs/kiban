@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="KeePassXC icon">
+  <rect width="64" height="64" rx="14" fill="#111827"/>
+  <circle cx="32" cy="28" r="14" fill="#38bdf8" opacity="0.9"/>
+  <path d="M18 46c4-8 9-12 14-12s10 4 14 12" fill="none" stroke="#e5e7eb" stroke-width="5" stroke-linecap="round"/>
+</svg>

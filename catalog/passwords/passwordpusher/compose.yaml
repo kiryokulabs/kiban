@@ -1,0 +1,12 @@
+services:
+  passwordpusher:
+    image: pglombardo/pwpush:1.61.1
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_PASSWORDPUSHER_PORT:-5100}:5100"
+    environment:
+      KIBAN_PASSWORDPUSHER_PORT: ${KIBAN_PASSWORDPUSHER_PORT:-5100}
+    volumes:
+      - passwordpusher_data:/data
+volumes:
+  passwordpusher_data:

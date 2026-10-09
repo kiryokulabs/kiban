@@ -1,0 +1,17 @@
+{
+  "id": "passwordpusher",
+  "name": "Password Pusher",
+  "description": "Secure temporary secret sharing service.",
+  "category": "passwords",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "passwordpusher",
+      "port": 5100
+    }
+  ]
+}

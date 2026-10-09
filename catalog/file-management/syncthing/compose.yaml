@@ -1,0 +1,12 @@
+services:
+  syncthing:
+    image: syncthing/syncthing:2.0.10
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_SYNCTHING_PORT:-8384}:8384"
+    environment:
+      KIBAN_SYNCTHING_PORT: ${KIBAN_SYNCTHING_PORT:-8384}
+    volumes:
+      - syncthing_data:/data
+volumes:
+  syncthing_data:

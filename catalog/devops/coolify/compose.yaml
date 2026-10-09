@@ -1,0 +1,94 @@
+services:
+  coolify:
+    image: coollabsio/coolify:sha-e793472
+    restart: unless-stopped
+    depends_on:
+      coolify-db:
+        condition: service_healthy
+      coolify-redis:
+        condition: service_healthy
+    ports:
+      - "${KIBAN_COOLIFY_PORT:-8000}:8080"
+      - "${KIBAN_COOLIFY_REALTIME_PORT:-6001}:6001"
+    environment:
+      APP_ID: kiban-coolify
+      APP_ENV: production
+      APP_NAME: Coolify
+      APP_KEY: base64:Y29vbGlmeS1raWJhbi1hcHAta2V5LTMyLWJ5dGVzISE=
+      APP_URL: ${SERVICE_URL_COOLIFY:-http://localhost:8000}
+      APP_PORT: "8080"
+      DB_CONNECTION: pgsql
+      DB_HOST: coolify-db
+      DB_PORT: "5432"
+      DB_DATABASE: coolify
+      DB_USERNAME: coolify
+      DB_PASSWORD: ${KIBAN_COOLIFY_DB_PASSWORD:-coolify-password}
+      REDIS_HOST: coolify-redis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: ${KIBAN_COOLIFY_REDIS_PASSWORD:-coolify-redis-password}
+      PUSHER_APP_ID: kiban-coolify
+      PUSHER_APP_KEY: kiban-coolify-key
+      PUSHER_APP_SECRET: kiban-coolify-secret
+      PUSHER_HOST: 0.0.0.0
+      PUSHER_PORT: "6001"
+      PUSHER_BACKEND_PORT: "6001"
+      SSL_MODE: off
+      SELF_HOSTED: "true"
+      AUTOUPDATE: "false"
+      SSH_MUX_ENABLED: "false"
+      KIBAN_COOLIFY_PORT: ${KIBAN_COOLIFY_PORT:-8000}
+      KIBAN_COOLIFY_REALTIME_PORT: ${KIBAN_COOLIFY_REALTIME_PORT:-6001}
+      KIBAN_COOLIFY_DB_PASSWORD: ${KIBAN_COOLIFY_DB_PASSWORD:-coolify-password}
+      KIBAN_COOLIFY_REDIS_PASSWORD: ${KIBAN_COOLIFY_REDIS_PASSWORD:-coolify-redis-password}
+    volumes:
+      - coolify_ssh:/var/www/html/storage/app/ssh
+      - coolify_applications:/var/www/html/storage/app/applications
+      - coolify_databases:/var/www/html/storage/app/databases
+      - coolify_services:/var/www/html/storage/app/services
+      - coolify_backups:/var/www/html/storage/app/backups
+      - coolify_images:/var/www/html/storage/app/images
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:8080/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 120s
+  coolify-db:
+    image: postgres:15.14-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: coolify
+      POSTGRES_USER: coolify
+      POSTGRES_PASSWORD: ${KIBAN_COOLIFY_DB_PASSWORD:-coolify-password}
+    volumes:
+      - coolify_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+  coolify-redis:
+    image: redis:8.2.1-alpine
+    restart: unless-stopped
+    command:
+      - sh
+      - -c
+      - redis-server --save 20 1 --loglevel warning --requirepass "$${REDIS_PASSWORD}"
+    environment:
+      REDIS_PASSWORD: ${KIBAN_COOLIFY_REDIS_PASSWORD:-coolify-redis-password}
+    volumes:
+      - coolify_redis:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a $${REDIS_PASSWORD} ping | grep -q PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+volumes:
+  coolify_ssh:
+  coolify_applications:
+  coolify_databases:
+  coolify_services:
+  coolify_backups:
+  coolify_images:
+  coolify_db:
+  coolify_redis:

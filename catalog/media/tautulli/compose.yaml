@@ -1,0 +1,16 @@
+services:
+  tautulli:
+    image: ghcr.io/tautulli/tautulli:v2.18.2
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_TAUTULLI_PORT:-8181}:8181"
+    environment:
+      PUID: "1000"
+      PGID: "1000"
+      TZ: ${KIBAN_TAUTULLI_TZ:-UTC}
+      KIBAN_TAUTULLI_PORT: ${KIBAN_TAUTULLI_PORT:-8181}
+      KIBAN_TAUTULLI_TZ: ${KIBAN_TAUTULLI_TZ:-UTC}
+    volumes:
+      - tautulli_config:/config
+volumes:
+  tautulli_config:

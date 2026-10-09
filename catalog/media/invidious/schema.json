@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_INVIDIOUS_PORT": {
+      "type": "string",
+      "default": "${KIBAN_INVIDIOUS_PORT:-3000}"
+    },
+    "KIBAN_INVIDIOUS_DB_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_INVIDIOUS_DB_PASSWORD:-invidious-password}"
+    },
+    "KIBAN_INVIDIOUS_HMAC_KEY": {
+      "type": "string",
+      "default": "${KIBAN_INVIDIOUS_HMAC_KEY:-invidious-hmac-key-change-me-000000000000}"
+    }
+  }
+}

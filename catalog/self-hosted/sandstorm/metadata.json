@@ -1,0 +1,17 @@
+{
+  "id": "sandstorm",
+  "name": "Sandstorm",
+  "description": "Self-hosting platform for personal web apps.",
+  "category": "self-hosted",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "sandstorm",
+      "port": 6080
+    }
+  ]
+}

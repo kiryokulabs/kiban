@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_METUBE_PORT": {
+      "type": "string",
+      "default": "${KIBAN_METUBE_PORT:-8081}"
+    },
+    "KIBAN_METUBE_THEME": {
+      "type": "string",
+      "default": "${KIBAN_METUBE_THEME:-auto}"
+    }
+  }
+}

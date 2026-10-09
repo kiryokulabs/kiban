@@ -1,0 +1,34 @@
+services:
+  zipline:
+    image: ghcr.io/diced/zipline:4.2.0
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_ZIPLINE_PORT:-3000}:3000"
+    environment:
+      DATABASE_URL: postgres://zipline:${KIBAN_ZIPLINE_DB_PASSWORD:-zipline}@zipline-db:5432/zipline
+      CORE_SECRET: ${KIBAN_ZIPLINE_CORE_SECRET:-change-me-zipline-secret}
+      KIBAN_ZIPLINE_PORT: ${KIBAN_ZIPLINE_PORT:-3000}
+      KIBAN_ZIPLINE_DB_PASSWORD: ${KIBAN_ZIPLINE_DB_PASSWORD:-zipline}
+      KIBAN_ZIPLINE_CORE_SECRET: ${KIBAN_ZIPLINE_CORE_SECRET:-change-me-zipline-secret}
+    depends_on:
+      - zipline-db
+    volumes:
+      - zipline_uploads:/zipline/uploads
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:3000 || curl -f http://127.0.0.1:3000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+  zipline-db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: zipline
+      POSTGRES_USER: zipline
+      POSTGRES_PASSWORD: ${KIBAN_ZIPLINE_DB_PASSWORD:-zipline}
+    volumes:
+      - zipline_db_data:/var/lib/postgresql/data
+volumes:
+  zipline_db_data:
+  zipline_uploads:

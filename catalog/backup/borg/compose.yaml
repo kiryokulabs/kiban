@@ -1,0 +1,24 @@
+services:
+  borg:
+    image: b3vis/borgmatic:2.1.9
+    restart: unless-stopped
+    environment:
+      TZ: Etc/UTC
+      KIBAN_BORG_INTERVAL_SECONDS: ${KIBAN_BORG_INTERVAL_SECONDS:-86400}
+    command:
+      - sh
+      - -c
+      - >-
+        mkdir -p /source /repository /etc/borgmatic.d &&
+        if [ ! -f /etc/borgmatic.d/config.yaml ]; then
+          printf '%s\n' 'source_directories:' '  - /source' 'repositories:' '  - path: /repository' 'encryption_passphrase: kiban-borg-passphrase-change-me' 'keep_daily: 7' 'keep_weekly: 4' 'keep_monthly: 6' > /etc/borgmatic.d/config.yaml;
+        fi &&
+        while true; do borgmatic --verbosity 1 || true; sleep "$${KIBAN_BORG_INTERVAL_SECONDS}"; done
+    volumes:
+      - borg_config:/etc/borgmatic.d
+      - borg_source:/source
+      - borg_repository:/repository
+volumes:
+  borg_config:
+  borg_source:
+  borg_repository:

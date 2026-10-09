@@ -1,0 +1,20 @@
+services:
+  komodo:
+    image: ghcr.io/moghtech/komodo:1.19.5
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_KOMODO_PORT:-9120}:9120"
+    environment:
+      KOMODO_JWT_SECRET: ${KIBAN_KOMODO_JWT_SECRET:-change-me-komodo-jwt-secret}
+      KIBAN_KOMODO_PORT: ${KIBAN_KOMODO_PORT:-9120}
+      KIBAN_KOMODO_JWT_SECRET: ${KIBAN_KOMODO_JWT_SECRET:-change-me-komodo-jwt-secret}
+    volumes:
+      - komodo_data:/config
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:9120 || curl -f http://127.0.0.1:9120 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+volumes:
+  komodo_data:

@@ -1,0 +1,52 @@
+services:
+  leantime:
+    image: leantime/leantime:3.10.4
+    restart: unless-stopped
+    depends_on:
+      leantime-db:
+        condition: service_healthy
+    ports:
+      - "${KIBAN_LEANTIME_PORT:-8080}:8080"
+    environment:
+      LEAN_PORT: "8080"
+      LEAN_APP_URL: ${SERVICE_URL_LEANTIME:-http://localhost:8080}
+      LEAN_DEBUG: "0"
+      LEAN_DB_HOST: leantime-db
+      LEAN_DB_USER: lean
+      LEAN_DB_PASSWORD: ${KIBAN_LEANTIME_DB_PASSWORD:-leantime-password}
+      LEAN_DB_DATABASE: leantime
+      LEAN_DB_PORT: "3306"
+      LEAN_SESSION_PASSWORD: ${KIBAN_LEANTIME_SESSION_PASSWORD:-leantime-session-password-change-me-0000000000}
+      KIBAN_LEANTIME_PORT: ${KIBAN_LEANTIME_PORT:-8080}
+      KIBAN_LEANTIME_DB_PASSWORD: ${KIBAN_LEANTIME_DB_PASSWORD:-leantime-password}
+      KIBAN_LEANTIME_DB_ROOT_PASSWORD: ${KIBAN_LEANTIME_DB_ROOT_PASSWORD:-leantime-root-password}
+      KIBAN_LEANTIME_SESSION_PASSWORD: ${KIBAN_LEANTIME_SESSION_PASSWORD:-leantime-session-password-change-me-0000000000}
+    volumes:
+      - leantime_public_userfiles:/var/www/html/public/userfiles
+      - leantime_userfiles:/var/www/html/userfiles
+      - leantime_plugins:/var/www/html/app/Plugins
+      - leantime_logs:/var/www/html/storage/logs
+  leantime-db:
+    image: mysql:8.4.6
+    restart: unless-stopped
+    command:
+      - --character-set-server=UTF8MB4
+      - --collation-server=UTF8MB4_unicode_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: ${KIBAN_LEANTIME_DB_ROOT_PASSWORD:-leantime-root-password}
+      MYSQL_DATABASE: leantime
+      MYSQL_USER: lean
+      MYSQL_PASSWORD: ${KIBAN_LEANTIME_DB_PASSWORD:-leantime-password}
+    volumes:
+      - leantime_db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+volumes:
+  leantime_public_userfiles:
+  leantime_userfiles:
+  leantime_plugins:
+  leantime_logs:
+  leantime_db:

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_GLITCHTIP_PORT": {
+      "type": "string",
+      "default": "${KIBAN_GLITCHTIP_PORT:-8000}"
+    },
+    "KIBAN_GLITCHTIP_DB_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_GLITCHTIP_DB_PASSWORD:-glitchtip}"
+    },
+    "KIBAN_GLITCHTIP_SECRET_KEY": {
+      "type": "string",
+      "default": "${KIBAN_GLITCHTIP_SECRET_KEY:-change-me-glitchtip-secret}"
+    },
+    "KIBAN_GLITCHTIP_EMAIL_URL": {
+      "type": "string",
+      "default": "${KIBAN_GLITCHTIP_EMAIL_URL:-consolemail://}"
+    },
+    "KIBAN_GLITCHTIP_ALLOWED_HOSTS": {
+      "type": "string",
+      "default": "${KIBAN_GLITCHTIP_ALLOWED_HOSTS:-localhost,glitchtip}"
+    }
+  }
+}

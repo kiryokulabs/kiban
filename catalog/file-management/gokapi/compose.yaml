@@ -1,0 +1,20 @@
+services:
+  gokapi:
+    image: f0rc3/gokapi:v2.0.0
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_GOKAPI_PORT:-53842}:53842"
+    environment:
+      KIBAN_GOKAPI_PORT: ${KIBAN_GOKAPI_PORT:-53842}
+    volumes:
+      - gokapi_data:/app/data
+      - gokapi_config:/app/config
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:53842 || curl -f http://127.0.0.1:53842 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+volumes:
+  gokapi_config:
+  gokapi_data:

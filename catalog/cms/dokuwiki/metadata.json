@@ -1,0 +1,17 @@
+{
+  "id": "dokuwiki",
+  "name": "DokuWiki",
+  "description": "Simple file-based wiki engine.",
+  "category": "cms",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "dokuwiki",
+      "port": 80
+    }
+  ]
+}

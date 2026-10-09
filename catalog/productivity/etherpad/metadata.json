@@ -1,0 +1,17 @@
+{
+  "id": "etherpad",
+  "name": "Etherpad",
+  "description": "Collaborative real-time text editor.",
+  "category": "productivity",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "etherpad",
+      "port": 9001
+    }
+  ]
+}
