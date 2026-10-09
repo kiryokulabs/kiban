@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_WIREGUARD_PORTAL_PORT": {
+      "type": "string",
+      "default": "${KIBAN_WIREGUARD_PORTAL_PORT:-8888}"
+    }
+  }
+}

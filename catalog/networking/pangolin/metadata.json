@@ -1,0 +1,17 @@
+{
+  "id": "pangolin",
+  "name": "Pangolin",
+  "description": "Self-hosted tunneled reverse proxy and resource access platform.",
+  "category": "networking",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "pangolin",
+      "port": 3000
+    }
+  ]
+}

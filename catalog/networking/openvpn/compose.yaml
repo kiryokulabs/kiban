@@ -1,0 +1,16 @@
+services:
+  openvpn:
+    image: openvpn/openvpn-as:3.2.2-413ca39f-Ubuntu24
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_OPENVPN_PORT:-943}:943"
+      - "${KIBAN_OPENVPN_TCP_PORT:-9443}:443"
+      - "${KIBAN_OPENVPN_UDP_PORT:-1194}:1194/udp"
+    environment:
+      KIBAN_OPENVPN_PORT: ${KIBAN_OPENVPN_PORT:-943}
+      KIBAN_OPENVPN_TCP_PORT: ${KIBAN_OPENVPN_TCP_PORT:-9443}
+      KIBAN_OPENVPN_UDP_PORT: ${KIBAN_OPENVPN_UDP_PORT:-1194}
+    volumes:
+      - openvpn_data:/openvpn
+volumes:
+  openvpn_data:

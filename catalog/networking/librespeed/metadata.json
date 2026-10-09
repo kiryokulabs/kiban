@@ -1,0 +1,17 @@
+{
+  "id": "librespeed",
+  "name": "LibreSpeed",
+  "description": "Self-hosted network speed test.",
+  "category": "networking",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "librespeed",
+      "port": 80
+    }
+  ]
+}

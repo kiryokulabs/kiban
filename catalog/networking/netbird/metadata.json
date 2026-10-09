@@ -1,0 +1,17 @@
+{
+  "id": "netbird",
+  "name": "NetBird",
+  "description": "Zero-trust network management dashboard.",
+  "category": "networking",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "netbird",
+      "port": 80
+    }
+  ]
+}

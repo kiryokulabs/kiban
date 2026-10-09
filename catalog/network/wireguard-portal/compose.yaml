@@ -1,0 +1,21 @@
+services:
+  wireguard-portal:
+    image: wgportal/wg-portal:2.0.2
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_WIREGUARD_PORTAL_PORT:-8888}:8888"
+    environment:
+      EXTERNAL_URL: http://localhost:${KIBAN_WIREGUARD_PORTAL_PORT:-8888}
+      KIBAN_WIREGUARD_PORTAL_PORT: ${KIBAN_WIREGUARD_PORTAL_PORT:-8888}
+    volumes:
+      - wireguard_portal_data:/app/data
+      - wireguard_portal_config:/etc/wireguard
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8888 || curl -f http://127.0.0.1:8888 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+volumes:
+  wireguard_portal_config:
+  wireguard_portal_data:
