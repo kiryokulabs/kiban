@@ -1,0 +1,17 @@
+{
+  "id": "calibre-web",
+  "name": "Calibre-Web",
+  "description": "Web app for browsing and reading eBook libraries.",
+  "category": "media",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "calibre-web",
+      "port": 8083
+    }
+  ]
+}

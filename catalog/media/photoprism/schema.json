@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_PHOTOPRISM_PORT": {
+      "type": "string",
+      "default": "${KIBAN_PHOTOPRISM_PORT:-2342}"
+    },
+    "KIBAN_PHOTOPRISM_ADMIN_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_PHOTOPRISM_ADMIN_PASSWORD:-photoprism-admin-password}"
+    },
+    "KIBAN_PHOTOPRISM_DB_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_PHOTOPRISM_DB_PASSWORD:-photoprism-password}"
+    },
+    "KIBAN_PHOTOPRISM_DB_ROOT_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_PHOTOPRISM_DB_ROOT_PASSWORD:-photoprism-root-password}"
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "id": "invidious",
+  "name": "Invidious",
+  "description": "Alternative front-end for YouTube.",
+  "category": "media",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "invidious",
+      "port": 3000
+    }
+  ]
+}

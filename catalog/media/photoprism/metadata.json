@@ -1,0 +1,17 @@
+{
+  "id": "photoprism",
+  "name": "PhotoPrism",
+  "description": "AI-powered photo management and gallery.",
+  "category": "media",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "photoprism",
+      "port": 2342
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+services:
+  peertube:
+    image: chocobozzz/peertube:v8.3.1-trixie
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    ports:
+      - "${KIBAN_PEERTUBE_PORT:-9000}:9000"
+      - "${KIBAN_PEERTUBE_RTMP_PORT:-1935}:1935"
+    environment:
+      PEERTUBE_WEBSERVER_HOSTNAME: ${SERVICE_FQDN_PEERTUBE:-localhost}
+      PEERTUBE_WEBSERVER_PORT: ${KIBAN_PEERTUBE_PORT:-9000}
+      PEERTUBE_WEBSERVER_HTTPS: "false"
+      PEERTUBE_DB_HOSTNAME: postgres
+      PEERTUBE_DB_PORT: "5432"
+      PEERTUBE_DB_USERNAME: peertube
+      PEERTUBE_DB_PASSWORD: ${KIBAN_PEERTUBE_DB_PASSWORD:-peertube-password}
+      PEERTUBE_DB_NAME: peertube
+      PEERTUBE_REDIS_HOSTNAME: redis
+      PEERTUBE_SECRET: ${KIBAN_PEERTUBE_SECRET:-peertube-secret-change-me-000000000000000000000000}
+      PEERTUBE_ADMIN_EMAIL: ${KIBAN_PEERTUBE_ADMIN_EMAIL:-admin@example.com}
+      KIBAN_PEERTUBE_PORT: ${KIBAN_PEERTUBE_PORT:-9000}
+      KIBAN_PEERTUBE_RTMP_PORT: ${KIBAN_PEERTUBE_RTMP_PORT:-1935}
+      KIBAN_PEERTUBE_DB_PASSWORD: ${KIBAN_PEERTUBE_DB_PASSWORD:-peertube-password}
+      KIBAN_PEERTUBE_SECRET: ${KIBAN_PEERTUBE_SECRET:-peertube-secret-change-me-000000000000000000000000}
+      KIBAN_PEERTUBE_ADMIN_EMAIL: ${KIBAN_PEERTUBE_ADMIN_EMAIL:-admin@example.com}
+    volumes:
+      - peertube_data:/data
+      - peertube_config:/config
+  postgres:
+    image: postgres:17.6-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: peertube
+      POSTGRES_USER: peertube
+      POSTGRES_PASSWORD: ${KIBAN_PEERTUBE_DB_PASSWORD:-peertube-password}
+    volumes:
+      - peertube_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+  redis:
+    image: redis:8.2.1-alpine
+    restart: unless-stopped
+    volumes:
+      - peertube_redis:/data
+volumes:
+  peertube_data:
+  peertube_config:
+  peertube_db:
+  peertube_redis:

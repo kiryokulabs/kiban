@@ -1,0 +1,12 @@
+services:
+  tvheadend:
+    image: lscr.io/linuxserver/tvheadend:02987438-ls151
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_TVHEADEND_PORT:-9981}:9981"
+    environment:
+      KIBAN_TVHEADEND_PORT: ${KIBAN_TVHEADEND_PORT:-9981}
+    volumes:
+      - tvheadend_data:/data
+volumes:
+  tvheadend_data:

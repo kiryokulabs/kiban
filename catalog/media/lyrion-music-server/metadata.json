@@ -1,0 +1,17 @@
+{
+  "id": "lyrion-music-server",
+  "name": "Lyrion Music Server",
+  "description": "Music server for local audio libraries and players.",
+  "category": "media",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "lyrion-music-server",
+      "port": 9000
+    }
+  ]
+}

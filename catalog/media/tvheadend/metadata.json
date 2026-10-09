@@ -1,0 +1,17 @@
+{
+  "id": "tvheadend",
+  "name": "TVHeadend",
+  "description": "TV streaming server and recorder.",
+  "category": "media",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "tvheadend",
+      "port": 9981
+    }
+  ]
+}

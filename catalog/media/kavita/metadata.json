@@ -1,0 +1,17 @@
+{
+  "id": "kavita",
+  "name": "Kavita",
+  "description": "Self-hosted digital library for manga, comics, ebooks, and audiobooks.",
+  "category": "media",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "kavita",
+      "port": 5000
+    }
+  ]
+}

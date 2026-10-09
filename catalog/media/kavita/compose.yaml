@@ -1,0 +1,18 @@
+services:
+  kavita:
+    image: jvmilazz0/kavita:0.9.1
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_KAVITA_PORT:-5000}:5000"
+    environment:
+      TZ: ${KIBAN_KAVITA_TZ:-UTC}
+      KIBAN_KAVITA_PORT: ${KIBAN_KAVITA_PORT:-5000}
+      KIBAN_KAVITA_TZ: ${KIBAN_KAVITA_TZ:-UTC}
+    volumes:
+      - kavita_config:/kavita/config
+      - kavita_books:/books
+      - kavita_manga:/manga
+volumes:
+  kavita_config:
+  kavita_books:
+  kavita_manga:

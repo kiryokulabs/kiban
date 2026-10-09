@@ -1,0 +1,58 @@
+services:
+  photoprism:
+    image: photoprism/photoprism:260919
+    restart: unless-stopped
+    depends_on:
+      photoprism-db:
+        condition: service_healthy
+    ports:
+      - "${KIBAN_PHOTOPRISM_PORT:-2342}:2342"
+    environment:
+      PHOTOPRISM_ADMIN_USER: admin
+      PHOTOPRISM_ADMIN_PASSWORD: ${KIBAN_PHOTOPRISM_ADMIN_PASSWORD:-photoprism-admin-password}
+      PHOTOPRISM_AUTH_MODE: password
+      PHOTOPRISM_SITE_URL: ${SERVICE_URL_PHOTOPRISM:-http://localhost:2342}
+      PHOTOPRISM_DISABLE_TLS: "true"
+      PHOTOPRISM_ORIGINALS_LIMIT: "5000"
+      PHOTOPRISM_HTTP_COMPRESSION: gzip
+      PHOTOPRISM_DATABASE_DRIVER: mysql
+      PHOTOPRISM_DATABASE_SERVER: photoprism-db:3306
+      PHOTOPRISM_DATABASE_NAME: photoprism
+      PHOTOPRISM_DATABASE_USER: photoprism
+      PHOTOPRISM_DATABASE_PASSWORD: ${KIBAN_PHOTOPRISM_DB_PASSWORD:-photoprism-password}
+      KIBAN_PHOTOPRISM_PORT: ${KIBAN_PHOTOPRISM_PORT:-2342}
+      KIBAN_PHOTOPRISM_ADMIN_PASSWORD: ${KIBAN_PHOTOPRISM_ADMIN_PASSWORD:-photoprism-admin-password}
+      KIBAN_PHOTOPRISM_DB_PASSWORD: ${KIBAN_PHOTOPRISM_DB_PASSWORD:-photoprism-password}
+      KIBAN_PHOTOPRISM_DB_ROOT_PASSWORD: ${KIBAN_PHOTOPRISM_DB_ROOT_PASSWORD:-photoprism-root-password}
+    volumes:
+      - photoprism_originals:/photoprism/originals
+      - photoprism_storage:/photoprism/storage
+  photoprism-db:
+    image: mariadb:11.8.3
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: photoprism
+      MARIADB_USER: photoprism
+      MARIADB_PASSWORD: ${KIBAN_PHOTOPRISM_DB_PASSWORD:-photoprism-password}
+      MARIADB_ROOT_PASSWORD: ${KIBAN_PHOTOPRISM_DB_ROOT_PASSWORD:-photoprism-root-password}
+      MARIADB_AUTO_UPGRADE: "1"
+    command:
+      - mariadbd
+      - --innodb-buffer-pool-size=512M
+      - --transaction-isolation=READ-COMMITTED
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --max-connections=512
+      - --innodb-rollback-on-timeout=OFF
+      - --innodb-lock-wait-timeout=120
+    volumes:
+      - photoprism_db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin ping -h 127.0.0.1 -u root -p$${MARIADB_ROOT_PASSWORD} --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+volumes:
+  photoprism_originals:
+  photoprism_storage:
+  photoprism_db:
