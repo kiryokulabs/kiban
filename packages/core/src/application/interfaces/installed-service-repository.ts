@@ -18,6 +18,25 @@ export interface RuntimePublicEndpoint {
   readonly protocol: 'http' | 'https';
 }
 
+export function parseRuntimePublicEndpoints(
+  runtime: Readonly<Record<string, unknown>> | null | undefined
+): readonly RuntimePublicEndpoint[] {
+  const publicEndpoints = runtime?.['publicEndpoints'];
+  if (!Array.isArray(publicEndpoints)) return [];
+  return publicEndpoints.flatMap((endpoint): readonly RuntimePublicEndpoint[] => {
+    if (!endpoint || typeof endpoint !== 'object' || Array.isArray(endpoint)) return [];
+    const record = endpoint as Readonly<Record<string, unknown>>;
+    const name = record['name'];
+    const service = record['service'];
+    const port = record['port'];
+    const host = record['host'];
+    const url = record['url'];
+    if (typeof name !== 'string' || typeof service !== 'string' || typeof port !== 'number' || typeof host !== 'string' || typeof url !== 'string') return [];
+    const protocol = record['protocol'] === 'http' || record['protocol'] === 'https' ? record['protocol'] : url.startsWith('https://') ? 'https' : 'http';
+    return [{ name, service, port, host, url, protocol }];
+  });
+}
+
 export interface RuntimeResult {
   readonly status: InstalledServiceStatus;
   readonly runtime?: Readonly<Record<string, unknown>> | null;

@@ -7,7 +7,7 @@ import http from 'node:http';
 import https from 'node:https';
 import { Logger } from '@nestjs/common';
 import { parse, stringify } from 'yaml';
-import type { InstallationPlan, InstalledService, RuntimeHealth, RuntimeProvider, RuntimePublicEndpoint, RuntimeResult } from '@kiban/core';
+import { parseRuntimePublicEndpoints, type InstallationPlan, type InstalledService, type RuntimeHealth, type RuntimeProvider, type RuntimePublicEndpoint, type RuntimeResult } from '@kiban/core';
 import type { RuntimeStatusDto } from '../dto/runtime.dto';
 import type { FleetRuntimeStats } from '../interfaces/fleet-runtime-stats';
 import type { ProxyProvider } from '../../proxy/application/proxy-provider';
@@ -296,22 +296,27 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
   /** Installs a catalog service by writing its Compose workspace and running `docker compose up -d`. */
   public async install(plan: InstallationPlan): Promise<RuntimeResult> {
     const workspace = this.workspaceFor(plan.environment.id, plan.serviceDefinition.id);
-    await mkdir(workspace, { recursive: true });
     const composeFile = join(workspace, 'compose.yaml');
     const envFile = join(workspace, '.env');
     const projectName = this.projectName(plan.environment.id, plan.serviceDefinition.id);
     const networkName = this.networkName(plan.environment.id);
-    await this.ensureReverseProxy();
-    let generatedComposeYaml = this.composeYamlForRuntime(plan.serviceDefinition.composeYaml, networkName, plan.publicEndpoints ?? []);
-    generatedComposeYaml = await this.materializeGeneratedBindFiles(workspace, generatedComposeYaml);
-    let variables = await this.variablesWithAvailableHostPorts(generatedComposeYaml, this.variablesWithPublicEndpoints(plan.variables, plan.publicEndpoints ?? [], plan.serviceDefinition.id));
-    await this.ensureEnvironmentNetwork(workspace, networkName);
-    await writeFile(composeFile, generatedComposeYaml, 'utf8');
-    await writeFile(envFile, this.envFile(variables), 'utf8');
-    variables = await this.composeUpWithPortCollisionRetry(workspace, projectName, generatedComposeYaml, variables, envFile);
-    const containers = await this.ps(workspace, projectName);
-    const health = await this.runtimeHealth(containers, plan.publicEndpoints ?? []);
-    return { status: health.status === 'unhealthy' ? 'failed' : 'running', runtime: { provider: 'docker-compose', projectName, workingDirectory: workspace, composeFile, envFile, networkName, sharedNetworkName: SHARED_REVERSE_PROXY_NETWORK, publicEndpoints: plan.publicEndpoints ?? [], containers, health: health.status, healthSource: health.source, healthCheckedAt: health.checkedAt, healthMessage: health.message, status: 'running', createdAt: new Date().toISOString() } };
+    const baseRuntime = { provider: 'docker-compose', projectName, workingDirectory: workspace, composeFile, envFile, networkName, sharedNetworkName: SHARED_REVERSE_PROXY_NETWORK, publicEndpoints: plan.publicEndpoints ?? [], createdAt: new Date().toISOString() };
+    try {
+      await mkdir(workspace, { recursive: true });
+      await this.ensureReverseProxy();
+      let generatedComposeYaml = this.composeYamlForRuntime(plan.serviceDefinition.composeYaml, networkName, plan.publicEndpoints ?? []);
+      generatedComposeYaml = await this.materializeGeneratedBindFiles(workspace, generatedComposeYaml);
+      let variables = await this.variablesWithAvailableHostPorts(generatedComposeYaml, this.variablesWithPublicEndpoints(plan.variables, plan.publicEndpoints ?? [], plan.serviceDefinition.id));
+      await this.ensureNetwork(workspace, networkName);
+      await writeFile(composeFile, generatedComposeYaml, 'utf8');
+      await writeFile(envFile, this.envFile(variables), 'utf8');
+      variables = await this.composeUpWithPortCollisionRetry(workspace, projectName, generatedComposeYaml, variables, envFile);
+      const containers = await this.ps(workspace, projectName);
+      const health = await this.runtimeHealth(containers, plan.publicEndpoints ?? []);
+      return { status: health.status === 'unhealthy' ? 'failed' : 'running', runtime: { ...baseRuntime, containers, health: health.status, healthSource: health.source, healthCheckedAt: health.checkedAt, healthMessage: health.message, status: 'running' } };
+    } catch (error: unknown) {
+      return { status: 'failed', runtime: this.deploymentErrorRuntime(baseRuntime, error) };
+    }
   }
 
   /** Redeploys a catalog service by rewriting its Compose workspace and running `docker compose up -d` without deleting volumes. */
@@ -322,20 +327,25 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
     const envFile = this.runtimeString(service, 'envFile');
     const projectName = this.runtimeString(service, 'projectName');
     const networkName = this.runtimeString(service, 'networkName');
-    await this.ensureReverseProxy();
-    let generatedComposeYaml = this.composeYamlForRuntime(plan.serviceDefinition.composeYaml, networkName, plan.publicEndpoints ?? []);
-    generatedComposeYaml = await this.materializeGeneratedBindFiles(workspace, generatedComposeYaml);
-    let variables = await this.variablesWithAvailableHostPorts(generatedComposeYaml, this.variablesWithPublicEndpoints(plan.variables, plan.publicEndpoints ?? [], plan.serviceDefinition.id));
-    await this.ensureEnvironmentNetwork(workspace, networkName);
-    await writeFile(composeFile, generatedComposeYaml, 'utf8');
-    await writeFile(envFile, this.envFile(variables), 'utf8');
-    variables = await this.composeUpWithPortCollisionRetry(workspace, projectName, generatedComposeYaml, variables, envFile);
-    const containers = await this.ps(workspace, projectName);
-    const health = await this.runtimeHealth(containers, plan.publicEndpoints ?? []);
-    return { status: health.status === 'unhealthy' ? 'failed' : 'running', runtime: { ...(service.runtime ?? {}), provider: 'docker-compose', projectName, workingDirectory: workspace, composeFile, envFile, networkName, sharedNetworkName: SHARED_REVERSE_PROXY_NETWORK, publicEndpoints: plan.publicEndpoints ?? [], containers, health: health.status, healthSource: health.source, healthCheckedAt: health.checkedAt, healthMessage: health.message, status: 'running' } };
+    const baseRuntime = { ...(service.runtime ?? {}), provider: 'docker-compose', projectName, workingDirectory: workspace, composeFile, envFile, networkName, sharedNetworkName: SHARED_REVERSE_PROXY_NETWORK, publicEndpoints: plan.publicEndpoints ?? [] };
+    try {
+      await this.ensureReverseProxy();
+      let generatedComposeYaml = this.composeYamlForRuntime(plan.serviceDefinition.composeYaml, networkName, plan.publicEndpoints ?? []);
+      generatedComposeYaml = await this.materializeGeneratedBindFiles(workspace, generatedComposeYaml);
+      let variables = await this.variablesWithAvailableHostPorts(generatedComposeYaml, this.variablesWithPublicEndpoints(plan.variables, plan.publicEndpoints ?? [], plan.serviceDefinition.id));
+      await this.ensureNetwork(workspace, networkName);
+      await writeFile(composeFile, generatedComposeYaml, 'utf8');
+      await writeFile(envFile, this.envFile(variables), 'utf8');
+      variables = await this.composeUpWithPortCollisionRetry(workspace, projectName, generatedComposeYaml, variables, envFile);
+      const containers = await this.ps(workspace, projectName);
+      const health = await this.runtimeHealth(containers, plan.publicEndpoints ?? []);
+      return { status: health.status === 'unhealthy' ? 'failed' : 'running', runtime: { ...baseRuntime, containers, health: health.status, healthSource: health.source, healthCheckedAt: health.checkedAt, healthMessage: health.message, status: 'running', lastError: undefined, state: undefined, exitCode: undefined } };
+    } catch (error: unknown) {
+      return { status: 'failed', runtime: this.deploymentErrorRuntime(baseRuntime, error) };
+    }
   }
 
-  /** Removes the Compose project and persistent volumes for an installed service. */
+  /** Removes the Compose project and persistent data for an installed service. */
   public async uninstall(service: InstalledService): Promise<RuntimeResult> {
     await this.composeFromService(service, ['down', '-v']);
     await this.removeWorkspace(service);
@@ -403,10 +413,6 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
     return sanitize(`kiban-env-${environmentId}`).toLowerCase();
   }
 
-  private async ensureEnvironmentNetwork(cwd: string, networkName: string): Promise<void> {
-    await this.ensureNetwork(cwd, networkName);
-  }
-
   private async ensureNetwork(cwd: string, networkName: string): Promise<void> {
     try {
       await this.runner.run('docker', ['network', 'inspect', networkName], { cwd });
@@ -427,7 +433,8 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
     await this.ensureAcmeStorage(join(workspace, 'acme.json'));
     await this.ensureNetwork(workspace, SHARED_REVERSE_PROXY_NETWORK);
     const composeFile = join(workspace, 'compose.yaml');
-    if (!(await this.fileExists(composeFile)) || await this.requiresProxyMigration(composeFile)) {
+    const compose = await readFile(composeFile, 'utf8').catch(() => null);
+    if (compose === null || compose.includes('--entrypoints.web.address=:80') || compose.includes('--entrypoints.websecure.address=:443')) {
       await writeFile(composeFile, await this.traefikComposeYaml(), 'utf8');
     }
     await this.runner.run('docker', ['compose', '--project-name', TRAEFIK_PROJECT_NAME, '-f', 'compose.yaml', 'up', '-d'], { cwd: workspace });
@@ -437,11 +444,6 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
   private async ensureAcmeStorage(path: string): Promise<void> {
     if (!(await this.fileExists(path))) await writeFile(path, '', 'utf8');
     await chmod(path, 0o600);
-  }
-
-  private async requiresProxyMigration(composeFile: string): Promise<boolean> {
-    const compose = await readFile(composeFile, 'utf8');
-    return compose.includes('--entrypoints.web.address=:80') || compose.includes('--entrypoints.websecure.address=:443');
   }
 
   private async fileExists(path: string): Promise<boolean> {
@@ -581,7 +583,15 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
 
     if (domain.length === 0) {
       this.removeTraefikLabels(webService);
-      this.removeServiceNetwork(webService, SHARED_REVERSE_PROXY_NETWORK);
+      const networks = webService['networks'];
+      if (Array.isArray(networks)) {
+        webService['networks'] = networks.filter((n) => n !== SHARED_REVERSE_PROXY_NETWORK);
+        if ((webService['networks'] as string[]).length === 0) delete webService['networks'];
+      } else if (networks && typeof networks === 'object') {
+        const record = networks as Record<string, unknown>;
+        delete record[SHARED_REVERSE_PROXY_NETWORK];
+        if (Object.keys(record).length === 0) delete webService['networks'];
+      }
       if (!('ports' in webService)) webService['ports'] = ['8080:80'];
       return stringify(document);
     }
@@ -742,20 +752,6 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
     service['networks'] = [networkName];
   }
 
-  private removeServiceNetwork(service: Record<string, unknown>, networkName: string): void {
-    const networks = service['networks'];
-    if (Array.isArray(networks)) {
-      service['networks'] = networks.filter((n) => n !== networkName);
-      if ((service['networks'] as string[]).length === 0) delete service['networks'];
-      return;
-    }
-    if (networks && typeof networks === 'object') {
-      const record = networks as Record<string, unknown>;
-      delete record[networkName];
-      if (Object.keys(record).length === 0) delete service['networks'];
-    }
-  }
-
   private addTraefikLabels(service: Record<string, unknown>, endpoint: RuntimePublicEndpoint): void {
     const labels = this.ensureRecord(service, 'labels');
     const protocol = this.publicProtocolForHost(endpoint.host, endpoint.protocol);
@@ -789,7 +785,7 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
       lines.set(key, resolved.value);
       if (resolved.variableName) lines.set(resolved.variableName, resolved.value);
     }
-    return [...lines.entries()].map(([key, value]) => `${key}=${this.escapeEnvValue(value)}`).join('\n') + '\n';
+    return [...lines.entries()].map(([key, value]) => `${key}=${!/[\s#'"\\]/.test(value) ? value : JSON.stringify(value)}`).join('\n') + '\n';
   }
 
   private variablesWithPublicEndpoints(
@@ -889,11 +885,6 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
     return Number.isInteger(parsed) && parsed > 0 && parsed <= 65535 ? parsed : defaultPort;
   }
 
-  private escapeEnvValue(value: string): string {
-    if (!/[\s#'"\\]/.test(value)) return value;
-    return JSON.stringify(value);
-  }
-
   private compose(cwd: string, projectName: string, args: readonly string[]): Promise<{ readonly stdout: string; readonly stderr: string }> {
     return this.runner.run('docker', ['compose', '--project-name', projectName, '--env-file', '.env', '-f', 'compose.yaml', ...args], { cwd });
   }
@@ -917,7 +908,7 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
     const cwd = this.runtimeString(service, 'workingDirectory');
     const projectName = this.runtimeString(service, 'projectName');
     const containers = await this.ps(cwd, projectName);
-    const health = await this.runtimeHealth(containers, this.runtimePublicEndpoints(service.runtime));
+    const health = await this.runtimeHealth(containers, parseRuntimePublicEndpoints(service.runtime));
     return { ...(service.runtime ?? {}), containers, health: health.status, healthSource: health.source, healthCheckedAt: health.checkedAt, healthMessage: health.message, status: containers.some((container) => container.status === 'running') ? 'running' : 'stopped' };
   }
 
@@ -942,28 +933,15 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
     return 'unknown';
   }
 
-  private runtimePublicEndpoints(runtime: Readonly<Record<string, unknown>> | null): readonly RuntimePublicEndpoint[] {
-    const publicEndpoints = runtime?.['publicEndpoints'];
-    if (!Array.isArray(publicEndpoints)) return [];
-    return publicEndpoints.flatMap((endpoint) => {
-      const record = this.recordValue(endpoint);
-      if (!record) return [];
-      const name = record['name'];
-      const service = record['service'];
-      const port = record['port'];
-      const host = record['host'];
-      const url = record['url'];
-      const protocol = record['protocol'];
-      if (typeof name !== 'string' || typeof service !== 'string' || typeof port !== 'number' || typeof host !== 'string' || typeof url !== 'string') return [];
-      if (protocol !== 'http' && protocol !== 'https') return [];
-      return [{ name, service, port, host, url, protocol }];
-    });
-  }
-
   private runtimeString(service: InstalledService, key: string): string {
     const value = service.runtime?.[key];
     if (typeof value !== 'string' || value.length === 0) throw new Error(`Installed service does not have Docker Compose runtime metadata: ${key}.`);
     return value;
+  }
+
+  private deploymentErrorRuntime(runtime: Readonly<Record<string, unknown>>, error: unknown): Readonly<Record<string, unknown>> {
+    const message = error instanceof Error ? error.message : String(error);
+    return { ...runtime, status: 'failed', state: 'deployment_failed', lastError: message, health: 'unhealthy', healthSource: 'deployment', healthCheckedAt: new Date().toISOString(), healthMessage: message };
   }
 
   private async ps(cwd: string, projectName: string): Promise<readonly ComposeContainerInfo[]> {
@@ -1015,7 +993,10 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
         containerId: id,
         name,
         state: this.stringField(record, 'State') || 'unknown',
-        health: this.parseHealthFromStatus(this.stringField(record, 'Status')),
+        health: (() => {
+          const match = /\((healthy|unhealthy|starting)\)/.exec(this.stringField(record, 'Status'));
+          return match && (match[1] === 'healthy' || match[1] === 'unhealthy' || match[1] === 'starting') ? match[1] : 'unknown';
+        })(),
         projectName: this.parseComposeProject(this.stringField(record, 'Labels'))
       }];
     });
@@ -1069,11 +1050,6 @@ export class DockerComposeRuntimeProvider implements RuntimeProvider {
   private parseComposeProject(labels: string): string | null {
     const match = /(?:^|,)com\.docker\.compose\.project=([^,]+)/.exec(labels);
     return match && match[1] ? match[1] : null;
-  }
-
-  private parseHealthFromStatus(status: string): 'healthy' | 'unhealthy' | 'starting' | 'unknown' {
-    const match = /\((healthy|unhealthy|starting)\)/.exec(status);
-    return match && (match[1] === 'healthy' || match[1] === 'unhealthy' || match[1] === 'starting') ? match[1] : 'unknown';
   }
 
   private parsePercent(value: string): number | null {

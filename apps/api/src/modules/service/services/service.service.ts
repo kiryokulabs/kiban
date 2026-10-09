@@ -1,5 +1,5 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { InstalledServiceManager, ProjectNotFoundError, ProjectValidationError } from '@kiban/core';
+import { InstalledServiceManager, parseRuntimePublicEndpoints, ProjectNotFoundError, ProjectValidationError } from '@kiban/core';
 import type { InstalledService, RuntimeProvider, RuntimePublicEndpoint, ServiceDefinition } from '@kiban/core';
 import { CatalogService } from '../../catalog/services/catalog.service';
 import { SqliteEnvironmentRepository } from '../../project/repositories/sqlite-environment.repository';
@@ -81,13 +81,11 @@ export class ServiceService {
     const host = this.parseDomainPayload(payload);
     try {
       const service = await this.services.get(id);
-      const endpoints = this.runtimePublicEndpoints(service.runtime);
+      const endpoints = parseRuntimePublicEndpoints(service.runtime);
       if (endpoints.length === 0) throw new ProjectValidationError('This service does not expose a web endpoint.');
       if (!this.runtime.updatePublicEndpoints) throw new ProjectValidationError('The current runtime cannot update service domains.');
-      const updatedEndpoints = endpoints.map((endpoint) => {
-        const protocol = this.publicProtocolForHost(host);
-        return { ...endpoint, host, url: `${protocol}://${host}`, protocol };
-      });
+      const protocol: 'http' | 'https' = host === 'localhost' || host.endsWith('.localhost') ? 'http' : 'https';
+      const updatedEndpoints = endpoints.map((endpoint: RuntimePublicEndpoint) => ({ ...endpoint, host, url: `${protocol}://${host}`, protocol }));
       const result = await this.runtime.updatePublicEndpoints(service, updatedEndpoints);
       const updated = await this.services.updateRuntime(id, result.runtime ?? { ...(service.runtime ?? {}), publicEndpoints: updatedEndpoints });
       return await this.enrichOne(updated);
@@ -112,7 +110,7 @@ export class ServiceService {
     } catch (error: unknown) { this.mapError(error); }
   }
 
-  /** Removes one installed service record. */
+  /** Removes one installed service record and its runtime data. */
   public async delete(id: string): Promise<void> {
     try { await this.services.delete(id); } catch (error: unknown) { this.mapError(error); }
   }
@@ -148,7 +146,7 @@ export class ServiceService {
     let catalogMap: Map<string, ServiceDefinition> | undefined;
     try { catalogMap = await this.loadCatalogMap(); } catch { /* catalog unavailable, return without access points */ }
     const refreshedServices = await this.refreshRuntimeState(services);
-    const locationMap = await this.loadLocationMap(refreshedServices);
+    const locationMap = await this.loadLocationMap(refreshedServices.map((service) => service.environmentId));
     return refreshedServices.map((service) => {
       const dto = mapInstalledServiceToDto(service);
       const location = locationMap.get(service.environmentId);
@@ -180,10 +178,10 @@ export class ServiceService {
     }));
   }
 
-  private async loadLocationMap(services: readonly InstalledService[]): Promise<Map<string, InstalledServiceLocationDto>> {
+  private async loadLocationMap(environmentIds: readonly string[]): Promise<Map<string, InstalledServiceLocationDto>> {
     const result = new Map<string, InstalledServiceLocationDto>();
-    const environmentIds = [...new Set(services.map((service) => service.environmentId))];
-    await Promise.all(environmentIds.map(async (environmentId) => {
+    const uniqueIds = [...new Set(environmentIds)];
+    await Promise.all(uniqueIds.map(async (environmentId) => {
       const environment = await this.environments.findById(environmentId);
       if (!environment) return;
       const project = await this.projects.findById(environment.projectId);
@@ -198,14 +196,9 @@ export class ServiceService {
 
 
   private async findLocation(environmentId: string): Promise<import('../dto/service-details.dto').ServiceLocationDto> {
-    const environment = await this.environments.findById(environmentId);
-    if (!environment) throw new ProjectNotFoundError();
-    const project = await this.projects.findById(environment.projectId);
-    if (!project) throw new ProjectNotFoundError();
-    return {
-      project: { id: project.id, name: project.name },
-      environment: { id: environment.id, name: environment.name, type: environment.type }
-    };
+    const location = (await this.loadLocationMap([environmentId])).get(environmentId);
+    if (!location) throw new ProjectNotFoundError();
+    return location;
   }
 
   private async findServiceDefinition(serviceId: string): Promise<import('@kiban/core').ServiceDefinition> {
@@ -233,37 +226,6 @@ export class ServiceService {
     if (host.length === 0) throw new BadRequestException('Service domain is required.');
     if (host.includes('://') || host.includes('/') || /\s/.test(host)) throw new BadRequestException('Service domain must be a hostname without protocol or path.');
     return host;
-  }
-
-  private runtimePublicEndpoints(runtime: Readonly<Record<string, unknown>> | null): readonly RuntimePublicEndpoint[] {
-    const publicEndpoints = runtime?.['publicEndpoints'];
-    if (!Array.isArray(publicEndpoints)) return [];
-    return publicEndpoints.flatMap((endpoint) => {
-      if (!endpoint || typeof endpoint !== 'object' || Array.isArray(endpoint)) return [];
-      const record = endpoint as Readonly<Record<string, unknown>>;
-      const name = record['name'];
-      const service = record['service'];
-      const port = record['port'];
-      const host = record['host'];
-      const url = record['url'];
-      const protocol = this.endpointProtocol(record['protocol'], url);
-      if (typeof name !== 'string' || typeof service !== 'string' || typeof port !== 'number' || typeof host !== 'string' || typeof url !== 'string') return [];
-      return [{ name, service, port, host, url, protocol }];
-    });
-  }
-
-  private publicProtocolForHost(host: string): 'http' | 'https' {
-    return this.isLocalhost(host) ? 'http' : 'https';
-  }
-
-  private isLocalhost(host: string): boolean {
-    return host === 'localhost' || host.endsWith('.localhost');
-  }
-
-  private endpointProtocol(protocol: unknown, url: unknown): 'http' | 'https' {
-    if (protocol === 'http' || protocol === 'https') return protocol;
-    if (typeof url === 'string' && url.startsWith('https://')) return 'https';
-    return 'http';
   }
 
   private parseInstallPayload(payload: unknown): InstallServiceDto {
