@@ -115,6 +115,7 @@ export class ProjectService {
           }
         }
       }
+      if (this.imageStorage) await this.imageStorage.delete(id);
       await this.projects.deleteProject(id);
     } catch (error: unknown) {
       this.mapProjectError(error);

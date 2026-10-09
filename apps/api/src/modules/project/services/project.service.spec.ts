@@ -122,6 +122,19 @@ describe('API ProjectService', () => {
     expect(deleteProject).toHaveBeenCalledWith('project-1');
   });
 
+  it('deletes project image storage before deleting the project record', async () => {
+    const calls: string[] = [];
+    const deleteProject = vi.fn(async () => { calls.push('project'); });
+    const deleteImageStorage = vi.fn(async () => { calls.push('image-storage'); });
+    const service = createService({ deleteProject }, undefined, { save: vi.fn(), find: vi.fn(), delete: deleteImageStorage });
+
+    await service.delete('project-1');
+
+    expect(deleteImageStorage).toHaveBeenCalledWith('project-1');
+    expect(deleteProject).toHaveBeenCalledWith('project-1');
+    expect(calls).toEqual(['image-storage', 'project']);
+  });
+
   it('does not delete a project while one of its environments has installed services', async () => {
     const getProject = vi.fn(async () => ({
       ...details,
