@@ -1,0 +1,17 @@
+{
+  "id": "zulip",
+  "name": "Zulip",
+  "description": "Threaded team chat platform.",
+  "category": "messaging",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "zulip",
+      "port": 80
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+services:
+  simplex-chat:
+    image: simplexchat/smp-server:v7.0.1
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_SIMPLEX_CHAT_PORT:-5223}:5223"
+    environment:
+      WEB_MANUAL: ${KIBAN_SIMPLEX_CHAT_WEB_MANUAL:-1}
+      ADDR: ${KIBAN_SIMPLEX_CHAT_ADDR:-smp1.example.org}
+      PASS: ${KIBAN_SIMPLEX_CHAT_PASSWORD:-}
+      KIBAN_SIMPLEX_CHAT_PORT: ${KIBAN_SIMPLEX_CHAT_PORT:-5223}
+      KIBAN_SIMPLEX_CHAT_ADDR: ${KIBAN_SIMPLEX_CHAT_ADDR:-smp1.example.org}
+      KIBAN_SIMPLEX_CHAT_PASSWORD: ${KIBAN_SIMPLEX_CHAT_PASSWORD:-}
+      KIBAN_SIMPLEX_CHAT_WEB_MANUAL: ${KIBAN_SIMPLEX_CHAT_WEB_MANUAL:-1}
+    volumes:
+      - simplex_configs:/etc/opt/simplex
+      - simplex_state:/var/opt/simplex
+volumes:
+  simplex_configs:
+  simplex_state:

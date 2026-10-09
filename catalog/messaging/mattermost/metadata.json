@@ -1,0 +1,17 @@
+{
+  "id": "mattermost",
+  "name": "Mattermost",
+  "description": "Open-source team messaging and collaboration platform.",
+  "category": "messaging",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "mattermost",
+      "port": 8065
+    }
+  ]
+}

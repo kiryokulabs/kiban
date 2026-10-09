@@ -1,0 +1,17 @@
+{
+  "id": "simplex-chat",
+  "name": "SimpleX Chat",
+  "description": "Self-hosted SimpleX SMP relay server for private messaging.",
+  "category": "messaging",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "SMP Server",
+      "kind": "tcp",
+      "service": "simplex-chat",
+      "port": 5223
+    }
+  ]
+}
