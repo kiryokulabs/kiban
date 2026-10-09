@@ -1,0 +1,12 @@
+services:
+  asciinema:
+    image: asciinema/asciinema-server:20241017
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_ASCIINEMA_PORT:-4000}:4000"
+    environment:
+      KIBAN_ASCIINEMA_PORT: ${KIBAN_ASCIINEMA_PORT:-4000}
+    volumes:
+      - asciinema_data:/data
+volumes:
+  asciinema_data:

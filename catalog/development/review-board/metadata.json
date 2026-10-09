@@ -1,0 +1,17 @@
+{
+  "id": "review-board",
+  "name": "Review Board",
+  "description": "Collaborative code review platform.",
+  "category": "development",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "review-board",
+      "port": 8080
+    }
+  ]
+}

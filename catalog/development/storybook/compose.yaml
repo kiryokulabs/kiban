@@ -1,0 +1,29 @@
+services:
+  storybook:
+    image: node:22.20.0-alpine3.22
+    restart: unless-stopped
+    command: |
+      sh -ec '
+        cd /data
+        if [ ! -f package.json ]; then
+          npm init -y
+          npm install @storybook/html-vite@9.1.8 vite@7.1.7
+          mkdir -p .storybook stories
+          cat > .storybook/main.js <<EOF
+          export default { framework: "@storybook/html-vite", stories: ["../stories/**/*.stories.js"] };
+      EOF
+          cat > stories/welcome.stories.js <<EOF
+          export default { title: "Kiban/Welcome" };
+          export const Welcome = () => "<main><h1>Storybook</h1><p>Ready for your stories.</p></main>";
+      EOF
+        fi
+        npx storybook dev --host 0.0.0.0 --port 6006 --ci
+      '
+    ports:
+      - "${KIBAN_STORYBOOK_PORT:-6006}:6006"
+    environment:
+      KIBAN_STORYBOOK_PORT: ${KIBAN_STORYBOOK_PORT:-6006}
+    volumes:
+      - storybook_data:/data
+volumes:
+  storybook_data:
