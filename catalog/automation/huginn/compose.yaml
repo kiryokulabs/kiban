@@ -1,0 +1,12 @@
+services:
+  huginn:
+    image: huginn/huginn:f2cc19148df9a4785d789d30f0b10d1d9c2dae10
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_HUGINN_PORT:-3000}:3000"
+    environment:
+      KIBAN_HUGINN_PORT: ${KIBAN_HUGINN_PORT:-3000}
+    volumes:
+      - huginn_data:/data
+volumes:
+  huginn_data:

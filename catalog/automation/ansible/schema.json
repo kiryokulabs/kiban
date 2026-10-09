@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_ANSIBLE_PORT": {
+      "type": "string",
+      "default": "${KIBAN_ANSIBLE_PORT:-3000}"
+    },
+    "KIBAN_ANSIBLE_ADMIN_USER": {
+      "type": "string",
+      "default": "${KIBAN_ANSIBLE_ADMIN_USER:-admin}"
+    },
+    "KIBAN_ANSIBLE_ADMIN_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_ANSIBLE_ADMIN_PASSWORD:-admin}"
+    },
+    "KIBAN_ANSIBLE_ACCESS_KEY": {
+      "type": "string",
+      "default": "${KIBAN_ANSIBLE_ACCESS_KEY:-kibanansibleaccesskey32chars0000}"
+    }
+  }
+}

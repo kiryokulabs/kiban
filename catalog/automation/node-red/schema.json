@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_NODE_RED_PORT": {
+      "type": "string",
+      "default": "${KIBAN_NODE_RED_PORT:-1880}"
+    }
+  }
+}

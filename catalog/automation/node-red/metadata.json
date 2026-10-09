@@ -1,0 +1,17 @@
+{
+  "id": "node-red",
+  "name": "Node-RED",
+  "description": "Flow-based automation tool for wiring services and devices.",
+  "category": "automation",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "node-red",
+      "port": 1880
+    }
+  ]
+}

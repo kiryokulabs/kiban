@@ -1,0 +1,12 @@
+services:
+  node-red:
+    image: nodered/node-red:4.0.9
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_NODE_RED_PORT:-1880}:1880"
+    environment:
+      KIBAN_NODE_RED_PORT: ${KIBAN_NODE_RED_PORT:-1880}
+    volumes:
+      - node-red_data:/data
+volumes:
+  node-red_data:
