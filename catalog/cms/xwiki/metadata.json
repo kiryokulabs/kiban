@@ -1,0 +1,17 @@
+{
+  "id": "xwiki",
+  "name": "XWiki",
+  "description": "Extensible enterprise wiki platform.",
+  "category": "cms",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "xwiki",
+      "port": 8080
+    }
+  ]
+}

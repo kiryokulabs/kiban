@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_NODEBB_PORT": {
+      "type": "string",
+      "default": "${KIBAN_NODEBB_PORT:-4567}"
+    },
+    "KIBAN_NODEBB_SECRET": {
+      "type": "string",
+      "default": "${KIBAN_NODEBB_SECRET:-kibannodebbsecret000000000000000000000000000000}"
+    }
+  }
+}

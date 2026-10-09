@@ -1,0 +1,28 @@
+services:
+  nodebb:
+    image: ghcr.io/nodebb/nodebb:4.4.3
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_NODEBB_PORT:-4567}:4567"
+    environment:
+      NODEBB_URL: http://localhost:${KIBAN_NODEBB_PORT:-4567}
+      NODEBB_PORT: 4567
+      NODEBB_SECRET: ${KIBAN_NODEBB_SECRET:-kibannodebbsecret000000000000000000000000000000}
+      database: mongo
+      mongo__host: nodebb-db
+      mongo__port: 27017
+      mongo__database: nodebb
+      KIBAN_NODEBB_PORT: ${KIBAN_NODEBB_PORT:-4567}
+      KIBAN_NODEBB_SECRET: ${KIBAN_NODEBB_SECRET:-kibannodebbsecret000000000000000000000000000000}
+    depends_on:
+      - nodebb-db
+    volumes:
+      - nodebb_uploads:/usr/src/app/public/uploads
+  nodebb-db:
+    image: mongo:6.0
+    restart: unless-stopped
+    volumes:
+      - nodebb_db:/data/db
+volumes:
+  nodebb_uploads:
+  nodebb_db:

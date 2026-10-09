@@ -1,0 +1,39 @@
+services:
+  flarum:
+    image: crazymax/flarum:1.8.19
+    restart: unless-stopped
+    depends_on:
+      flarum-db:
+        condition: service_healthy
+    ports:
+      - "${KIBAN_FLARUM_PORT:-8000}:8000"
+    environment:
+      TZ: Etc/UTC
+      FLARUM_BASE_URL: ${SERVICE_URL_FLARUM:-http://localhost:8000}
+      DB_HOST: flarum-db
+      DB_NAME: flarum
+      DB_USER: flarum
+      DB_PASSWORD: ${KIBAN_FLARUM_DB_PASSWORD:-flarum-password}
+      KIBAN_FLARUM_PORT: ${KIBAN_FLARUM_PORT:-8000}
+      KIBAN_FLARUM_DB_PASSWORD: ${KIBAN_FLARUM_DB_PASSWORD:-flarum-password}
+      KIBAN_FLARUM_DB_ROOT_PASSWORD: ${KIBAN_FLARUM_DB_ROOT_PASSWORD:-flarum-root-password}
+    volumes:
+      - flarum_data:/data
+  flarum-db:
+    image: mariadb:11.8.3
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: flarum
+      MARIADB_USER: flarum
+      MARIADB_PASSWORD: ${KIBAN_FLARUM_DB_PASSWORD:-flarum-password}
+      MARIADB_ROOT_PASSWORD: ${KIBAN_FLARUM_DB_ROOT_PASSWORD:-flarum-root-password}
+    volumes:
+      - flarum_db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin ping -h 127.0.0.1 -u root -p$${MARIADB_ROOT_PASSWORD} --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+volumes:
+  flarum_data:
+  flarum_db:
