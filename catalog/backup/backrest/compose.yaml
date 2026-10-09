@@ -1,0 +1,22 @@
+services:
+  backrest:
+    image: garethgeorge/backrest:v1.9.3
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_BACKREST_PORT:-9898}:9898"
+    environment:
+      KIBAN_BACKREST_PORT: ${KIBAN_BACKREST_PORT:-9898}
+    volumes:
+      - backrest_data:/data
+      - backrest_cache:/cache
+      - backrest_repos:/repos
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:9898 || curl -f http://127.0.0.1:9898 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+volumes:
+  backrest_cache:
+  backrest_data:
+  backrest_repos:

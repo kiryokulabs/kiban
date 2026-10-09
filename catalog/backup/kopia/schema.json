@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_KOPIA_PORT": {
+      "type": "string",
+      "default": "${KIBAN_KOPIA_PORT:-51515}"
+    },
+    "KIBAN_KOPIA_USERNAME": {
+      "type": "string",
+      "default": "${KIBAN_KOPIA_USERNAME:-admin}"
+    },
+    "KIBAN_KOPIA_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_KOPIA_PASSWORD:-kopia-admin-password}"
+    },
+    "KIBAN_KOPIA_REPOSITORY_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_KOPIA_REPOSITORY_PASSWORD:-kopia-repository-password}"
+    }
+  }
+}

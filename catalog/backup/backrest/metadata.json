@@ -1,0 +1,17 @@
+{
+  "id": "backrest",
+  "name": "Backrest",
+  "description": "Web interface for Restic backups and restores.",
+  "category": "backup",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "backrest",
+      "port": 9898
+    }
+  ]
+}

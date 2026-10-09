@@ -1,0 +1,30 @@
+services:
+  kopia:
+    image: kopia/kopia:0.21.1
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_KOPIA_PORT:-51515}:51515"
+    environment:
+      KOPIA_PASSWORD: ${KIBAN_KOPIA_REPOSITORY_PASSWORD:-kopia-repository-password}
+      KIBAN_KOPIA_PORT: ${KIBAN_KOPIA_PORT:-51515}
+      KIBAN_KOPIA_USERNAME: ${KIBAN_KOPIA_USERNAME:-admin}
+      KIBAN_KOPIA_PASSWORD: ${KIBAN_KOPIA_PASSWORD:-kopia-admin-password}
+      KIBAN_KOPIA_REPOSITORY_PASSWORD: ${KIBAN_KOPIA_REPOSITORY_PASSWORD:-kopia-repository-password}
+    entrypoint:
+      - sh
+      - -c
+    command:
+      - >-
+        mkdir -p /app/config /app/cache /repository /data &&
+        kopia repository create filesystem --path=/repository --password="$${KOPIA_PASSWORD}" --config-file=/app/config/repository.config || true;
+        exec kopia server start --address=0.0.0.0:51515 --server-username="$${KIBAN_KOPIA_USERNAME}" --server-password="$${KIBAN_KOPIA_PASSWORD}" --config-file=/app/config/repository.config --cache-directory=/app/cache --insecure --disable-csrf-token-checks
+    volumes:
+      - kopia_config:/app/config
+      - kopia_cache:/app/cache
+      - kopia_repository:/repository
+      - kopia_data:/data
+volumes:
+  kopia_config:
+  kopia_cache:
+  kopia_repository:
+  kopia_data:
