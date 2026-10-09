@@ -1,0 +1,12 @@
+services:
+  smokeping:
+    image: lscr.io/linuxserver/smokeping:2.9.0-r0-ls185
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_SMOKEPING_PORT:-80}:80"
+    environment:
+      KIBAN_SMOKEPING_PORT: ${KIBAN_SMOKEPING_PORT:-80}
+    volumes:
+      - smokeping_data:/data
+volumes:
+  smokeping_data:

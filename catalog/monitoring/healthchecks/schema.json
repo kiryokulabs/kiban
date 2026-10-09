@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_HEALTHCHECKS_PORT": {
+      "type": "string",
+      "default": "${KIBAN_HEALTHCHECKS_PORT:-8000}"
+    },
+    "KIBAN_HEALTHCHECKS_SECRET_KEY": {
+      "type": "string",
+      "default": "${KIBAN_HEALTHCHECKS_SECRET_KEY:-healthchecks-secret-key-change-me-00000000000000000000}"
+    },
+    "KIBAN_HEALTHCHECKS_DB_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_HEALTHCHECKS_DB_PASSWORD:-healthchecks-password}"
+    },
+    "KIBAN_HEALTHCHECKS_SUPERUSER_EMAIL": {
+      "type": "string",
+      "default": "${KIBAN_HEALTHCHECKS_SUPERUSER_EMAIL:-admin@example.com}"
+    },
+    "KIBAN_HEALTHCHECKS_SUPERUSER_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_HEALTHCHECKS_SUPERUSER_PASSWORD:-healthchecks-admin-password}"
+    }
+  }
+}

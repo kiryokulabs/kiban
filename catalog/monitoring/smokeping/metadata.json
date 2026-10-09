@@ -1,0 +1,17 @@
+{
+  "id": "smokeping",
+  "name": "SmokePing",
+  "description": "Network latency monitoring and visualization.",
+  "category": "monitoring",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "smokeping",
+      "port": 80
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+services:
+  gatus:
+    image: ghcr.io/twin/gatus:v5.37.0
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_GATUS_PORT:-8080}:8080"
+    environment:
+      KIBAN_GATUS_PORT: ${KIBAN_GATUS_PORT:-8080}
+    volumes:
+      - gatus_data:/data
+      - type: bind
+        source: ./config.yaml
+        target: /config/config.yaml
+        content: |
+          storage:
+            type: sqlite
+            path: /data/data.db
+          web:
+            port: 8080
+          endpoints:
+            - name: Gatus
+              group: internal
+              url: http://127.0.0.1:8080/health
+              interval: 60s
+              conditions:
+                - "[STATUS] == 200"
+volumes:
+  gatus_data:

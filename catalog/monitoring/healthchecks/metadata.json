@@ -1,0 +1,17 @@
+{
+  "id": "healthchecks",
+  "name": "Healthchecks",
+  "description": "Cron and background job monitoring service.",
+  "category": "monitoring",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "healthchecks",
+      "port": 8000
+    }
+  ]
+}

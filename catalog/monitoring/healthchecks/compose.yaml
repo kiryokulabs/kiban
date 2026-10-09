@@ -1,0 +1,50 @@
+services:
+  healthchecks:
+    image: healthchecks/healthchecks:v4.4
+    restart: unless-stopped
+    depends_on:
+      healthchecks-db:
+        condition: service_healthy
+    ports:
+      - "${KIBAN_HEALTHCHECKS_PORT:-8000}:8000"
+    environment:
+      SECRET_KEY: ${KIBAN_HEALTHCHECKS_SECRET_KEY:-healthchecks-secret-key-change-me-00000000000000000000}
+      SITE_ROOT: ${SERVICE_URL_HEALTHCHECKS:-http://localhost:8000}
+      SITE_NAME: Healthchecks
+      ALLOWED_HOSTS: "*"
+      DB: postgres
+      DB_HOST: healthchecks-db
+      DB_PORT: "5432"
+      DB_NAME: healthchecks
+      DB_USER: healthchecks
+      DB_PASSWORD: ${KIBAN_HEALTHCHECKS_DB_PASSWORD:-healthchecks-password}
+      SUPERUSER_EMAIL: ${KIBAN_HEALTHCHECKS_SUPERUSER_EMAIL:-admin@example.com}
+      SUPERUSER_PASSWORD: ${KIBAN_HEALTHCHECKS_SUPERUSER_PASSWORD:-healthchecks-admin-password}
+      KIBAN_HEALTHCHECKS_PORT: ${KIBAN_HEALTHCHECKS_PORT:-8000}
+      KIBAN_HEALTHCHECKS_SECRET_KEY: ${KIBAN_HEALTHCHECKS_SECRET_KEY:-healthchecks-secret-key-change-me-00000000000000000000}
+      KIBAN_HEALTHCHECKS_DB_PASSWORD: ${KIBAN_HEALTHCHECKS_DB_PASSWORD:-healthchecks-password}
+      KIBAN_HEALTHCHECKS_SUPERUSER_EMAIL: ${KIBAN_HEALTHCHECKS_SUPERUSER_EMAIL:-admin@example.com}
+      KIBAN_HEALTHCHECKS_SUPERUSER_PASSWORD: ${KIBAN_HEALTHCHECKS_SUPERUSER_PASSWORD:-healthchecks-admin-password}
+    command:
+      - sh
+      - -c
+      - >-
+        python /opt/healthchecks/manage.py migrate --noinput &&
+        python /opt/healthchecks/manage.py createsuperuser --noinput --email "$${SUPERUSER_EMAIL}" || true;
+        uwsgi /opt/healthchecks/docker/uwsgi.ini
+  healthchecks-db:
+    image: postgres:17.6-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: healthchecks
+      POSTGRES_USER: healthchecks
+      POSTGRES_PASSWORD: ${KIBAN_HEALTHCHECKS_DB_PASSWORD:-healthchecks-password}
+    volumes:
+      - healthchecks_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+volumes:
+  healthchecks_db:
