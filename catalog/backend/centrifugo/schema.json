@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_CENTRIFUGO_PORT": {
+      "type": "string",
+      "default": "${KIBAN_CENTRIFUGO_PORT:-8000}"
+    },
+    "KIBAN_CENTRIFUGO_API_KEY": {
+      "type": "string",
+      "default": "${KIBAN_CENTRIFUGO_API_KEY:-change-me-api-key}"
+    },
+    "KIBAN_CENTRIFUGO_TOKEN_SECRET": {
+      "type": "string",
+      "default": "${KIBAN_CENTRIFUGO_TOKEN_SECRET:-change-me-token-secret}"
+    }
+  }
+}

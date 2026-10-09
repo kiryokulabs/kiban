@@ -1,0 +1,50 @@
+services:
+  nakama:
+    image: heroiclabs/nakama:3.41.0
+    restart: unless-stopped
+    depends_on:
+      nakama-db:
+        condition: service_healthy
+    ports:
+      - "${KIBAN_NAKAMA_CONSOLE_PORT:-7351}:7351"
+      - "${KIBAN_NAKAMA_API_PORT:-7350}:7350"
+    environment:
+      KIBAN_NAKAMA_CONSOLE_PORT: ${KIBAN_NAKAMA_CONSOLE_PORT:-7351}
+      KIBAN_NAKAMA_API_PORT: ${KIBAN_NAKAMA_API_PORT:-7350}
+      KIBAN_NAKAMA_DB_PASSWORD: ${KIBAN_NAKAMA_DB_PASSWORD:-nakama-password}
+      KIBAN_NAKAMA_CONSOLE_USERNAME: ${KIBAN_NAKAMA_CONSOLE_USERNAME:-admin}
+      KIBAN_NAKAMA_CONSOLE_PASSWORD: ${KIBAN_NAKAMA_CONSOLE_PASSWORD:-nakama-admin-password}
+    entrypoint:
+      - /bin/sh
+      - -ec
+    command:
+      - >-
+        /nakama/nakama migrate up --database.address "postgres:${KIBAN_NAKAMA_DB_PASSWORD:-nakama-password}@nakama-db:5432/nakama?sslmode=disable" &&
+        exec /nakama/nakama
+        --name nakama
+        --database.address "postgres:${KIBAN_NAKAMA_DB_PASSWORD:-nakama-password}@nakama-db:5432/nakama?sslmode=disable"
+        --logger.level INFO
+        --session.token_expiry_sec 7200
+        --runtime.path /nakama/data
+        --console.port 7351
+        --console.username "${KIBAN_NAKAMA_CONSOLE_USERNAME:-admin}"
+        --console.password "${KIBAN_NAKAMA_CONSOLE_PASSWORD:-nakama-admin-password}"
+    volumes:
+      - nakama_data:/nakama/data
+  nakama-db:
+    image: postgres:17.6-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: nakama
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${KIBAN_NAKAMA_DB_PASSWORD:-nakama-password}
+    volumes:
+      - nakama_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U postgres -d nakama"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+volumes:
+  nakama_data:
+  nakama_db:

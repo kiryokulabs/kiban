@@ -1,0 +1,35 @@
+services:
+  kinto:
+    image: kinto/kinto-server:26.3.3
+    restart: unless-stopped
+    depends_on:
+      kinto-db:
+        condition: service_healthy
+    ports:
+      - "${KIBAN_KINTO_PORT:-8888}:8888"
+    environment:
+      KINTO_STORAGE_BACKEND: kinto.core.storage.postgresql
+      KINTO_STORAGE_URL: postgresql://kinto:${KIBAN_KINTO_DB_PASSWORD:-kinto-password}@kinto-db:5432/kinto
+      KINTO_PERMISSION_BACKEND: kinto.core.permission.postgresql
+      KINTO_PERMISSION_URL: postgresql://kinto:${KIBAN_KINTO_DB_PASSWORD:-kinto-password}@kinto-db:5432/kinto
+      KINTO_USERID_HMAC_SECRET: ${KIBAN_KINTO_USERID_HMAC_SECRET:-kinto-userid-hmac-secret-change-me}
+      KINTO_BATCH_MAX_REQUESTS: "200"
+      KIBAN_KINTO_PORT: ${KIBAN_KINTO_PORT:-8888}
+      KIBAN_KINTO_DB_PASSWORD: ${KIBAN_KINTO_DB_PASSWORD:-kinto-password}
+      KIBAN_KINTO_USERID_HMAC_SECRET: ${KIBAN_KINTO_USERID_HMAC_SECRET:-kinto-userid-hmac-secret-change-me}
+  kinto-db:
+    image: postgres:17.6-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: kinto
+      POSTGRES_USER: kinto
+      POSTGRES_PASSWORD: ${KIBAN_KINTO_DB_PASSWORD:-kinto-password}
+    volumes:
+      - kinto_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+volumes:
+  kinto_db:

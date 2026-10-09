@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "KIBAN_NAKAMA_CONSOLE_PORT": {
+      "type": "string",
+      "default": "${KIBAN_NAKAMA_CONSOLE_PORT:-7351}"
+    },
+    "KIBAN_NAKAMA_API_PORT": {
+      "type": "string",
+      "default": "${KIBAN_NAKAMA_API_PORT:-7350}"
+    },
+    "KIBAN_NAKAMA_DB_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_NAKAMA_DB_PASSWORD:-nakama-password}"
+    },
+    "KIBAN_NAKAMA_CONSOLE_USERNAME": {
+      "type": "string",
+      "default": "${KIBAN_NAKAMA_CONSOLE_USERNAME:-admin}"
+    },
+    "KIBAN_NAKAMA_CONSOLE_PASSWORD": {
+      "type": "string",
+      "default": "${KIBAN_NAKAMA_CONSOLE_PASSWORD:-nakama-admin-password}"
+    }
+  }
+}

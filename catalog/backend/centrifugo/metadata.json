@@ -1,0 +1,17 @@
+{
+  "id": "centrifugo",
+  "name": "Centrifugo",
+  "description": "Scalable real-time messaging server for WebSocket and event-driven applications.",
+  "category": "backend",
+  "author": "Kiban",
+  "minimumVersion": "0.1.0",
+  "icon": "icon.svg",
+  "accessPoints": [
+    {
+      "name": "Web UI",
+      "kind": "web",
+      "service": "centrifugo",
+      "port": 8000
+    }
+  ]
+}
