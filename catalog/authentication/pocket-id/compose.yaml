@@ -1,0 +1,19 @@
+services:
+  pocket-id:
+    image: ghcr.io/pocket-id/pocket-id:v1.11.2
+    restart: unless-stopped
+    ports:
+      - "${KIBAN_POCKET_ID_PORT:-1411}:1411"
+    environment:
+      PUBLIC_APP_URL: http://localhost:${KIBAN_POCKET_ID_PORT:-1411}
+      KIBAN_POCKET_ID_PORT: ${KIBAN_POCKET_ID_PORT:-1411}
+    volumes:
+      - pocket_id_data:/app/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:1411 || curl -f http://127.0.0.1:1411 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+volumes:
+  pocket_id_data:
