@@ -1,0 +1,25 @@
+name: Trigger Landing Sync
+
+on:
+  push:
+    paths:
+      - 'catalog/**'
+    branches:
+      - main
+
+  workflow_dispatch:
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger landing sync
+        env:
+          LANDING_SYNC_TOKEN: ${{ secrets.LANDING_SYNC_TOKEN }}
+        run: |
+          curl -X POST \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token $LANDING_SYNC_TOKEN" \
+            https://api.github.com/repos/kiryokulabs/kiban-landing/dispatches \
+            -d '{"event_type": "sync-catalog"}'
