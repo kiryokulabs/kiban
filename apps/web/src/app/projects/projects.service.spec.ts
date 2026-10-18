@@ -95,6 +95,14 @@ describe('Web ProjectsService environments', () => {
     expect(calls).toEqual([{ method: 'POST', url: '/api/projects/project-1/environments', body: payload, options: { withCredentials: true } }]);
   });
 
+  it('updates an environment with credentials', () => {
+    const payload = { name: 'Local', description: 'Local development' };
+    const { http, calls } = createHttpClient({ id: 'environment-1' });
+    const service = new ProjectsService(http);
+    service.updateEnvironment('project-1', 'environment-1', payload).subscribe();
+    expect(calls).toEqual([{ method: 'PATCH', url: '/api/projects/project-1/environments/environment-1', body: payload, options: { withCredentials: true } }]);
+  });
+
   it('deletes an environment with credentials', () => {
     const { http, calls } = createHttpClient(null);
     const service = new ProjectsService(http);

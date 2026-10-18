@@ -20,4 +20,9 @@ export class ConfirmationDialogPresenter {
       destructive: false
     };
   }
+
+  /** Requires an exact value when destructive confirmation text is configured. */
+  public canConfirm(value: string, requiredValue: string): boolean {
+    return !requiredValue || value === requiredValue;
+  }
 }

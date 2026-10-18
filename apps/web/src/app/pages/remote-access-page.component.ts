@@ -15,7 +15,7 @@ import { IconsComponent } from '../shared/icons.component';
           </div>
           <h1 class="text-xl font-semibold kb-text">Remote Access</h1>
         </div>
-        <p class="mt-0.5 text-sm c-muted">Access Kiban and services from other devices.</p>
+        <p class="mt-4 text-sm c-muted">Access Kiban and services from other devices.</p>
       </div>
 
       <!-- Overview -->

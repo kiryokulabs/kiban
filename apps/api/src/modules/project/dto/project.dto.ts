@@ -1,4 +1,5 @@
 export interface CreateEnvironmentDto { readonly name: string; readonly description?: string | null; }
+export interface UpdateEnvironmentDto { readonly name: string; readonly description?: string | null; }
 export interface CreateProjectDto { readonly name: string; readonly description?: string | null; }
 export interface UpdateProjectDto { readonly name: string; readonly description?: string | null; }
 export interface EnvironmentDto { readonly id: string; readonly projectId: string; readonly name: string; readonly slug: string; readonly type: 'system' | 'custom'; readonly description: string | null; readonly status: 'Empty'; readonly createdAt: string; readonly updatedAt: string; }

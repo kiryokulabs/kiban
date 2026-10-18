@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import type { Observable } from 'rxjs';
-import type { CreateEnvironmentRequest, CreateProjectRequest, EnvironmentItem, ProjectDetails, ProjectSettings, ProjectSummary, SaveProjectImageRequest, UpdateProjectRequest } from './projects.models';
+import type { CreateEnvironmentRequest, CreateProjectRequest, EnvironmentItem, ProjectDetails, ProjectSettings, ProjectSummary, SaveProjectImageRequest, UpdateEnvironmentRequest, UpdateProjectRequest } from './projects.models';
 
 @Injectable({ providedIn: 'root' })
 export class ProjectsService {
@@ -60,7 +60,12 @@ export class ProjectsService {
     return this.http.post<EnvironmentItem>(`${this.apiUrl}/projects/${projectId}/environments`, request, { withCredentials: true });
   }
 
-  /** Deletes a custom environment for a project. */
+  /** Updates an environment. */
+  public updateEnvironment(projectId: string, environmentId: string, request: UpdateEnvironmentRequest): Observable<EnvironmentItem> {
+    return this.http.patch<EnvironmentItem>(`${this.apiUrl}/projects/${projectId}/environments/${environmentId}`, request, { withCredentials: true });
+  }
+
+  /** Deletes an environment for a project. */
   public deleteEnvironment(projectId: string, environmentId: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/projects/${projectId}/environments/${environmentId}`, { withCredentials: true });
   }

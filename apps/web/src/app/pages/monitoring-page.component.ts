@@ -96,7 +96,7 @@ const RECENT_CHANGES_LIMIT = 5;
                 <li class="card flex flex-col gap-2 p-3 sm:flex-row sm:items-center">
                   <div class="min-w-0 flex-1">
                     <a [routerLink]="['/services', service.id]" class="block truncate text-sm font-medium kb-text hover:underline">{{ service.name }}</a>
-                    <div class="mt-1 flex flex-wrap items-center gap-1.5">
+                    <div class="mt-4 flex flex-wrap items-center gap-1.5">
                       <span [class]="presenter.statusBadgeClasses(service.status)">{{ service.status }}</span>
                       <span [class]="presenter.healthBadgeClasses(service.health)">{{ service.health }}</span>
                     </div>

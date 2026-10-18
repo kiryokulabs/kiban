@@ -13,6 +13,7 @@ import { ConfirmModalComponent } from '../shared/confirm-modal.component';
 import { IconsComponent } from '../shared/icons.component';
 import { SvgIconComponent } from '../shared/svg-icon.component';
 import { SkeletonInstalledDetailComponent } from '../shared/skeleton-installed-detail.component';
+import { ToastService } from '../shared/toast.service';
 
 @Component({
   selector: 'kiban-installed-service-details-page',
@@ -332,6 +333,7 @@ export class InstalledServiceDetailsPageComponent implements OnDestroy {
   private readonly router = inject(Router);
   private readonly installedServices = inject(InstalledServicesService);
   private readonly terminal = inject(TerminalService);
+  private readonly notifications = inject(ToastService);
   protected readonly presenter = new ServiceDetailsPresenter();
   protected readonly details = signal<InstalledServiceDetails | null>(null);
   protected readonly loading = signal(true);
@@ -414,7 +416,7 @@ export class InstalledServiceDetailsPageComponent implements OnDestroy {
   protected saveConfiguration(): void {
     this.confirmSaveConfiguration.set(false);
     this.actionInProgress.set('Applying configuration…');
-    this.installedServices.updateConfiguration(this.serviceId, this.configurationValues()).subscribe({ next: () => { this.actionInProgress.set(null); this.load(); }, error: () => { this.actionInProgress.set(null); this.message.set('Could not save configuration.'); } });
+    this.installedServices.updateConfiguration(this.serviceId, this.configurationValues()).subscribe({ next: () => { this.actionInProgress.set(null); this.notifications.success('Configuration saved and service redeployed successfully.'); this.load(); }, error: () => { this.actionInProgress.set(null); this.notifications.error('Could not save configuration.'); } });
   }
 
   protected saveServiceDomain(): void {
@@ -424,8 +426,8 @@ export class InstalledServiceDetailsPageComponent implements OnDestroy {
     this.serviceDomainError.set('');
     this.serviceDomainSaved.set(false);
     this.installedServices.updateDomain(this.serviceId, host).subscribe({
-      next: () => { this.serviceDomainSaving.set(false); this.originalServiceDomain = host; this.serviceDomainSaved.set(true); this.load(); },
-      error: (error: unknown) => { this.serviceDomainSaving.set(false); this.serviceDomainError.set(this.errorMessage(error, 'Could not update service domain.')); }
+      next: () => { this.serviceDomainSaving.set(false); this.originalServiceDomain = host; this.serviceDomainSaved.set(true); this.notifications.success('Service domain updated successfully.'); this.load(); },
+      error: (error: unknown) => { this.serviceDomainSaving.set(false); const message = this.errorMessage(error, 'Could not update service domain.'); this.serviceDomainError.set(message); this.notifications.error(message); }
     });
   }
 
@@ -435,9 +437,10 @@ export class InstalledServiceDetailsPageComponent implements OnDestroy {
   }
 
   protected deleteService(): void {
+    const serviceName = this.details()?.overview.name ?? 'Service';
     this.confirmDelete.set(false);
     this.actionInProgress.set('Deleting service…');
-    this.installedServices.delete(this.serviceId).subscribe({ next: () => { void this.router.navigateByUrl('/installed'); }, error: () => { this.actionInProgress.set(null); this.message.set('Could not delete service.'); } });
+    this.installedServices.delete(this.serviceId).subscribe({ next: () => { this.notifications.success(`${serviceName} deleted successfully.`); void this.router.navigateByUrl('/installed'); }, error: () => { this.actionInProgress.set(null); this.notifications.error(`Could not delete ${serviceName}.`); } });
   }
 
   protected toggleAutoRefresh(): void { this.autoRefresh() ? this.stopAutoRefresh() : this.startAutoRefresh(); }

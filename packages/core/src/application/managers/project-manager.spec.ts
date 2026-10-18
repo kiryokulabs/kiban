@@ -61,6 +61,14 @@ class MemoryEnvironmentRepository implements EnvironmentRepository {
     return this.environments.get(id) ?? null;
   }
 
+  public async update(id: string, input: { readonly name: string; readonly slug: string; readonly description: string | null }): Promise<Environment | null> {
+    const existing = this.environments.get(id);
+    if (!existing) return null;
+    const environment = { ...existing, ...input, updatedAt: now };
+    this.environments.set(id, environment);
+    return environment;
+  }
+
   public async deleteById(id: string): Promise<void> {
     this.environments.delete(id);
   }
@@ -198,6 +206,26 @@ describe('ProjectManager', () => {
     await expect(manager.createEnvironment('project-1', { name: '   ' })).rejects.toBeInstanceOf(ProjectValidationError);
   });
 
+  it('updates an environment name and description', async () => {
+    const { manager } = createManager();
+    await manager.createProject({ name: 'CrossMetrics', description: null });
+    const environment = await manager.createEnvironment('project-1', { name: 'QA', description: null });
+
+    await expect(manager.updateEnvironment('project-1', environment.id, { name: 'Quality Assurance', description: 'Quality checks' })).resolves.toMatchObject({
+      name: 'Quality Assurance',
+      slug: 'quality-assurance',
+      description: 'Quality checks'
+    });
+  });
+
+  it('rejects empty environment names when updating', async () => {
+    const { manager } = createManager();
+    await manager.createProject({ name: 'CrossMetrics', description: null });
+    const environment = await manager.createEnvironment('project-1', { name: 'QA' });
+
+    await expect(manager.updateEnvironment('project-1', environment.id, { name: '   ' })).rejects.toBeInstanceOf(ProjectValidationError);
+  });
+
   it('deletes a custom environment', async () => {
     const { manager } = createManager();
     await manager.createProject({ name: 'CrossMetrics', description: null });
@@ -208,12 +236,14 @@ describe('ProjectManager', () => {
     await expect(manager.listEnvironments('project-1')).resolves.toHaveLength(3);
   });
 
-  it('does not delete system environments', async () => {
+  it('deletes a system environment', async () => {
     const { manager } = createManager();
     const details = await manager.createProject({ name: 'CrossMetrics', description: null });
     const systemEnvironment = details.environments[0]!;
 
-    await expect(manager.deleteEnvironment('project-1', systemEnvironment.id)).rejects.toBeInstanceOf(ProjectValidationError);
+    await manager.deleteEnvironment('project-1', systemEnvironment.id);
+
+    await expect(manager.listEnvironments('project-1')).resolves.toHaveLength(2);
   });
 
 });

@@ -43,9 +43,9 @@ They are created atomically with the project. If environment creation fails, the
 | Type | Description |
 | --- | --- |
 | `system` | Created automatically by Kiban. |
-| `custom` | Reserved for future user-created environments. |
+| `custom` | Created by users. |
 
-Users can create custom environments. Only custom environments can be deleted. System environments — Development, Staging and Production — cannot be deleted.
+Users can create custom environments. Both system and custom environments can be deleted.
 
 ## API endpoints
 
@@ -58,7 +58,7 @@ Users can create custom environments. Only custom environments can be deleted. S
 | `DELETE` | `/projects/:id` | Delete project and environments. |
 | `GET` | `/projects/:id/environments` | List environments for a project. |
 | `POST` | `/projects/:id/environments` | Create a custom environment. |
-| `DELETE` | `/projects/:id/environments/:environmentId` | Delete a custom environment. |
+| `DELETE` | `/projects/:id/environments/:environmentId` | Delete an environment. |
 
 ## Validation
 

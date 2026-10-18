@@ -17,6 +17,7 @@ import { IconsComponent } from '../shared/icons.component';
 import { SvgIconComponent } from '../shared/svg-icon.component';
 import { SkeletonProjectDetailComponent } from '../shared/skeleton-project-detail.component';
 import { SkeletonComponent } from '../shared/skeleton.component';
+import { ToastService } from '../shared/toast.service';
 
 type InstallStep = 1 | 2 | 3;
 interface SchemaField { readonly key: string; readonly label: string; readonly required: boolean; readonly defaultValue: string; }
@@ -56,7 +57,7 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
                 </div>
                 <div>
                   <h1 class="text-xl font-semibold kb-text">{{ project()?.name }}</h1>
-                  <p class="mt-0.5 text-sm c-muted">{{ project()?.description || 'No description' }}</p>
+                  <p class="mt-1 text-sm c-muted">{{ project()?.description || 'No description' }}</p>
                 </div>
               </div>
             </div>
@@ -75,6 +76,17 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
         }
 
         <!-- Environment grid -->
+        @if (project()?.environments?.length === 0) {
+          <div class="card flex flex-col items-center justify-center px-4 py-10 text-center">
+            <kiban-icon name="box" [size]="24" class="c-subtle" />
+            <h2 class="mt-3 text-sm font-medium kb-text">No environments</h2>
+            <p class="mt-1 text-xs c-muted">Create an environment to install services.</p>
+            <button type="button" class="btn-primary btn mt-4 gap-1.5" (click)="openEnvironmentModal()">
+              <kiban-icon name="plus" [size]="14" />
+              Create environment
+            </button>
+          </div>
+        } @else {
         <div class="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-2 2xl:grid-cols-3">
           @for (environment of project()?.environments; track environment.id) {
             <article class="card flex min-w-0 flex-col overflow-hidden">
@@ -195,17 +207,20 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
               </div>
 
               <!-- Environment actions -->
-              @if (environment.type === 'custom') {
-                <div class="border-t kb-border px-4 py-2.5">
-                  <button type="button" class="btn-danger btn gap-1 text-xs w-full justify-center" (click)="requestDeleteEnvironment(environment)">
-                    <kiban-icon name="trash" [size]="12" style="color: var(--color-danger);" />
-                    Delete environment
-                  </button>
-                </div>
-              }
+              <div class="border-t kb-border px-4 py-2.5 flex items-center justify-end gap-2">
+                <button type="button" class="btn-secondary btn gap-1 text-xs" (click)="openEditEnvironmentModal(environment)" aria-label="Edit environment" title="Edit environment">
+                  <kiban-icon name="edit" [size]="12" />
+                  Edit environment
+                </button>
+                <button type="button" class="btn-danger btn gap-1 text-xs w-fit justify-center" (click)="requestDeleteEnvironment(environment)">
+                  <kiban-icon name="trash" [size]="12" style="color: var(--color-danger);" />
+                  Delete environment
+                </button>
+              </div>
             </article>
           }
         </div>
+        }
 
         <!-- Install modal -->
         @if (installEnvironment()) {
@@ -325,9 +340,9 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
 
         <!-- Environment modal -->
         @if (environmentModalOpen()) {
-          <kiban-modal title="Create Environment" (close)="closeEnvironmentModal()">
-            <form (ngSubmit)="createEnvironment()">
-              <p class="mb-5 text-xs leading-6 c-muted">Create an isolated custom environment for this project.</p>
+          <kiban-modal [title]="editingEnvironment() ? 'Edit Environment' : 'Create Environment'" (close)="closeEnvironmentModal()">
+            <form (ngSubmit)="submitEnvironment()">
+              <p class="mb-5 text-xs leading-6 c-muted">{{ editingEnvironment() ? 'Update this environment information.' : 'Create an isolated custom environment for this project.' }}</p>
               <label class="block text-xs">
                 <span class="mb-1.5 block c-muted">Environment Name</span>
                 <input name="environmentName" [(ngModel)]="environmentName" placeholder="QA, Demo, Preview..." class="input" required maxlength="100" />
@@ -338,7 +353,7 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
               </label>
               <div class="mt-5 flex justify-end gap-2">
                 <button class="btn-ghost btn" type="button" (click)="closeEnvironmentModal()">Cancel</button>
-                <button class="btn-primary btn" type="submit" [disabled]="!environmentName.trim()">Create</button>
+                <button class="btn-primary btn" type="submit" [disabled]="!environmentName.trim()">{{ editingEnvironment() ? 'Save' : 'Create' }}</button>
               </div>
             </form>
           </kiban-modal>
@@ -459,8 +474,8 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
         @if (installedServicePendingDelete()) {
           <kiban-confirm-modal title="Delete service" [message]="deleteInstalledServiceMessage()" confirmLabel="Delete service" [destructive]="true" (cancel)="cancelDeleteInstalledService()" (confirm)="confirmDeleteInstalledService()" />
         }
-        @if (environmentPendingDelete()) {
-          <kiban-confirm-modal title="Delete environment" [message]="deleteEnvironmentMessage()" confirmLabel="Delete environment" [destructive]="true" (cancel)="cancelDeleteEnvironment()" (confirm)="confirmDeleteEnvironment()" />
+        @if (environmentPendingDelete(); as environment) {
+          <kiban-confirm-modal title="Delete environment" [message]="deleteEnvironmentMessage()" confirmLabel="Delete environment" [destructive]="true" [confirmationText]="environment.name" (cancel)="cancelDeleteEnvironment()" (confirm)="confirmDeleteEnvironment()" />
         }
       } @else {
         <kiban-skeleton-project-detail />
@@ -469,8 +484,8 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
   `
 })
 export class ProjectDetailsPageComponent {
-  private readonly route = inject(ActivatedRoute); private readonly projectsService = inject(ProjectsService); private readonly installedServices = inject(InstalledServicesService); private readonly catalogService = inject(CatalogService); private readonly environmentPresenter = new EnvironmentCardPresenter(); private readonly catalogPresenter = new CatalogPagePresenter();
-  protected readonly detailsPresenter = new ServiceDetailsPresenter();   protected readonly project = signal<ProjectDetails | null>(null); protected readonly message = signal<string | null>(null); protected readonly environmentPendingDelete = signal<EnvironmentItem | null>(null); protected readonly installedServicePendingDelete = signal<InstalledService | null>(null); protected readonly environmentModalOpen = signal(false); protected readonly servicesByEnvironment = signal<Readonly<Record<string, readonly InstalledService[]>>>({}); protected readonly loadingEnvironments = signal<ReadonlySet<string>>(new Set()); protected readonly catalogCategories = signal<readonly CatalogCategory[]>([]); protected readonly catalogItems = signal<readonly CatalogItem[]>([]); protected readonly installEnvironment = signal<EnvironmentItem | null>(null); protected readonly selectedService = signal<CatalogItem | null>(null); protected readonly installStep = signal<InstallStep>(1); protected readonly installingService = signal(false); protected readonly selectedCatalogCategory = signal('all'); protected readonly serviceForDetails = signal<InstalledService | null>(null); protected readonly visiblePasswords = signal<ReadonlySet<number>>(new Set()); protected readonly projectImageFailed = signal(false);
+  private readonly route = inject(ActivatedRoute); private readonly projectsService = inject(ProjectsService); private readonly installedServices = inject(InstalledServicesService); private readonly catalogService = inject(CatalogService); private readonly notifications = inject(ToastService); private readonly environmentPresenter = new EnvironmentCardPresenter(); private readonly catalogPresenter = new CatalogPagePresenter();
+  protected readonly detailsPresenter = new ServiceDetailsPresenter();   protected readonly project = signal<ProjectDetails | null>(null); protected readonly message = signal<string | null>(null); protected readonly environmentPendingDelete = signal<EnvironmentItem | null>(null); protected readonly installedServicePendingDelete = signal<InstalledService | null>(null); protected readonly environmentModalOpen = signal(false); protected readonly editingEnvironment = signal<EnvironmentItem | null>(null); protected readonly servicesByEnvironment = signal<Readonly<Record<string, readonly InstalledService[]>>>({}); protected readonly loadingEnvironments = signal<ReadonlySet<string>>(new Set()); protected readonly catalogCategories = signal<readonly CatalogCategory[]>([]); protected readonly catalogItems = signal<readonly CatalogItem[]>([]); protected readonly installEnvironment = signal<EnvironmentItem | null>(null); protected readonly selectedService = signal<CatalogItem | null>(null); protected readonly installStep = signal<InstallStep>(1); protected readonly installingService = signal(false); protected readonly selectedCatalogCategory = signal('all'); protected readonly serviceForDetails = signal<InstalledService | null>(null); protected readonly visiblePasswords = signal<ReadonlySet<number>>(new Set()); protected readonly projectImageFailed = signal(false);
   protected environmentName = ''; protected environmentDescriptionText = ''; protected serviceSearch = ''; protected configurationValues: Record<string, string> = {}; protected readonly projectId: string | null;
   public constructor() { this.projectId = this.route.snapshot.paramMap.get('id'); this.loadCatalog(); this.loadProject(); }
   protected loadProject(): void { if (this.projectId) this.projectsService.getProject(this.projectId).subscribe({ next: (project) => { this.project.set(project); this.projectImageFailed.set(false); for (const environment of project.environments) this.loadInstalledServices(environment.id); }, error: () => this.message.set('Could not load project.') }); }
@@ -486,25 +501,26 @@ export class ProjectDetailsPageComponent {
   protected schemaFields(): readonly SchemaField[] { const item = this.selectedService(); return item ? this.schemaFieldsFor(item) : []; }
   private schemaFieldsFor(item: CatalogItem): readonly SchemaField[] { const properties = item.schema['properties']; const required = Array.isArray(item.schema['required']) ? item.schema['required'] : []; if (!properties || typeof properties !== 'object' || Array.isArray(properties)) return []; return Object.entries(properties).map(([key, value]) => { const record = value && typeof value === 'object' && !Array.isArray(value) ? value as Readonly<Record<string, unknown>> : {}; const title = typeof record['title'] === 'string' ? record['title'] : key; const defaultValue = resolveSchemaDefaultValue(record['default']); return { key, label: title, required: required.includes(key), defaultValue }; }); }
   protected goToReview(): void { this.installStep.set(3); }
-  protected installSelectedService(): void { const env = this.installEnvironment(); const service = this.selectedService(); if (!this.projectId || !env || !service || this.installingService()) return; this.installingService.set(true); this.message.set('Installing service. This can take a few minutes while Kiban pulls the image and creates runtime resources.'); this.installedServices.install(this.projectId, env.id, { serviceId: service.id, configuration: this.configurationValues }).subscribe({ next: () => { this.installingService.set(false); this.closeInstallDialog(); this.message.set(null); this.loadInstalledServices(env.id); }, error: () => { this.installingService.set(false); this.message.set('Could not install service. Check configuration and duplicates.'); } }); }
+  protected installSelectedService(): void { const env = this.installEnvironment(); const service = this.selectedService(); if (!this.projectId || !env || !service || this.installingService()) return; this.installingService.set(true); this.installedServices.install(this.projectId, env.id, { serviceId: service.id, configuration: this.configurationValues }).subscribe({ next: () => { this.installingService.set(false); this.closeInstallDialog(); this.notifications.success(`${service.name} installed successfully.`); this.loadInstalledServices(env.id); }, error: () => { this.installingService.set(false); this.notifications.error(`Could not install ${service.name}. Check configuration and duplicates.`); } }); }
   protected startInstalledService(service: InstalledService): void { this.installedServices.start(service.id).subscribe({ next: () => this.loadInstalledServices(service.environmentId), error: () => this.message.set('Could not start service.') }); }
   protected stopInstalledService(service: InstalledService): void { this.installedServices.stop(service.id).subscribe({ next: () => this.loadInstalledServices(service.environmentId), error: () => this.message.set('Could not stop service.') }); }
   protected restartInstalledService(service: InstalledService): void { this.installedServices.restart(service.id).subscribe({ next: () => this.loadInstalledServices(service.environmentId), error: () => this.message.set('Could not restart service.') }); }
   protected requestDeleteInstalledService(service: InstalledService): void { this.installedServicePendingDelete.set(service); }
   protected cancelDeleteInstalledService(): void { this.installedServicePendingDelete.set(null); }
   protected deleteInstalledServiceMessage(): string { const service = this.installedServicePendingDelete(); return service ? `Delete service "${service.name}"? This will stop and remove its running runtime resources.` : ''; }
-  protected confirmDeleteInstalledService(): void { const service = this.installedServicePendingDelete(); if (!service) return; this.installedServices.delete(service.id).subscribe({ next: () => { this.installedServicePendingDelete.set(null); this.loadInstalledServices(service.environmentId); }, error: () => this.message.set('Could not delete service.') }); }
+  protected confirmDeleteInstalledService(): void { const service = this.installedServicePendingDelete(); if (!service) return; this.installedServices.delete(service.id).subscribe({ next: () => { this.installedServicePendingDelete.set(null); this.notifications.success(`${service.name} deleted successfully.`); this.loadInstalledServices(service.environmentId); }, error: () => this.notifications.error(`Could not delete ${service.name}.`) }); }
   protected openDetails(service: InstalledService): void { this.serviceForDetails.set(service); this.visiblePasswords.set(new Set()); }
   protected closeDetails(): void { this.serviceForDetails.set(null); }
   protected copyToClipboard(value: string): void { if (typeof navigator !== 'undefined' && navigator.clipboard) navigator.clipboard.writeText(value).catch(() => {}); }
   protected togglePassword(index: number): void { const current = this.visiblePasswords(); const next = new Set(current); if (next.has(index)) { next.delete(index); } else { next.add(index); } this.visiblePasswords.set(next); }
   protected configurationKeys(): readonly string[] { return Object.keys(this.configurationValues).filter((key) => this.configurationValues[key]); }
-  protected openEnvironmentModal(): void { this.environmentName = ''; this.environmentDescriptionText = ''; this.environmentModalOpen.set(true); }
-  protected closeEnvironmentModal(): void { this.environmentModalOpen.set(false); }
+  protected openEnvironmentModal(): void { this.editingEnvironment.set(null); this.environmentName = ''; this.environmentDescriptionText = ''; this.environmentModalOpen.set(true); }
+  protected openEditEnvironmentModal(environment: EnvironmentItem): void { this.editingEnvironment.set(environment); this.environmentName = environment.name; this.environmentDescriptionText = environment.description ?? ''; this.environmentModalOpen.set(true); }
+  protected closeEnvironmentModal(): void { this.environmentModalOpen.set(false); this.editingEnvironment.set(null); }
   protected environmentCardDescription(environment: EnvironmentItem): string { return this.environmentPresenter.description(environment); }
-  protected createEnvironment(): void { if (!this.projectId) return; const name = this.environmentName.trim(); if (!name) { this.message.set('Environment name is required.'); return; } this.projectsService.createEnvironment(this.projectId, { name, description: this.environmentDescriptionText.trim() || null }).subscribe({ next: () => { this.environmentName = ''; this.environmentDescriptionText = ''; this.environmentModalOpen.set(false); this.message.set(null); this.loadProject(); }, error: () => this.message.set('Could not create environment. Check the name and try again.') }); }
-  protected requestDeleteEnvironment(environment: EnvironmentItem): void { if (environment.type !== 'custom') return; this.environmentPendingDelete.set(environment); }
+  protected submitEnvironment(): void { if (!this.projectId) return; const name = this.environmentName.trim(); if (!name) { this.message.set('Environment name is required.'); return; } const editing = this.editingEnvironment(); const payload = { name, description: this.environmentDescriptionText.trim() || null }; const request = editing ? this.projectsService.updateEnvironment(this.projectId, editing.id, payload) : this.projectsService.createEnvironment(this.projectId, payload); request.subscribe({ next: () => { this.environmentName = ''; this.environmentDescriptionText = ''; this.closeEnvironmentModal(); this.notifications.success(`${name} ${editing ? 'updated' : 'created'} successfully.`); this.loadProject(); }, error: () => this.notifications.error(`Could not ${editing ? 'update' : 'create'} ${name}. Check the name and try again.`) }); }
+  protected requestDeleteEnvironment(environment: EnvironmentItem): void { this.environmentPendingDelete.set(environment); }
   protected cancelDeleteEnvironment(): void { this.environmentPendingDelete.set(null); }
   protected deleteEnvironmentMessage(): string { const environment = this.environmentPendingDelete(); return environment ? `Delete environment "${environment.name}"? This cannot be undone.` : ''; }
-  protected confirmDeleteEnvironment(): void { const environment = this.environmentPendingDelete(); if (!this.projectId || !environment || environment.type !== 'custom') return; this.projectsService.deleteEnvironment(this.projectId, environment.id).subscribe({ next: () => { this.environmentPendingDelete.set(null); this.loadProject(); }, error: () => this.message.set('Could not delete environment.') }); }
+  protected confirmDeleteEnvironment(): void { const environment = this.environmentPendingDelete(); if (!this.projectId || !environment) return; this.projectsService.deleteEnvironment(this.projectId, environment.id).subscribe({ next: () => { this.environmentPendingDelete.set(null); this.notifications.success(`${environment.name} deleted successfully.`); this.loadProject(); }, error: () => this.notifications.error(`Could not delete ${environment.name}.`) }); }
 }

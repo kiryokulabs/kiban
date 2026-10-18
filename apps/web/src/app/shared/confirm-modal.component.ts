@@ -1,6 +1,8 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { ModalComponent } from './modal.component';
 import { IconsComponent } from './icons.component';
+import { ConfirmationDialogPresenter } from './confirmation-dialog.presenter';
 
 /**
  * Reusable confirmation dialog for destructive or important actions.
@@ -8,7 +10,7 @@ import { IconsComponent } from './icons.component';
 @Component({
   selector: 'kiban-confirm-modal',
   standalone: true,
-  imports: [ModalComponent, IconsComponent],
+  imports: [FormsModule, ModalComponent, IconsComponent],
   template: `
     <kiban-modal [title]="title" (close)="cancelAction()">
       @if (destructive) {
@@ -24,13 +26,20 @@ import { IconsComponent } from './icons.component';
       } @else {
         <p class="text-sm leading-relaxed c-muted">{{ message }}</p>
       }
+      @if (confirmationText) {
+        <label class="mt-4 block text-xs">
+          <span class="mb-4 block c-muted">Type <strong class="kb-text">{{ confirmationText }}</strong> to confirm</span>
+          <input name="confirmationValue" [(ngModel)]="confirmationValue" class="input" autocomplete="off" />
+        </label>
+      }
       <div class="mt-5 flex justify-end gap-2">
-        <button class="btn-ghost btn" type="button" (click)="cancelAction()">{{ cancelLabel }}</button>
+        <button class="btn-ghost btn mt-4" type="button" (click)="cancelAction()">{{ cancelLabel }}</button>
         <button
-          class="btn gap-1.5"
+          class="btn gap-1.5 mt-4"
           [class.btn-danger]="destructive"
           [class.btn-primary]="!destructive"
           type="button"
+          [disabled]="!canConfirm()"
           (click)="confirmAction()"
         >
           @if (destructive) { <kiban-icon name="trash" [size]="14" style="color: var(--color-danger);" /> }
@@ -41,33 +50,29 @@ import { IconsComponent } from './icons.component';
   `
 })
 export class ConfirmModalComponent {
-  /** Dialog title. */
+  private readonly presenter = new ConfirmationDialogPresenter();
+
   @Input() public title = 'Confirm action';
-
-  /** Explanation of what will happen if the user confirms. */
   @Input() public message = '';
-
-  /** Secondary action label. */
   @Input() public cancelLabel = 'Cancel';
-
-  /** Primary action label. */
   @Input() public confirmLabel = 'Confirm';
-
-  /** Whether the primary action should be styled as destructive. */
   @Input() public destructive = false;
+  @Input() public confirmationText = '';
 
-  /** Emitted when the user confirms the action. */
+  public confirmationValue = '';
+
   @Output() public readonly confirm = new EventEmitter<void>();
-
-  /** Emitted when the user cancels or closes the dialog. */
   @Output() public readonly cancel = new EventEmitter<void>();
 
-  /** Confirms the pending action. */
   public confirmAction(): void {
+    if (!this.canConfirm()) return;
     this.confirm.emit();
   }
 
-  /** Cancels the pending action. */
+  public canConfirm(): boolean {
+    return this.presenter.canConfirm(this.confirmationValue, this.confirmationText);
+  }
+
   public cancelAction(): void {
     this.cancel.emit();
   }
