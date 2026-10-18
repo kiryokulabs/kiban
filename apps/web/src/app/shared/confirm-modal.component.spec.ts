@@ -13,4 +13,18 @@ describe('ConfirmationDialogPresenter', () => {
       destructive: false
     });
   });
+
+  it('requires an exact confirmation value when one is configured', () => {
+    const presenter = new ConfirmationDialogPresenter();
+
+    expect(presenter.canConfirm('Production', 'Production')).toBe(true);
+    expect(presenter.canConfirm('production', 'Production')).toBe(false);
+    expect(presenter.canConfirm(' Production ', 'Production')).toBe(false);
+  });
+
+  it('allows confirmation without a configured value', () => {
+    const presenter = new ConfirmationDialogPresenter();
+
+    expect(presenter.canConfirm('', '')).toBe(true);
+  });
 });
