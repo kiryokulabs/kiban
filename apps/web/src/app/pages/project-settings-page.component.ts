@@ -5,6 +5,7 @@ import type { ProjectSettings } from '../projects/projects.models';
 import { ProjectsService } from '../projects/projects.service';
 import { IconsComponent } from '../shared/icons.component';
 import { SkeletonComponent } from '../shared/skeleton.component';
+import { ToastService } from '../shared/toast.service';
 
 @Component({
   selector: 'kiban-project-settings-page',
@@ -108,6 +109,7 @@ import { SkeletonComponent } from '../shared/skeleton.component';
 export class ProjectSettingsPageComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly projects = inject(ProjectsService);
+  private readonly notifications = inject(ToastService);
   protected readonly projectId = this.route.snapshot.paramMap.get('id') ?? '';
   protected readonly settings = signal<ProjectSettings | null>(null);
   protected readonly message = signal<string | null>(null);
@@ -137,8 +139,8 @@ export class ProjectSettingsPageComponent {
     if (!this.projectId || !name) return;
     this.saving.set(true);
     this.projects.updateProject(this.projectId, { name, description: this.projectDescription.trim() || null }).subscribe({
-      next: () => { this.saving.set(false); this.message.set('Project updated.'); this.load(); },
-      error: () => { this.saving.set(false); this.message.set('Could not update project.'); }
+      next: () => { this.saving.set(false); this.notifications.success('Project updated successfully.'); this.load(); },
+      error: () => { this.saving.set(false); this.notifications.error('Could not update project.'); }
     });
   }
 
@@ -151,8 +153,8 @@ export class ProjectSettingsPageComponent {
       const result = typeof reader.result === 'string' ? reader.result : '';
       const dataBase64 = result.includes(',') ? result.split(',')[1] ?? '' : result;
       this.projects.saveProjectImage(this.projectId, { contentType: file.type, dataBase64 }).subscribe({
-        next: () => { this.message.set('Project image updated.'); this.imageFailed.set(false); this.imageVersion.set(Date.now()); this.load(); },
-        error: () => this.message.set('Could not update project image.')
+        next: () => { this.notifications.success('Project image updated successfully.'); this.imageFailed.set(false); this.imageVersion.set(Date.now()); this.load(); },
+        error: () => this.notifications.error('Could not update project image.')
       });
     };
     reader.readAsDataURL(file);

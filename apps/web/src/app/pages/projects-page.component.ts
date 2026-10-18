@@ -7,6 +7,7 @@ import { ProjectsService } from '../projects/projects.service';
 import { ConfirmModalComponent } from '../shared/confirm-modal.component';
 import { ModalComponent } from '../shared/modal.component';
 import { IconsComponent } from '../shared/icons.component';
+import { ToastService } from '../shared/toast.service';
 
 @Component({
   selector: 'kiban-projects-page',
@@ -23,7 +24,6 @@ import { IconsComponent } from '../shared/icons.component';
             </div>
             <h1 class="text-xl font-semibold kb-text">Projects</h1>
           </div>
-          <p class="mt-0.5 text-sm c-muted">Manage your infrastructure projects.</p>
         </div>
         <button class="btn-primary btn gap-1.5" type="button" (click)="openCreateModal()">
           <kiban-icon name="plus" [size]="14" />
@@ -80,7 +80,7 @@ import { IconsComponent } from '../shared/icons.component';
                 </a>
               </div>
               <!-- Description -->
-              <p class="text-xs c-muted hidden md:block truncate">{{ project.description || '—' }}</p>
+              <p class="text-xs c-muted hidden truncate md:flex md:items-center">{{ project.description || '—' }}</p>
               <!-- Environments count -->
               <div class="flex items-center gap-1.5">
                 <kiban-icon name="server" [size]="12" class="c-subtle shrink-0" />
@@ -96,7 +96,7 @@ import { IconsComponent } from '../shared/icons.component';
                 <a [routerLink]="['/projects', project.id]" class="btn-secondary btn gap-1 text-xs">
                   <kiban-icon name="eye" [size]="12" />
                 </a>
-                <button class="btn-ghost btn text-xs" type="button" (click)="openEditModal(project)">
+                <button class="btn-secondary btn gap-1 text-xs" type="button" (click)="openEditModal(project)">
                   <kiban-icon name="edit" [size]="12" />
                 </button>
                 <button class="btn-danger btn text-xs" type="button" (click)="requestDeleteProject(project)">
@@ -137,6 +137,7 @@ import { IconsComponent } from '../shared/icons.component';
           [message]="deleteProjectMessage()"
           confirmLabel="Delete project"
           [destructive]="true"
+          [confirmationText]="project.name"
           (cancel)="cancelDeleteProject()"
           (confirm)="confirmDeleteProject()"
         />
@@ -147,6 +148,7 @@ import { IconsComponent } from '../shared/icons.component';
 export class ProjectsPageComponent {
   private readonly projectsService = inject(ProjectsService);
   private readonly router = inject(Router);
+  private readonly notifications = inject(ToastService);
 
   protected readonly projects = signal<readonly ProjectSummary[]>([]);
   protected readonly loading = signal(true);
@@ -202,7 +204,7 @@ export class ProjectsPageComponent {
     const editing = this.editingProject();
     const payload = { name: this.name, description: this.description || null };
     const request = editing ? this.projectsService.updateProject(editing.id, payload) : this.projectsService.createProject(payload);
-    request.subscribe({ next: (project) => { this.closeModal(); this.loadProjects(); if (!editing) void this.router.navigate(['/projects', project.id]); }, error: () => this.message.set('Could not save project.') });
+    request.subscribe({ next: (project) => { this.closeModal(); this.loadProjects(); if (!editing) { this.notifications.success(`${project.name} created successfully.`); void this.router.navigate(['/projects', project.id]); } }, error: () => { if (editing) { this.message.set('Could not save project.'); } else { this.notifications.error('Could not create project.'); } } });
   }
 
   protected requestDeleteProject(project: ProjectSummary): void {
@@ -225,6 +227,6 @@ export class ProjectsPageComponent {
     if (!project || project.serviceCount > 0) {
       return;
     }
-    this.projectsService.deleteProject(project.id).subscribe({ next: () => { this.projectPendingDelete.set(null); this.loadProjects(); }, error: () => this.message.set('Could not delete project.') });
+    this.projectsService.deleteProject(project.id).subscribe({ next: () => { this.projectPendingDelete.set(null); this.notifications.success(`${project.name} deleted successfully.`); this.loadProjects(); }, error: () => this.notifications.error(`Could not delete ${project.name}.`) });
   }
 }
