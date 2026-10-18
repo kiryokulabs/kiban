@@ -13,6 +13,7 @@ import { IconsComponent } from '../shared/icons.component';
 import { SvgIconComponent } from '../shared/svg-icon.component';
 import { CategorySliderComponent } from '../shared/category-slider.component';
 import { CategorySliderPresenter, type CategorySliderItem } from '../shared/category-slider.presenter';
+import { ToastService } from '../shared/toast.service';
 
 interface CatalogSchemaField { readonly key: string; readonly label: string; readonly required: boolean; readonly secret: boolean; }
 
@@ -32,7 +33,6 @@ interface CatalogSchemaField { readonly key: string; readonly label: string; rea
               </div>
               <h1 class="text-xl font-semibold kb-text">Service Catalog</h1>
             </div>
-            <p class="mt-0.5 text-sm c-muted">Browse installable service definitions loaded from the filesystem.</p>
           </div>
           <div class="relative w-full lg:max-w-xs">
             <kiban-icon name="search" [size]="14" class="absolute left-3 top-1/2 -translate-y-1/2 c-subtle pointer-events-none" />
@@ -162,6 +162,7 @@ export class CatalogPageComponent {
   private readonly catalog = inject(CatalogService);
   private readonly projectsService = inject(ProjectsService);
   private readonly installedServices = inject(InstalledServicesService);
+  private readonly notifications = inject(ToastService);
   private readonly presenter = new CatalogPagePresenter();
   private readonly categorySlider = new CategorySliderPresenter();
   protected readonly allCategoryId = ALL_CATALOG_CATEGORIES;
@@ -253,8 +254,8 @@ export class CatalogPageComponent {
     if (targets.length === 0) return;
     this.installing.set(true);
     forkJoin(targets.map((target: CatalogInstallTarget) => this.installedServices.install(target.projectId, target.environmentId, { serviceId: service.id, configuration: this.configurationValues() }))).subscribe({
-      next: () => { this.installing.set(false); this.message.set(`${service.name} installed in ${targets.length} target(s).`); this.closeInstallModal(); },
-      error: () => { this.installing.set(false); this.message.set(`Could not install ${service.name} in every selected target.`); }
+      next: () => { this.installing.set(false); this.notifications.success(`${service.name} installed in ${targets.length} target(s).`); this.closeInstallModal(); },
+      error: () => { this.installing.set(false); this.notifications.error(`Could not install ${service.name} in every selected target.`); }
     });
   }
 

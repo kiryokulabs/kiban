@@ -13,6 +13,7 @@ import { ConfirmModalComponent } from '../shared/confirm-modal.component';
 import { IconsComponent } from '../shared/icons.component';
 import { SvgIconComponent } from '../shared/svg-icon.component';
 import { SkeletonInstalledDetailComponent } from '../shared/skeleton-installed-detail.component';
+import { ToastService } from '../shared/toast.service';
 
 @Component({
   selector: 'kiban-installed-service-details-page',
@@ -332,6 +333,7 @@ export class InstalledServiceDetailsPageComponent implements OnDestroy {
   private readonly router = inject(Router);
   private readonly installedServices = inject(InstalledServicesService);
   private readonly terminal = inject(TerminalService);
+  private readonly notifications = inject(ToastService);
   protected readonly presenter = new ServiceDetailsPresenter();
   protected readonly details = signal<InstalledServiceDetails | null>(null);
   protected readonly loading = signal(true);
@@ -435,9 +437,10 @@ export class InstalledServiceDetailsPageComponent implements OnDestroy {
   }
 
   protected deleteService(): void {
+    const serviceName = this.details()?.overview.name ?? 'Service';
     this.confirmDelete.set(false);
     this.actionInProgress.set('Deleting service…');
-    this.installedServices.delete(this.serviceId).subscribe({ next: () => { void this.router.navigateByUrl('/installed'); }, error: () => { this.actionInProgress.set(null); this.message.set('Could not delete service.'); } });
+    this.installedServices.delete(this.serviceId).subscribe({ next: () => { this.notifications.success(`${serviceName} deleted successfully.`); void this.router.navigateByUrl('/installed'); }, error: () => { this.actionInProgress.set(null); this.notifications.error(`Could not delete ${serviceName}.`); } });
   }
 
   protected toggleAutoRefresh(): void { this.autoRefresh() ? this.stopAutoRefresh() : this.startAutoRefresh(); }
