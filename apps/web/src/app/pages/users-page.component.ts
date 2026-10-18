@@ -4,11 +4,13 @@ import { AuthService } from '../auth/auth.service';
 import type { UserListItem } from '../users/users.models';
 import { UsersService } from '../users/users.service';
 import { IconsComponent } from '../shared/icons.component';
+import { ToastService } from '../shared/toast.service';
+import { ConfirmModalComponent } from '../shared/confirm-modal.component';
 
 @Component({
   selector: 'kiban-users-page',
   standalone: true,
-  imports: [FormsModule, IconsComponent],
+  imports: [FormsModule, IconsComponent, ConfirmModalComponent],
   template: `
     <div class="space-y-6 max-w-3xl">
       <!-- Header -->
@@ -19,7 +21,7 @@ import { IconsComponent } from '../shared/icons.component';
           </div>
           <h1 class="text-xl font-semibold kb-text">Users</h1>
         </div>
-        <p class="mt-0.5 text-sm c-muted">The first Kiban user is the only administrator. Admin can create and delete operator accounts.</p>
+        <p class="mt-4 text-sm c-muted">The first Kiban user is the only administrator. Admin can create and delete operator accounts.</p>
       </div>
 
       @if (auth.user()?.role !== 'admin') {
@@ -35,9 +37,15 @@ import { IconsComponent } from '../shared/icons.component';
             <h2 class="text-sm font-medium kb-text">Create operator</h2>
           </div>
           <form class="flex flex-col gap-3 sm:flex-row" (ngSubmit)="createOperator()">
-            <input name="email" type="email" autocomplete="email" placeholder="operator@example.com" [(ngModel)]="email" class="input flex-1" required />
-            <input name="password" type="password" autocomplete="new-password" placeholder="Temporary password" [(ngModel)]="password" class="input flex-1" required minlength="8" />
-            <button type="submit" class="btn-primary btn gap-1.5 shrink-0" [disabled]="loading()">
+            <label class="flex-1 text-xs">
+              <span class="mb-1.5 block c-muted">Email</span>
+              <input name="email" type="email" autocomplete="email" placeholder="operator@example.com" [(ngModel)]="email" class="input" required />
+            </label>
+            <label class="flex-1 text-xs">
+              <span class="mb-1.5 block c-muted">Password</span>
+              <input name="password" type="password" autocomplete="new-password" placeholder="Temporary password" [(ngModel)]="password" class="input" required minlength="8" />
+            </label>
+            <button type="submit" class="btn-primary btn gap-1.5 shrink-0 sm:self-end" [disabled]="loading() || !email.trim() || !password">
               <kiban-icon name="plus" [size]="14" />
               Create
             </button>
@@ -72,7 +80,7 @@ import { IconsComponent } from '../shared/icons.component';
                     </div>
                   </div>
                 </div>
-                <button type="button" class="btn-danger btn gap-1 text-xs" [disabled]="user.role === 'admin' || deleting() === user.id" (click)="deleteUser(user)">
+                <button type="button" class="btn-danger btn gap-1 text-xs" [disabled]="user.role === 'admin' || deleting() === user.id" (click)="requestDeleteUser(user)">
                   @if (deleting() === user.id) {
                     <span>Deleting…</span>
                   } @else {
@@ -89,16 +97,29 @@ import { IconsComponent } from '../shared/icons.component';
           </div>
         </div>
       }
+
+      @if (userPendingDelete(); as user) {
+        <kiban-confirm-modal
+          title="Delete user"
+          [message]="'Delete user &quot;' + user.email + '&quot;? This cannot be undone.'"
+          confirmLabel="Delete user"
+          [destructive]="true"
+          (cancel)="cancelDeleteUser()"
+          (confirm)="confirmDeleteUser()"
+        />
+      }
     </div>
   `
 })
 export class UsersPageComponent {
   protected readonly auth = inject(AuthService);
   private readonly usersService = inject(UsersService);
+  private readonly notifications = inject(ToastService);
 
   protected readonly users = signal<readonly UserListItem[]>([]);
   protected readonly loading = signal(false);
   protected readonly deleting = signal<string | null>(null);
+  protected readonly userPendingDelete = signal<UserListItem | null>(null);
   protected readonly message = signal<string | null>(null);
 
   protected email = '';
@@ -116,6 +137,7 @@ export class UsersPageComponent {
     if (this.loading()) {
       return;
     }
+    const email = this.email;
     this.loading.set(true);
     this.message.set(null);
     this.usersService.createOperator({ email: this.email, password: this.password }).subscribe({
@@ -123,18 +145,27 @@ export class UsersPageComponent {
         this.email = '';
         this.password = '';
         this.loading.set(false);
-        this.message.set('Operator created.');
+        this.notifications.success(`${email} created successfully.`);
         this.loadUsers();
       },
       error: () => {
         this.loading.set(false);
-        this.message.set('Could not create operator.');
+        this.notifications.error(`Could not create ${email}.`);
       }
     });
   }
 
-  protected deleteUser(user: UserListItem): void {
-    if (user.role === 'admin' || this.deleting()) {
+  protected requestDeleteUser(user: UserListItem): void {
+    if (user.role !== 'admin') this.userPendingDelete.set(user);
+  }
+
+  protected cancelDeleteUser(): void {
+    this.userPendingDelete.set(null);
+  }
+
+  protected confirmDeleteUser(): void {
+    const user = this.userPendingDelete();
+    if (!user || user.role === 'admin' || this.deleting()) {
       return;
     }
     this.deleting.set(user.id);
@@ -142,12 +173,13 @@ export class UsersPageComponent {
     this.usersService.deleteUser(user.id).subscribe({
       next: () => {
         this.deleting.set(null);
-        this.message.set('Operator deleted.');
+        this.userPendingDelete.set(null);
+        this.notifications.success(`${user.email} deleted successfully.`);
         this.loadUsers();
       },
       error: () => {
         this.deleting.set(null);
-        this.message.set('Could not delete operator.');
+        this.notifications.error(`Could not delete ${user.email}.`);
       }
     });
   }
