@@ -100,7 +100,7 @@ export class AuthShellComponent {
   protected readonly requiresAdminSetup = signal<boolean | null>(null);
 
   protected readonly eyebrow = computed(() => (this.requiresAdminSetup() === true ? 'First run setup' : 'Welcome back'));
-  protected readonly title = computed(() => (this.requiresAdminSetup() === true ? 'Create admin account' : 'Log in to Kiban'));
+  protected readonly title = computed(() => (this.requiresAdminSetup() === true ? 'Create admin account' : 'Log in to KibanOS'));
   protected readonly description = computed(() => (this.requiresAdminSetup() === true ? 'This account will become the only initial administrator for this Kiban installation.' : 'Public registration is disabled.'));
   protected readonly actionLabel = computed(() => (this.requiresAdminSetup() === true ? 'Create admin account' : 'Log in'));
 
