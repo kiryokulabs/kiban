@@ -416,7 +416,7 @@ export class InstalledServiceDetailsPageComponent implements OnDestroy {
   protected saveConfiguration(): void {
     this.confirmSaveConfiguration.set(false);
     this.actionInProgress.set('Applying configuration…');
-    this.installedServices.updateConfiguration(this.serviceId, this.configurationValues()).subscribe({ next: () => { this.actionInProgress.set(null); this.load(); }, error: () => { this.actionInProgress.set(null); this.message.set('Could not save configuration.'); } });
+    this.installedServices.updateConfiguration(this.serviceId, this.configurationValues()).subscribe({ next: () => { this.actionInProgress.set(null); this.notifications.success('Configuration saved and service redeployed successfully.'); this.load(); }, error: () => { this.actionInProgress.set(null); this.notifications.error('Could not save configuration.'); } });
   }
 
   protected saveServiceDomain(): void {
@@ -426,8 +426,8 @@ export class InstalledServiceDetailsPageComponent implements OnDestroy {
     this.serviceDomainError.set('');
     this.serviceDomainSaved.set(false);
     this.installedServices.updateDomain(this.serviceId, host).subscribe({
-      next: () => { this.serviceDomainSaving.set(false); this.originalServiceDomain = host; this.serviceDomainSaved.set(true); this.load(); },
-      error: (error: unknown) => { this.serviceDomainSaving.set(false); this.serviceDomainError.set(this.errorMessage(error, 'Could not update service domain.')); }
+      next: () => { this.serviceDomainSaving.set(false); this.originalServiceDomain = host; this.serviceDomainSaved.set(true); this.notifications.success('Service domain updated successfully.'); this.load(); },
+      error: (error: unknown) => { this.serviceDomainSaving.set(false); const message = this.errorMessage(error, 'Could not update service domain.'); this.serviceDomainError.set(message); this.notifications.error(message); }
     });
   }
 
