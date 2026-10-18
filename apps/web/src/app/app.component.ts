@@ -10,11 +10,12 @@ import { SystemMetricsHeaderComponent } from './system/system-metrics-header.com
 import { UpdateNoticeComponent } from './system/update-notice.component';
 import { AppLayoutPresenter } from './app-layout.presenter';
 import { ViewportService } from './shared/viewport.service';
+import { ToastComponent } from './shared/toast.component';
 
 @Component({
   selector: 'kiban-root',
   standalone: true,
-  imports: [AuthShellComponent, RouterLink, RouterOutlet, SidebarComponent, IconsComponent, ProgressBarComponent, SystemMetricsHeaderComponent, UpdateNoticeComponent],
+  imports: [AuthShellComponent, RouterLink, RouterOutlet, SidebarComponent, IconsComponent, ProgressBarComponent, SystemMetricsHeaderComponent, UpdateNoticeComponent, ToastComponent],
   template: `
     @if (initializing()) {
       <!-- Loading state -->
@@ -126,6 +127,7 @@ import { ViewportService } from './shared/viewport.service';
           </div>
         </div>
       }
+      <kiban-toast />
     }
   `
 })
