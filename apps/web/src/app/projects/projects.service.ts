@@ -60,7 +60,7 @@ export class ProjectsService {
     return this.http.post<EnvironmentItem>(`${this.apiUrl}/projects/${projectId}/environments`, request, { withCredentials: true });
   }
 
-  /** Deletes a custom environment for a project. */
+  /** Deletes an environment for a project. */
   public deleteEnvironment(projectId: string, environmentId: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/projects/${projectId}/environments/${environmentId}`, { withCredentials: true });
   }

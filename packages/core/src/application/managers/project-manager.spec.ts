@@ -208,12 +208,14 @@ describe('ProjectManager', () => {
     await expect(manager.listEnvironments('project-1')).resolves.toHaveLength(3);
   });
 
-  it('does not delete system environments', async () => {
+  it('deletes a system environment', async () => {
     const { manager } = createManager();
     const details = await manager.createProject({ name: 'CrossMetrics', description: null });
     const systemEnvironment = details.environments[0]!;
 
-    await expect(manager.deleteEnvironment('project-1', systemEnvironment.id)).rejects.toBeInstanceOf(ProjectValidationError);
+    await manager.deleteEnvironment('project-1', systemEnvironment.id);
+
+    await expect(manager.listEnvironments('project-1')).resolves.toHaveLength(2);
   });
 
 });

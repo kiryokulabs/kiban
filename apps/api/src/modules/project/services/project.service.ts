@@ -142,7 +142,7 @@ export class ProjectService {
     }
   }
 
-  /** Deletes a custom environment for a project. */
+  /** Deletes an environment for a project. */
   public async deleteEnvironment(projectId: string, environmentId: string): Promise<void> {
     try {
       await this.projects.deleteEnvironment(projectId, environmentId);

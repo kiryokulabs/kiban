@@ -64,7 +64,7 @@ export class ProjectController {
     return this.projects.createEnvironment(id, body);
   }
 
-  /** Deletes a custom environment for a project. */
+  /** Deletes an environment for a project. */
   @Delete(':id/environments/:environmentId')
   @HttpCode(204)
   public deleteEnvironment(@Param('id') id: string, @Param('environmentId') environmentId: string): Promise<void> {

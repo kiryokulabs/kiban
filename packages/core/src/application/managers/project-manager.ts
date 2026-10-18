@@ -89,7 +89,7 @@ export class ProjectManager {
     return this.environments.create({ projectId: project.id, name, slug: this.slugify(name), type: 'custom', description });
   }
 
-  /** Deletes a custom environment. System environments cannot be deleted. */
+  /** Deletes an environment from a project. */
   public async deleteEnvironment(projectId: string, environmentId: string): Promise<void> {
     const project = await this.projects.findById(projectId);
     if (!project) {
@@ -98,9 +98,6 @@ export class ProjectManager {
     const environment = await this.environments.findById(environmentId);
     if (!environment || environment.projectId !== project.id) {
       throw new ProjectNotFoundError();
-    }
-    if (environment.type === 'system') {
-      throw new ProjectValidationError('System environments cannot be deleted.');
     }
     await this.environments.deleteById(environment.id);
   }
