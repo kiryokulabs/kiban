@@ -1,5 +1,5 @@
 import { ProjectNotFoundError, ProjectValidationError } from '../../domain/projects/project-errors.js';
-import type { CreateEnvironmentInput, CreateProjectInput, Environment, ProjectDetails, ProjectSummary, UpdateProjectInput } from '../../domain/projects/project.js';
+import type { CreateEnvironmentInput, CreateProjectInput, Environment, ProjectDetails, ProjectSummary, UpdateEnvironmentInput, UpdateProjectInput } from '../../domain/projects/project.js';
 import type { EnvironmentRepository, ProjectRepository, ProjectUnitOfWork } from '../interfaces/project-repository.js';
 
 const MAX_PROJECT_NAME_LENGTH = 100;
@@ -87,6 +87,24 @@ export class ProjectManager {
     const name = this.validateEnvironmentName(input.name);
     const description = input.description?.trim() || null;
     return this.environments.create({ projectId: project.id, name, slug: this.slugify(name), type: 'custom', description });
+  }
+
+  /** Updates editable environment fields. */
+  public async updateEnvironment(projectId: string, environmentId: string, input: UpdateEnvironmentInput): Promise<Environment> {
+    const project = await this.projects.findById(projectId);
+    if (!project) {
+      throw new ProjectNotFoundError();
+    }
+    const environment = await this.environments.findById(environmentId);
+    if (!environment || environment.projectId !== project.id) {
+      throw new ProjectNotFoundError();
+    }
+    const name = this.validateEnvironmentName(input.name);
+    const updated = await this.environments.update(environment.id, { name, slug: this.slugify(name), description: input.description?.trim() || null });
+    if (!updated) {
+      throw new ProjectNotFoundError();
+    }
+    return updated;
   }
 
   /** Deletes an environment from a project. */

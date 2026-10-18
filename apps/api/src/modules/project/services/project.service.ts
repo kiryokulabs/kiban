@@ -1,6 +1,6 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { ProjectManager, ProjectNotFoundError, ProjectValidationError } from '@kiban/core';
-import type { CreateEnvironmentDto, CreateProjectDto, EnvironmentDto, ProjectDetailsDto, ProjectSettingsDto, ProjectSummaryDto, SaveProjectImageDto, UpdateProjectDto } from '../dto/project.dto';
+import type { CreateEnvironmentDto, CreateProjectDto, EnvironmentDto, ProjectDetailsDto, ProjectSettingsDto, ProjectSummaryDto, SaveProjectImageDto, UpdateEnvironmentDto, UpdateProjectDto } from '../dto/project.dto';
 import { PROJECT_MANAGER } from '../interfaces/project.constants';
 import type { ProjectImageData, ProjectImageStorage } from '../interfaces/project-image-storage';
 import { mapEnvironmentToDto, mapProjectDetailsToDto, mapProjectSummaryToDto } from '../mappers/project.mapper';
@@ -137,6 +137,16 @@ export class ProjectService {
     const dto = this.parseEnvironmentPayload(payload);
     try {
       return mapEnvironmentToDto(await this.projects.createEnvironment(projectId, dto));
+    } catch (error: unknown) {
+      this.mapProjectError(error);
+    }
+  }
+
+  /** Updates editable environment fields. */
+  public async updateEnvironment(projectId: string, environmentId: string, payload: unknown): Promise<EnvironmentDto> {
+    const dto: UpdateEnvironmentDto = this.parseEnvironmentPayload(payload);
+    try {
+      return mapEnvironmentToDto(await this.projects.updateEnvironment(projectId, environmentId, dto));
     } catch (error: unknown) {
       this.mapProjectError(error);
     }

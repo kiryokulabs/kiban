@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import type { CreateEnvironmentRecordInput, Environment, EnvironmentRepository, EnvironmentType } from '@kiban/core';
+import type { CreateEnvironmentRecordInput, Environment, EnvironmentRepository, EnvironmentType, UpdateEnvironmentRecordInput } from '@kiban/core';
 import { randomUUID } from 'node:crypto';
 import { DatabaseService, type SqliteRow } from '../../../database/database.service';
 import type { DatabaseExecutor } from './sqlite-project.repository';
@@ -27,6 +27,12 @@ export class SqliteEnvironmentRepository implements EnvironmentRepository {
   public async findById(id: string): Promise<Environment | null> {
     const row = await this.database.get<EnvironmentRow>('SELECT * FROM environments WHERE id = ? LIMIT 1', [id]);
     return row ? this.toEnvironment(row) : null;
+  }
+
+  /** Updates environment editable fields. */
+  public async update(id: string, input: UpdateEnvironmentRecordInput): Promise<Environment | null> {
+    await this.database.run('UPDATE environments SET name = ?, slug = ?, description = ?, updated_at = ? WHERE id = ?', [input.name, input.slug, input.description, new Date(), id]);
+    return this.findById(id);
   }
 
   /** Deletes an environment by id. */

@@ -173,6 +173,18 @@ describe('API ProjectService environments', () => {
     await expect(service.createEnvironment('project-1', { name: 'QA', description: null, extra: true })).rejects.toBeInstanceOf(BadRequestException);
   });
 
+  it('updates an environment', async () => {
+    const updateEnvironment = vi.fn(async () => ({ ...details.environments[0]!, name: 'Local', slug: 'local', description: 'Local development' }));
+    const service = createService({ updateEnvironment });
+
+    await expect(service.updateEnvironment('project-1', 'environment-1', { name: 'Local', description: 'Local development' })).resolves.toMatchObject({
+      name: 'Local',
+      slug: 'local',
+      description: 'Local development'
+    });
+    expect(updateEnvironment).toHaveBeenCalledWith('project-1', 'environment-1', { name: 'Local', description: 'Local development' });
+  });
+
   it('deletes an environment', async () => {
     const deleteEnvironment = vi.fn(async () => undefined);
     const service = createService({ deleteEnvironment });

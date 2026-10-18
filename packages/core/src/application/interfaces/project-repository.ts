@@ -3,6 +3,7 @@ import type { Environment, EnvironmentType, Project, ProjectSummary } from '../.
 export interface CreateProjectRecordInput { readonly name: string; readonly description: string | null; }
 export interface UpdateProjectRecordInput { readonly name: string; readonly description: string | null; }
 export interface CreateEnvironmentRecordInput { readonly projectId: string; readonly name: string; readonly slug: string; readonly type: EnvironmentType; readonly description: string | null; }
+export interface UpdateEnvironmentRecordInput { readonly name: string; readonly slug: string; readonly description: string | null; }
 
 export interface ProjectRepository {
   /** Creates a project record. */
@@ -24,6 +25,8 @@ export interface EnvironmentRepository {
   listByProjectId(projectId: string): Promise<readonly Environment[]>;
   /** Finds an environment by identifier. */
   findById(id: string): Promise<Environment | null>;
+  /** Updates environment editable fields. */
+  update(id: string, input: UpdateEnvironmentRecordInput): Promise<Environment | null>;
   /** Deletes an environment by identifier. */
   deleteById(id: string): Promise<void>;
   /** Deletes every environment belonging to a project. */

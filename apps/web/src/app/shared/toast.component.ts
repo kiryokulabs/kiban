@@ -27,8 +27,8 @@ import { ToastService, type ToastType } from './toast.service';
             [class.text-danger]="toast.type === 'error'"
             [class.text-brand-light]="toast.type === 'info'"
           />
-          <p class="min-w-0 flex-1 text-sm leading-5 kb-text">{{ toast.message }}</p>
-          <button type="button" class="btn-icon-close -mr-1 -mt-1 shrink-0" aria-label="Dismiss notification" (click)="notifications.dismiss(toast.id)">
+          <p class="min-w-0 flex-1 text-sm leading-5 text-white">{{ toast.message }}</p>
+          <button type="button" class="btn-icon-close text-white -mr-1 -mt-1 shrink-0" aria-label="Dismiss notification" (click)="notifications.dismiss(toast.id)">
             <kiban-icon name="x" [size]="14" />
           </button>
         </div>

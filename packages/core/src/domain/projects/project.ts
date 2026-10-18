@@ -48,3 +48,8 @@ export interface CreateEnvironmentInput {
   readonly name: string;
   readonly description?: string | null;
 }
+
+export interface UpdateEnvironmentInput {
+  readonly name: string;
+  readonly description?: string | null;
+}

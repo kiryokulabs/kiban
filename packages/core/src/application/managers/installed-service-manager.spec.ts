@@ -72,6 +72,7 @@ class MemoryEnvironmentRepository implements EnvironmentRepository {
   public async create(): Promise<Environment> { return this.environment; }
   public async listByProjectId(projectId: string): Promise<readonly Environment[]> { return projectId === this.environment.projectId ? [this.environment] : []; }
   public async findById(id: string): Promise<Environment | null> { return id === this.environment.id ? this.environment : null; }
+  public async update(): Promise<Environment> { return this.environment; }
   public async deleteById(): Promise<void> {}
   public async deleteByProjectId(): Promise<void> {}
 }
