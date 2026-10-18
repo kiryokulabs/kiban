@@ -15,7 +15,7 @@ import { IconsComponent } from '../shared/icons.component';
           </div>
           <h1 class="text-xl font-semibold kb-text">Domain Routing</h1>
         </div>
-        <p class="mt-0.5 text-sm c-muted">How Kiban routes traffic to your services.</p>
+        <p class="mt-4 text-sm c-muted">How Kiban routes traffic to your services.</p>
       </div>
 
       <!-- How it works -->

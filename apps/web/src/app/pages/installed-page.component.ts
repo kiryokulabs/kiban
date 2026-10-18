@@ -25,7 +25,6 @@ import { SkeletonCardComponent } from '../shared/skeleton-card.component';
             </div>
             <h1 class="text-xl font-semibold kb-text">Installed</h1>
           </div>
-          <p class="mt-0.5 text-sm c-muted">Services installed across every environment.</p>
         </div>
         <button class="btn-secondary btn gap-1.5" type="button" (click)="loadServices()">
           <kiban-icon name="refresh" [size]="14" />
