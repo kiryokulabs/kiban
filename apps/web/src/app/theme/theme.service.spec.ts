@@ -51,4 +51,29 @@ describe('ThemeService', () => {
     expect(service.theme()).toBe('dark');
     expect(documentMock.cookie).toContain('kiban_theme=dark');
   });
+
+  it('defaults to the default color theme', () => {
+    const { service, documentMock } = createService();
+
+    expect(service.colorTheme()).toBe('default');
+    expect(documentMock.documentElement.dataset['colorTheme']).toBe('default');
+  });
+
+  it('applies and persists a selected color theme', () => {
+    const { service, documentMock } = createService();
+
+    service.setColorTheme('obsidian-vermilion');
+
+    expect(service.colorTheme()).toBe('obsidian-vermilion');
+    expect(documentMock.documentElement.dataset['colorTheme']).toBe('obsidian-vermilion');
+    expect(documentMock.cookie).toContain('kiban_color_theme=obsidian-vermilion');
+  });
+
+  it('supports the additional color themes', () => {
+    const { service, documentMock } = createService();
+
+    service.setColorTheme('moss-lime');
+
+    expect(documentMock.documentElement.dataset['colorTheme']).toBe('moss-lime');
+  });
 });

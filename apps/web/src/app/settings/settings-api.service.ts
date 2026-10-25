@@ -1,6 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import type { Observable } from 'rxjs';
+import type { ColorTheme } from '../theme/theme.service';
+
+export interface UserPreferencesResponse {
+  readonly theme: ColorTheme;
+}
 
 export interface InstanceDomainResponse {
   readonly domain: string | null;
@@ -53,6 +58,16 @@ export class SettingsApiService {
   private readonly apiUrl = '/api';
 
   public constructor(private readonly http: HttpClient) {}
+
+  /** Returns preferences for the current user. */
+  public getUserPreferences(): Observable<UserPreferencesResponse> {
+    return this.http.get<UserPreferencesResponse>(`${this.apiUrl}/users/me/preferences`, { withCredentials: true });
+  }
+
+  /** Saves the current user's color theme. */
+  public setUserTheme(theme: ColorTheme): Observable<void> {
+    return this.http.patch<void>(`${this.apiUrl}/users/me/preferences/theme`, { theme }, { withCredentials: true });
+  }
 
   /** Returns the configured instance domain, or null when not set. */
   public getInstanceDomain(): Observable<InstanceDomainResponse> {
