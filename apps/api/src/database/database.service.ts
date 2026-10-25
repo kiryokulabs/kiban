@@ -77,6 +77,13 @@ export class DatabaseService implements OnModuleInit {
         FOREIGN KEY (user_id) REFERENCES users(id)
       );
 
+      CREATE TABLE IF NOT EXISTS user_preferences (
+        user_id TEXT PRIMARY KEY,
+        theme TEXT NOT NULL,
+        updated_at INTEGER NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      );
+
       CREATE TABLE IF NOT EXISTS environments (
         id TEXT PRIMARY KEY,
         project_id TEXT NOT NULL,
