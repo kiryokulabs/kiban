@@ -1,1 +1,2 @@
 export const USER_MANAGER = Symbol('USER_MANAGER');
+export const USER_PREFERENCES_MANAGER = Symbol('USER_PREFERENCES_MANAGER');

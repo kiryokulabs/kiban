@@ -1,13 +1,13 @@
 import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { AuthManager, CannotDeleteAdminUserError, ForbiddenUserActionError, InvalidCredentialsError, UnauthenticatedError, UserManager, UserNotFoundError } from '@kiban/core';
+import { AuthManager, CannotDeleteAdminUserError, ForbiddenUserActionError, InvalidCredentialsError, isUserTheme, UnauthenticatedError, UserManager, UserNotFoundError, UserPreferencesManager } from '@kiban/core';
 import { AUTH_MANAGER } from '../../auth/interfaces/auth.constants';
-import type { CreateOperatorDto, UserDto } from '../dto/users.dto';
-import { USER_MANAGER } from '../interfaces/users.constants';
+import type { CreateOperatorDto, UpdateUserThemeDto, UserDto, UserPreferencesDto } from '../dto/users.dto';
+import { USER_MANAGER, USER_PREFERENCES_MANAGER } from '../interfaces/users.constants';
 import { mapPublicUserToDto } from '../mappers/users.mapper';
 
 @Injectable()
 export class UsersService {
-  public constructor(@Inject(AUTH_MANAGER) private readonly auth: AuthManager, @Inject(USER_MANAGER) private readonly users: UserManager) {}
+  public constructor(@Inject(AUTH_MANAGER) private readonly auth: AuthManager, @Inject(USER_MANAGER) private readonly users: UserManager, @Inject(USER_PREFERENCES_MANAGER) private readonly preferences: UserPreferencesManager) {}
 
   /** Lists users visible to the administrator. */
   public async listUsers(token: string | undefined): Promise<readonly UserDto[]> {
@@ -40,6 +40,21 @@ export class UsersService {
     } catch (error: unknown) {
       this.mapUserManagementError(error);
     }
+  }
+
+  /** Returns preferences for the authenticated user. */
+  public async getPreferences(token: string | undefined): Promise<UserPreferencesDto> {
+    const actor = await this.authenticate(token);
+    return { theme: await this.preferences.getTheme(actor.id) };
+  }
+
+  /** Updates the authenticated user's theme. */
+  public async updateTheme(token: string | undefined, dto: UpdateUserThemeDto): Promise<void> {
+    if (!dto || typeof dto.theme !== 'string' || !isUserTheme(dto.theme)) {
+      throw new BadRequestException('Unsupported theme.');
+    }
+    const actor = await this.authenticate(token);
+    await this.preferences.setTheme(actor.id, dto.theme);
   }
 
   private async authenticate(token: string | undefined) {
