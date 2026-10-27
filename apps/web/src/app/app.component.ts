@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { AuthShellComponent } from './auth/auth-shell.component';
 import { AuthService } from './auth/auth.service';
@@ -11,6 +11,7 @@ import { UpdateNoticeComponent } from './system/update-notice.component';
 import { AppLayoutPresenter } from './app-layout.presenter';
 import { ViewportService } from './shared/viewport.service';
 import { ToastComponent } from './shared/toast.component';
+import { SettingsApiService } from './settings/settings-api.service';
 
 @Component({
   selector: 'kiban-root',
@@ -134,6 +135,7 @@ import { ToastComponent } from './shared/toast.component';
 export class AppComponent {
   protected readonly auth = inject(AuthService);
   protected readonly theme = inject(ThemeService);
+  private readonly settingsApi = inject(SettingsApiService);
   protected readonly viewport = inject(ViewportService);
   protected readonly initializing = signal(true);
   protected readonly sidebarCollapsed = signal(false);
@@ -160,6 +162,10 @@ export class AppComponent {
   ]);
 
   public constructor() {
+    effect(() => {
+      if (!this.auth.user()) return;
+      this.settingsApi.getUserPreferences().subscribe({ next: (preferences) => this.theme.setColorTheme(preferences.theme), error: () => undefined });
+    });
     this.auth.me().subscribe({
       next: () => this.initializing.set(false),
       error: () => this.initializing.set(false)

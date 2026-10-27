@@ -1,13 +1,13 @@
 import { BadRequestException, ForbiddenException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { describe, expect, it, vi } from 'vitest';
-import { AuthManager, CannotDeleteAdminUserError, ForbiddenUserActionError, UnauthenticatedError, UserManager, UserNotFoundError } from '@kiban/core';
+import { AuthManager, CannotDeleteAdminUserError, ForbiddenUserActionError, UnauthenticatedError, UserManager, UserNotFoundError, UserPreferencesManager } from '@kiban/core';
 import { UsersService } from './users.service';
 
 const fullAdmin = { id: 'admin-1', email: 'admin@example.com', role: 'admin' as const, passwordHash: 'hash', createdAt: new Date(), updatedAt: new Date() };
 const publicAdmin = { id: 'admin-1', email: 'admin@example.com', role: 'admin' as const };
 const publicOperator = { id: 'operator-1', email: 'operator@example.com', role: 'operator' as const };
 
-const createService = (auth: Partial<AuthManager>, users: Partial<UserManager>) => new UsersService(auth as AuthManager, users as UserManager);
+const createService = (auth: Partial<AuthManager>, users: Partial<UserManager>, preferences: Partial<UserPreferencesManager> = {}) => new UsersService(auth as AuthManager, users as UserManager, preferences as UserPreferencesManager);
 const authenticatedAuth = { authenticate: vi.fn(async () => ({ user: fullAdmin, session: { id: 'session-1', userId: fullAdmin.id, tokenHash: 'hash', expiresAt: new Date(), createdAt: new Date() } })) };
 
 describe('API UsersService', () => {
@@ -33,6 +33,27 @@ describe('API UsersService', () => {
     const service = createService(authenticatedAuth, { deleteUser });
     await service.deleteUser('token', 'operator-1');
     expect(deleteUser).toHaveBeenCalledWith(fullAdmin, 'operator-1');
+  });
+
+  it('gets the authenticated user theme', async () => {
+    const service = createService(authenticatedAuth, {}, { getTheme: vi.fn(async () => 'midnight-indigo' as const) });
+
+    await expect(service.getPreferences('token')).resolves.toEqual({ theme: 'midnight-indigo' });
+  });
+
+  it('updates the authenticated user theme', async () => {
+    const setTheme = vi.fn(async () => undefined);
+    const service = createService(authenticatedAuth, {}, { setTheme });
+
+    await service.updateTheme('token', { theme: 'forged-brass' });
+
+    expect(setTheme).toHaveBeenCalledWith('admin-1', 'forged-brass');
+  });
+
+  it('rejects an invalid theme payload', async () => {
+    const service = createService(authenticatedAuth, {}, { setTheme: vi.fn() });
+
+    await expect(service.updateTheme('token', { theme: 'unsupported' })).rejects.toBeInstanceOf(BadRequestException);
   });
 
   it('maps unauthenticated requests to unauthorized', async () => {

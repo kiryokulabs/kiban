@@ -72,6 +72,13 @@ const RECENT_CHANGES_LIMIT = 5;
             </div>
           </div>
           <p class="mt-2 text-xs c-muted">IP {{ hostPresenter.localIpLabel(current.host.network.localIp) }}</p>
+
+          @if (history(); as stored) {
+            @if (stored.samples.length === 0) {
+              <p class="text-xs c-muted mt-4">Collecting samples… charts appear after a few minutes.</p>
+            }
+          }
+
         </div>
 
         <div>
@@ -195,12 +202,6 @@ const RECENT_CHANGES_LIMIT = 5;
             </ul>
           </div>
         </div>
-      }
-
-      @if (history(); as stored) {
-        @if (stored.samples.length === 0) {
-          <p class="text-xs c-muted">Collecting samples… charts appear after a few minutes.</p>
-        }
       }
     </div>
   `

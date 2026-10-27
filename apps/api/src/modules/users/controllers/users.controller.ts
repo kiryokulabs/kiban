@@ -1,7 +1,7 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Post, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Req } from '@nestjs/common';
 import type { FastifyRequest } from 'fastify';
 import { AUTH_SESSION_COOKIE_NAME } from '../../auth/interfaces/auth.constants';
-import type { CreateOperatorDto, UserDto } from '../dto/users.dto';
+import type { CreateOperatorDto, UpdateUserThemeDto, UserDto, UserPreferencesDto } from '../dto/users.dto';
 import { UsersService } from '../services/users.service';
 
 @Controller('users')
@@ -18,6 +18,19 @@ export class UsersController {
   @Post('operators')
   public createOperator(@Body() dto: CreateOperatorDto, @Req() request: FastifyRequest): Promise<UserDto> {
     return this.users.createOperator(this.readSessionCookie(request), dto);
+  }
+
+  /** Returns preferences for the current user. */
+  @Get('me/preferences')
+  public preferences(@Req() request: FastifyRequest): Promise<UserPreferencesDto> {
+    return this.users.getPreferences(this.readSessionCookie(request));
+  }
+
+  /** Updates the current user's theme. */
+  @Patch('me/preferences/theme')
+  @HttpCode(204)
+  public updateTheme(@Body() dto: UpdateUserThemeDto, @Req() request: FastifyRequest): Promise<void> {
+    return this.users.updateTheme(this.readSessionCookie(request), dto);
   }
 
   /** Deletes an operator account. */

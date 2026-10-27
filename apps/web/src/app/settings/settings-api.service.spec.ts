@@ -9,12 +9,31 @@ const createHttpClient = (response: unknown) => {
   const calls: HttpCall[] = [];
   const http = {
     get: vi.fn((url: string, options?: unknown) => { calls.push({ method: 'GET', url, options }); return of(response); }),
-    put: vi.fn((url: string, body: unknown, options?: unknown) => { calls.push({ method: 'PUT', url, body, options }); return of(response); })
+    put: vi.fn((url: string, body: unknown, options?: unknown) => { calls.push({ method: 'PUT', url, body, options }); return of(response); }),
+    patch: vi.fn((url: string, body: unknown, options?: unknown) => { calls.push({ method: 'PATCH', url, body, options }); return of(response); })
   };
   return { http: http as unknown as HttpClient, calls };
 };
 
 describe('Web SettingsApiService', () => {
+  it('loads the current user preferences with credentials', () => {
+    const { http, calls } = createHttpClient({ theme: 'iron-copper' });
+    const service = new SettingsApiService(http);
+
+    service.getUserPreferences().subscribe();
+
+    expect(calls).toEqual([{ method: 'GET', url: '/api/users/me/preferences', options: { withCredentials: true } }]);
+  });
+
+  it('saves the current user theme with credentials', () => {
+    const { http, calls } = createHttpClient(null);
+    const service = new SettingsApiService(http);
+
+    service.setUserTheme('titanium-ice').subscribe();
+
+    expect(calls).toEqual([{ method: 'PATCH', url: '/api/users/me/preferences/theme', body: { theme: 'titanium-ice' }, options: { withCredentials: true } }]);
+  });
+
   it('loads TLS settings with credentials', () => {
     const response = { acmeEmail: 'ops@example.com', useStaging: true };
     const { http, calls } = createHttpClient(response);

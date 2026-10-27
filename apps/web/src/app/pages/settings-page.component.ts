@@ -3,6 +3,8 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { IconsComponent } from '../shared/icons.component';
 import { SettingsApiService, type TraefikInfo } from '../settings/settings-api.service';
+import { COLOR_THEMES, type ColorTheme, ThemeService } from '../theme/theme.service';
+import { ToastService } from '../shared/toast.service';
 
 @Component({
   selector: 'kiban-settings-page',
@@ -417,11 +419,43 @@ import { SettingsApiService, type TraefikInfo } from '../settings/settings-api.s
           }
         }
       </div>
+
+      <!-- Appearance -->
+      <div class="card p-5">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="grid h-8 w-8 place-items-center rounded-lg bg-brand/10 text-brand-light">
+            <kiban-icon name="eye" [size]="16" />
+          </div>
+          <div>
+            <p class="text-sm font-medium kb-text">Appearance</p>
+            <p class="text-xs c-muted">Choose the color theme used by your account</p>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          @for (colorTheme of colorThemes; track colorTheme.id) {
+            <button
+              type="button"
+              class="btn"
+              [class.btn-primary]="selectedTheme() === colorTheme.id"
+              [class.btn-secondary]="selectedTheme() !== colorTheme.id"
+              [disabled]="themeSaving()"
+              (click)="selectTheme(colorTheme.id)"
+            >
+              {{ colorTheme.name }}
+            </button>
+          }
+        </div>
+      </div>
     </div>
   `
 })
 export class SettingsPageComponent implements OnInit {
   private readonly api: SettingsApiService;
+  private readonly theme: ThemeService;
+  private readonly notifications: ToastService;
+
+  public readonly colorThemes = COLOR_THEMES;
+  public readonly themeSaving = signal(false);
 
   public readonly installationType = signal<'local' | 'remote'>('local');
   public readonly installationTypeLoading = signal(true);
@@ -453,8 +487,10 @@ export class SettingsPageComponent implements OnInit {
   public readonly traefikInfo = signal<TraefikInfo | null>(null);
   public readonly traefikLoading = signal(true);
 
-  public constructor(http: HttpClient) {
+  public constructor(http: HttpClient, theme: ThemeService, notifications: ToastService) {
     this.api = new SettingsApiService(http);
+    this.theme = theme;
+    this.notifications = notifications;
   }
 
   public ngOnInit(): void {
@@ -463,6 +499,26 @@ export class SettingsPageComponent implements OnInit {
     this.loadWildcardDomain();
     this.loadTlsSettings();
     this.loadTraefikInfo();
+  }
+
+  public selectedTheme(): ColorTheme {
+    return this.theme.colorTheme();
+  }
+
+  public async selectTheme(theme: ColorTheme): Promise<void> {
+    if (theme === this.selectedTheme() || this.themeSaving()) return;
+    const previousTheme = this.selectedTheme();
+    this.themeSaving.set(true);
+    this.theme.setColorTheme(theme);
+    try {
+      await this.api.setUserTheme(theme).toPromise();
+      this.notifications.success(`${COLOR_THEMES.find((item) => item.id === theme)?.name ?? theme} theme saved successfully.`);
+    } catch {
+      this.theme.setColorTheme(previousTheme);
+      this.notifications.error('Could not save theme.');
+    } finally {
+      this.themeSaving.set(false);
+    }
   }
 
   public async setInstallationType(type: 'local' | 'remote'): Promise<void> {
