@@ -9,5 +9,11 @@ services:
       - "27017"
     volumes:
       - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --eval 'db.adminCommand({ ping: 1 }).ok' --username $${MONGO_INITDB_ROOT_USERNAME} --password $${MONGO_INITDB_ROOT_PASSWORD} --authenticationDatabase admin"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
 volumes:
   mongodb_data:

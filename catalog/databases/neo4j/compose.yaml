@@ -3,11 +3,17 @@ services:
     image: neo4j:5
     restart: unless-stopped
     environment:
-      NEO4J_AUTH: ${NEO4J_AUTH:-neo4j/kiban12345}
+      NEO4J_AUTH: ${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-kiban12345}
     expose:
       - "7474"
       - "7687"
     volumes:
       - neo4j_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "cypher-shell -u \"$${NEO4J_AUTH%%/*}\" -p \"$${NEO4J_AUTH#*/}\" 'RETURN 1'"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
 volumes:
   neo4j_data:

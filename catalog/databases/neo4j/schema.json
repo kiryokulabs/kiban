@@ -3,9 +3,13 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "NEO4J_AUTH": {
+    "NEO4J_USER": {
       "type": "string",
-      "default": "${NEO4J_AUTH:-neo4j/kiban12345}"
+      "default": "${NEO4J_USER:-neo4j}"
+    },
+    "NEO4J_PASSWORD": {
+      "type": "string",
+      "default": "${NEO4J_PASSWORD:-kiban12345}"
     }
   }
 }

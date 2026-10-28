@@ -9,5 +9,10 @@ services:
       - "6379"
     volumes:
       - valkey_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "valkey-cli -a $${KIBAN_VALKEY_PASSWORD} ping | grep PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 volumes:
   valkey_data:

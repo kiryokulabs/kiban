@@ -10,6 +10,12 @@ services:
     volumes:
       - arangodb_data:/var/lib/arangodb3
       - arangodb_apps:/var/lib/arangodb3-apps
+    healthcheck:
+      test: ["CMD-SHELL", "arangosh --server.endpoint tcp://127.0.0.1:8529 --server.username root --server.password $${ARANGO_ROOT_PASSWORD} --javascript.execute-string 'db._version()'"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
 volumes:
   arangodb_data:
   arangodb_apps:
