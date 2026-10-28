@@ -2,15 +2,15 @@ services:
   dragonfly:
     image: docker.dragonflydb.io/dragonflydb/dragonfly:latest
     restart: unless-stopped
-    command: dragonfly --requirepass ${KIBAN_DRAGONFLY_PASSWORD:-kiban}
+    command: dragonfly --requirepass ${DRAGONFLY_PASSWORD:-kiban}
     environment:
-      KIBAN_DRAGONFLY_PASSWORD: ${KIBAN_DRAGONFLY_PASSWORD:-kiban}
+      DRAGONFLY_PASSWORD: ${DRAGONFLY_PASSWORD:-kiban}
     expose:
       - "6379"
     volumes:
       - dragonfly_data:/data
     healthcheck:
-      test: ["CMD-SHELL", "redis-cli -a $${KIBAN_DRAGONFLY_PASSWORD} ping | grep PONG"]
+      test: ["CMD-SHELL", "redis-cli -a $${DRAGONFLY_PASSWORD} ping | grep PONG"]
       interval: 10s
       timeout: 5s
       retries: 5

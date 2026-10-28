@@ -3,7 +3,7 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "KIBAN_MEMCACHED_MEMORY": {
+    "MEMCACHED_MEMORY": {
       "type": "integer",
       "default": 256
     }

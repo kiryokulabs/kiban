@@ -13,9 +13,9 @@
       "service": "timescaledb",
       "port": 5432,
       "connection": {
-        "username": "KIBAN_TIMESCALE_USER",
-        "password": "KIBAN_TIMESCALE_PASSWORD",
-        "database": "KIBAN_TIMESCALE_DB"
+        "username": "TIMESCALE_USER",
+        "password": "TIMESCALE_PASSWORD",
+        "database": "TIMESCALE_DB"
       }
     }
   ]

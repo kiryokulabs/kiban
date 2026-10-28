@@ -3,8 +3,8 @@ services:
     image: arangodb:3.12
     restart: unless-stopped
     environment:
-      ARANGO_ROOT_PASSWORD: ${KIBAN_ARANGO_PASSWORD:-kiban}
-      KIBAN_ARANGO_PASSWORD: ${KIBAN_ARANGO_PASSWORD:-kiban}
+      ARANGO_ROOT_PASSWORD: ${ARANGO_PASSWORD:-kiban}
+      ARANGO_PASSWORD: ${ARANGO_PASSWORD:-kiban}
     expose:
       - "8529"
     volumes:

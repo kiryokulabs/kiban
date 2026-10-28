@@ -2,9 +2,9 @@ services:
   memcached:
     image: memcached:1.6-alpine
     restart: unless-stopped
-    command: memcached --memory-limit=${KIBAN_MEMCACHED_MEMORY:-256}m --conn-limit=1024 --threads=4
+    command: memcached --memory-limit=${MEMCACHED_MEMORY:-256}m --conn-limit=1024 --threads=4
     environment:
-      KIBAN_MEMCACHED_MEMORY: ${KIBAN_MEMCACHED_MEMORY:-256}
+      MEMCACHED_MEMORY: ${MEMCACHED_MEMORY:-256}
     expose:
       - "11211"
     healthcheck:

@@ -3,12 +3,9 @@ services:
     image: clickhouse/clickhouse-server:latest
     restart: unless-stopped
     environment:
-      CLICKHOUSE_DB: ${KIBAN_CLICKHOUSE_DB:-kiban}
-      CLICKHOUSE_USER: ${KIBAN_CLICKHOUSE_USER:-kiban}
-      CLICKHOUSE_PASSWORD: ${KIBAN_CLICKHOUSE_PASSWORD:-kiban}
-      KIBAN_CLICKHOUSE_DB: ${KIBAN_CLICKHOUSE_DB:-kiban}
-      KIBAN_CLICKHOUSE_USER: ${KIBAN_CLICKHOUSE_USER:-kiban}
-      KIBAN_CLICKHOUSE_PASSWORD: ${KIBAN_CLICKHOUSE_PASSWORD:-kiban}
+      CLICKHOUSE_DB: ${CLICKHOUSE_DB:-kiban}
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER:-kiban}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-kiban}
     expose:
       - "8123"
       - "9000"
