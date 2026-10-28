@@ -3,10 +3,10 @@ services:
     image: mysql:9
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: ${KIBAN_MYSQL_DATABASE:-kiban}
-      MYSQL_USER: ${KIBAN_MYSQL_USER:-kiban}
-      MYSQL_PASSWORD: ${KIBAN_MYSQL_PASSWORD:-kiban}
-      MYSQL_ROOT_PASSWORD: ${KIBAN_MYSQL_ROOT_PASSWORD:-kiban}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-kiban}
+      MYSQL_USER: ${MYSQL_USER:-kiban}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-kiban}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-kiban}
     ports:
       - "${KIBAN_MYSQL_PORT:-3306}:3306"
     volumes:
