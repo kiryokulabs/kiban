@@ -17,7 +17,12 @@ const objectValue = (value: unknown): Readonly<Record<string, unknown>> | null =
 export function mapInstalledServiceDetails(service: InstalledService, definition: ServiceDefinition, logs: string, location: ServiceLocationDto): InstalledServiceDetailsDto {
   const runtime = service.runtime;
   const containers = runtimeContainers(runtime, definition);
-  const accessPoints = computeAccessPoints(definition.metadata.accessPoints, service.configuration, runtime) ?? [];
+  const accessPoints = computeAccessPoints(
+    definition.metadata.accessPoints,
+    service.configuration,
+    runtime,
+    definition.metadata.category === 'databases'
+  ) ?? [];
   return {
     installedService: { ...mapInstalledServiceToDto(service), accessPoints },
     location,

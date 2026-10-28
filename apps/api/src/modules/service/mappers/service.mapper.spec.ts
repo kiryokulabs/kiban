@@ -120,6 +120,26 @@ describe('computeAccessPoints', () => {
     expect(result![0]!.connectionString).toBe('mysql://root:secret@localhost:33060/app');
   });
 
+  it('uses the service name and internal port for database connections', () => {
+    const runtime = newRuntime('postgresql', 5432, '49153');
+    const config = { POSTGRES_USER: 'user', POSTGRES_PASSWORD: 'pass', POSTGRES_DB: 'app' };
+    const result = computeAccessPoints([pgAccessPoint], config, runtime, true);
+
+    expect(result![0]).toMatchObject({
+      host: 'postgresql',
+      port: 5432,
+      connectionString: 'postgres://user:pass@postgresql:5432/app'
+    });
+    expect(result![0]!.hostPort).toBeUndefined();
+  });
+
+  it('keeps localhost access unchanged for web services', () => {
+    const runtime = newRuntime('app', 8080, '32100');
+    const result = computeAccessPoints([webAccessPoint], {}, runtime, true);
+
+    expect(result![0]).toMatchObject({ host: 'localhost', hostPort: 32100, port: 8080 });
+  });
+
   it('falls back to old top-level assignedPorts format for backward compatibility', () => {
     const runtime = oldRuntime('5432/tcp', '49153');
     const config = { POSTGRES_USER: 'user', POSTGRES_PASSWORD: 'pass', POSTGRES_DB: 'db' };
