@@ -49,6 +49,17 @@ describe('normalizeComposeDocument', () => {
     expect(firstService(spec).ports).toEqual([{ port: 5432, protocol: 'udp' }]);
   });
 
+  it('normalizes private exposed ports', () => {
+    const { spec } = normalizeComposeDocument(
+      { services: { app: { image: 'x', expose: ['5432', '8125/udp'] } } },
+      CONTEXT
+    );
+    expect(firstService(spec).ports).toEqual([
+      { port: 5432, protocol: 'tcp' },
+      { port: 8125, protocol: 'udp' }
+    ]);
+  });
+
   it('resolves map-form environment entries with defaults', () => {
     const { spec } = normalizeComposeDocument(
       {

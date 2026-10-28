@@ -7,8 +7,8 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-kiban}
       POSTGRES_USER: ${POSTGRES_USER:-kiban}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-kiban}
-    ports:
-      - "${KIBAN_POSTGRESQL_PORT:-5432}:5432"
+    expose:
+      - "5432"
     volumes:
       - postgresql_data:/var/lib/postgresql/data
 volumes:

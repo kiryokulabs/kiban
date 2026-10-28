@@ -5,8 +5,8 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-kiban}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-kiban}
-    ports:
-      - "${KIBAN_MONGODB_PORT:-27017}:27017"
+    expose:
+      - "27017"
     volumes:
       - mongodb_data:/data/db
 volumes:

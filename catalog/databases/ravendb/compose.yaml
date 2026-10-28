@@ -6,8 +6,8 @@ services:
       RAVEN_Setup_Mode: None
       RAVEN_Security_UnsecuredAccessAllowed: PublicNetwork
       RAVEN_Logs_Mode: Operations
-    ports:
-      - "${KIBAN_RAVENDB_PORT:-8080}:8080"
+    expose:
+      - "8080"
     volumes:
       - ravendb_data:/var/lib/ravendb
     healthcheck:

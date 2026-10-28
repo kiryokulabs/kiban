@@ -8,8 +8,8 @@ services:
       DOCKER_INFLUXDB_INIT_PASSWORD: ${DOCKER_INFLUXDB_INIT_PASSWORD:-kiban12345}
       DOCKER_INFLUXDB_INIT_ORG: ${DOCKER_INFLUXDB_INIT_ORG:-kiban}
       DOCKER_INFLUXDB_INIT_BUCKET: ${DOCKER_INFLUXDB_INIT_BUCKET:-default}
-    ports:
-      - "${KIBAN_INFLUXDB_PORT:-8086}:8086"
+    expose:
+      - "8086"
     volumes:
       - influxdb_data:/var/lib/influxdb2
 volumes:

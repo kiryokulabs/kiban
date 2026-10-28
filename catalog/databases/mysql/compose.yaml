@@ -7,8 +7,8 @@ services:
       MYSQL_USER: ${MYSQL_USER:-kiban}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-kiban}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-kiban}
-    ports:
-      - "${KIBAN_MYSQL_PORT:-3306}:3306"
+    expose:
+      - "3306"
     volumes:
       - mysql_data:/var/lib/mysql
 volumes:

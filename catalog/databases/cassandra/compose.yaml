@@ -7,8 +7,8 @@ services:
       CASSANDRA_DC: dc1
       CASSANDRA_RACK: rack1
       CASSANDRA_ENDPOINT_SNITCH: GossipingPropertyFileSnitch
-    ports:
-      - "${KIBAN_CASSANDRA_PORT:-9042}:9042"
+    expose:
+      - "9042"
     volumes:
       - cassandra_data:/var/lib/cassandra
     healthcheck:

@@ -7,8 +7,8 @@ services:
       COUCHDB_PASSWORD: ${KIBAN_COUCHDB_PASSWORD:-kiban}
       KIBAN_COUCHDB_USER: ${KIBAN_COUCHDB_USER:-admin}
       KIBAN_COUCHDB_PASSWORD: ${KIBAN_COUCHDB_PASSWORD:-kiban}
-    ports:
-      - "${KIBAN_COUCHDB_PORT:-5984}:5984"
+    expose:
+      - "5984"
     volumes:
       - couchdb_data:/opt/couchdb/data
       - couchdb_etc:/opt/couchdb/etc

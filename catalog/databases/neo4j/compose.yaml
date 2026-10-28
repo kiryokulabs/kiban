@@ -4,9 +4,9 @@ services:
     restart: unless-stopped
     environment:
       NEO4J_AUTH: ${NEO4J_AUTH:-neo4j/kiban12345}
-    ports:
-      - "${KIBAN_NEO4J_PORT:-7474}:7474"
-      - "${KIBAN_NEO4J_BOLT_PORT:-7687}:7687"
+    expose:
+      - "7474"
+      - "7687"
     volumes:
       - neo4j_data:/data
 volumes:

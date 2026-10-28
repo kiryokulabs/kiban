@@ -5,8 +5,8 @@ services:
     environment:
       ARANGO_ROOT_PASSWORD: ${KIBAN_ARANGO_PASSWORD:-kiban}
       KIBAN_ARANGO_PASSWORD: ${KIBAN_ARANGO_PASSWORD:-kiban}
-    ports:
-      - "${KIBAN_ARANGODB_PORT:-8529}:8529"
+    expose:
+      - "8529"
     volumes:
       - arangodb_data:/var/lib/arangodb3
       - arangodb_apps:/var/lib/arangodb3-apps

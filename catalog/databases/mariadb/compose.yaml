@@ -7,8 +7,8 @@ services:
       MARIADB_USER: ${MARIADB_USER:-kiban}
       MARIADB_PASSWORD: ${MARIADB_PASSWORD:-kiban}
       MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:-kiban}
-    ports:
-      - "${KIBAN_MARIADB_PORT:-3306}:3306"
+    expose:
+      - "3306"
     volumes:
       - mariadb_data:/var/lib/mysql
 volumes:

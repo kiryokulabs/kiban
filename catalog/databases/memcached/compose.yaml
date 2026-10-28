@@ -5,5 +5,5 @@ services:
     command: memcached --memory-limit=${KIBAN_MEMCACHED_MEMORY:-256}m --conn-limit=1024 --threads=4
     environment:
       KIBAN_MEMCACHED_MEMORY: ${KIBAN_MEMCACHED_MEMORY:-256}
-    ports:
-      - "${KIBAN_MEMCACHED_PORT:-11211}:11211"
+    expose:
+      - "11211"

@@ -9,8 +9,8 @@ services:
       KIBAN_TIMESCALE_DB: ${KIBAN_TIMESCALE_DB:-kiban}
       KIBAN_TIMESCALE_USER: ${KIBAN_TIMESCALE_USER:-postgres}
       KIBAN_TIMESCALE_PASSWORD: ${KIBAN_TIMESCALE_PASSWORD:-kiban}
-    ports:
-      - "${KIBAN_TIMESCALE_PORT:-5432}:5432"
+    expose:
+      - "5432"
     volumes:
       - timescaledb_data:/var/lib/postgresql/data
     healthcheck:
