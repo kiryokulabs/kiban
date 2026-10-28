@@ -5,15 +5,15 @@
   "properties": {
     "POSTGRES_DB": {
       "type": "string",
-      "default": "${KIBAN_POSTGRES_DB:-kiban}"
+      "default": "${POSTGRES_DB:-kiban}"
     },
     "POSTGRES_USER": {
       "type": "string",
-      "default": "${KIBAN_POSTGRES_USER:-kiban}"
+      "default": "${POSTGRES_USER:-kiban}"
     },
     "POSTGRES_PASSWORD": {
       "type": "string",
-      "default": "${KIBAN_POSTGRES_PASSWORD:-kiban}"
+      "default": "${POSTGRES_PASSWORD:-kiban}"
     }
   }
 }
