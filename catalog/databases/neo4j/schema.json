@@ -5,7 +5,7 @@
   "properties": {
     "NEO4J_AUTH": {
       "type": "string",
-      "default": "${KIBAN_NEO4J_AUTH:-neo4j/kiban12345}"
+      "default": "${NEO4J_AUTH:-neo4j/kiban12345}"
     }
   }
 }
