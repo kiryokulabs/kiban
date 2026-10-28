@@ -2,7 +2,7 @@
   "id": "redis-commander",
   "name": "Redis Commander",
   "description": "Web UI for inspecting and managing Redis data.",
-  "category": "databases",
+  "category": "development",
   "author": "Kiban",
   "minimumVersion": "0.1.0",
   "icon": "icon.svg",

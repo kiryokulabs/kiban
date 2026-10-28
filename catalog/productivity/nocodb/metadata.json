@@ -2,7 +2,7 @@
   "id": "nocodb",
   "name": "NocoDB",
   "description": "Open-source Airtable alternative that turns any database into a smart spreadsheet.",
-  "category": "databases",
+  "category": "productivity",
   "author": "Kiban",
   "minimumVersion": "0.1.0",
   "icon": "icon.svg",

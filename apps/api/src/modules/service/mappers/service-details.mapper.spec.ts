@@ -81,7 +81,7 @@ describe('mapInstalledServiceDetails', () => {
 
   it('renders access points and backend-generated connection strings without service-specific logic', () => {
     const details = mapInstalledServiceDetails(service(), definition, 'logs', location);
-    expect(details.accessPoints[0]).toMatchObject({ host: 'localhost', hostPort: 45432, username: 'kiban', password: 'secret', database: 'app', connectionString: 'database://kiban:secret@localhost:45432/app' });
+    expect(details.accessPoints[0]).toMatchObject({ host: 'db', username: 'kiban', password: 'secret', database: 'app', connectionString: 'database://kiban:secret@db:5432/app' });
   });
 
   it('includes schema and current configuration for dynamic forms', () => {
