@@ -1,6 +1,6 @@
 services:
   ravendb:
-    image: ravendb/ravendb:latest
+    image: ravendb/ravendb:7.2.7
     restart: unless-stopped
     environment:
       RAVEN_Setup_Mode: None

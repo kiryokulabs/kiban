@@ -1,6 +1,6 @@
 services:
   dragonfly:
-    image: docker.dragonflydb.io/dragonflydb/dragonfly:latest
+    image: docker.dragonflydb.io/dragonflydb/dragonfly:v2.0.2
     restart: unless-stopped
     command: dragonfly --requirepass ${DRAGONFLY_PASSWORD:-kiban}
     environment:
