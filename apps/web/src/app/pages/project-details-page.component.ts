@@ -224,7 +224,7 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
 
         <!-- Install modal -->
         @if (installEnvironment()) {
-          <kiban-modal title="Install Service" [wide]="true" [expandable]="true" (close)="closeInstallDialog()">
+          <kiban-modal title="Install Service" [wide]="true" [expandable]="true" [initiallyExpanded]="true" (close)="closeInstallDialog()">
             <div class="mb-5">
               <div class="flex items-center gap-2 text-xs c-muted">
                 <span [class.c-text]="installStep() === 1" [class.c-muted]="installStep() !== 1" class="flex items-center gap-1.5 font-medium">
