@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
+import { Component, EventEmitter, Input, Output, signal, OnInit } from '@angular/core';
 import { IconsComponent } from './icons.component';
 
 /**
@@ -39,17 +39,17 @@ import { IconsComponent } from './icons.component';
     </div>
   `
 })
-export class ModalComponent {
-  /** Modal title exposed to users and assistive technologies. */
+export class ModalComponent implements OnInit {
   @Input() public title = '';
-
-  /** Allows feature dialogs with denser selection UIs to use a wider shell. */
   @Input() public wide = false;
-
-  /** Enables the optional expand/restore button for this dialog. */
   @Input() public expandable = false;
+  @Input() public initiallyExpanded = false;
 
   public readonly expanded = signal(false);
+
+  public ngOnInit(): void {
+    this.expanded.set(this.initiallyExpanded);
+  }
 
   /** Emitted when the user asks to dismiss the modal. */
   @Output() public readonly close = new EventEmitter<void>();
