@@ -3,11 +3,17 @@ services:
     image: mongo:8
     restart: unless-stopped
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ${KIBAN_MONGO_ROOT_USERNAME:-kiban}
-      MONGO_INITDB_ROOT_PASSWORD: ${KIBAN_MONGO_ROOT_PASSWORD:-kiban}
-    ports:
-      - "${KIBAN_MONGODB_PORT:-27017}:27017"
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-kiban}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-kiban}
+    expose:
+      - "27017"
     volumes:
       - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --eval 'db.adminCommand({ ping: 1 }).ok' --username $${MONGO_INITDB_ROOT_USERNAME} --password $${MONGO_INITDB_ROOT_PASSWORD} --authenticationDatabase admin"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
 volumes:
   mongodb_data:

@@ -3,29 +3,30 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "MATOMO_DATABASE_HOST": {
+    "MATOMO_DB_NAME": {
       "type": "string",
-      "default": "matomo-db"
+      "title": "Database name",
+      "default": "${MATOMO_DB_NAME:-matomo}"
     },
-    "MATOMO_DATABASE_ADAPTER": {
+    "MATOMO_DB_USER": {
       "type": "string",
-      "default": "mysql"
+      "title": "Database username",
+      "default": "${MATOMO_DB_USER:-matomo}"
     },
-    "MATOMO_DATABASE_TABLES_PREFIX": {
+    "MATOMO_DB_PASSWORD": {
       "type": "string",
-      "default": "matomo_"
+      "title": "Database password",
+      "default": "${MATOMO_DB_PASSWORD:-kiban}"
     },
-    "MATOMO_DATABASE_USERNAME": {
+    "MATOMO_ROOT_PASSWORD": {
       "type": "string",
-      "default": "matomo"
+      "title": "Database root password",
+      "default": "${MATOMO_ROOT_PASSWORD:-kiban}"
     },
-    "MATOMO_DATABASE_PASSWORD": {
+    "MATOMO_TABLES_PREFIX": {
       "type": "string",
-      "default": "${KIBAN_MATOMO_DB_PASSWORD:-kiban}"
-    },
-    "MATOMO_DATABASE_DBNAME": {
-      "type": "string",
-      "default": "matomo"
+      "title": "Database tables prefix",
+      "default": "${MATOMO_TABLES_PREFIX:-matomo_}"
     }
   }
 }

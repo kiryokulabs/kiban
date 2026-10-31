@@ -9,7 +9,7 @@
   "accessPoints": [
     {
       "name": "Memcached",
-      "kind": "database",
+      "kind": "memcached",
       "service": "memcached",
       "port": 11211
     }

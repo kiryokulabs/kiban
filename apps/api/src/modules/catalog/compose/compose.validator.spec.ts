@@ -106,6 +106,11 @@ describe('validateComposeDocument', () => {
     expect(validateComposeDocument(doc, CONTEXT)).toEqual([]);
   });
 
+  it('accepts private exposed ports', () => {
+    const doc = { services: { app: { image: 'x', expose: ['5432', '8125/udp'] } } };
+    expect(validateComposeDocument(doc, CONTEXT)).toEqual([]);
+  });
+
   it('rejects a malformed environment list entry', () => {
     const doc = { services: { app: { image: 'x', environment: ['NO_EQUALS_HERE'] } } };
     const issues = validateComposeDocument(doc, CONTEXT);

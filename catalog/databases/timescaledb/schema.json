@@ -3,17 +3,17 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "KIBAN_TIMESCALE_DB": {
+    "TIMESCALE_DB": {
       "type": "string",
-      "default": "${KIBAN_TIMESCALE_DB:-kiban}"
+      "default": "${TIMESCALE_DB:-kiban}"
     },
-    "KIBAN_TIMESCALE_USER": {
+    "TIMESCALE_USER": {
       "type": "string",
-      "default": "${KIBAN_TIMESCALE_USER:-postgres}"
+      "default": "${TIMESCALE_USER:-postgres}"
     },
-    "KIBAN_TIMESCALE_PASSWORD": {
+    "TIMESCALE_PASSWORD": {
       "type": "string",
-      "default": "${KIBAN_TIMESCALE_PASSWORD:-kiban}"
+      "default": "${TIMESCALE_PASSWORD:-kiban}"
     }
   }
 }

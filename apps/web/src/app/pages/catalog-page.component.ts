@@ -31,7 +31,7 @@ interface CatalogSchemaField { readonly key: string; readonly label: string; rea
               <div class="grid h-7 w-7 place-items-center rounded-lg bg-brand/20 text-brand-light">
                 <kiban-icon name="catalog" [size]="15" />
               </div>
-              <h1 class="text-xl font-semibold kb-text">Service Catalog</h1>
+              <h1 class="text-xl font-semibold kb-text">One-Click Services</h1>
             </div>
           </div>
           <div class="relative w-full lg:max-w-xs">
@@ -97,12 +97,17 @@ interface CatalogSchemaField { readonly key: string; readonly label: string; rea
 
 
       @if (serviceForInstall(); as service) {
-        <kiban-modal title="Install {{ service.name }}" [wide]="true" (close)="closeInstallModal()">
+        <kiban-modal title="Install {{ service.name }}" [wide]="true" [expandable]="true" [initiallyExpanded]="true" (close)="closeInstallModal()">
           <div class="space-y-5">
             <div>
               <p class="text-sm kb-text">Choose exactly where this service should be installed.</p>
               <p class="mt-1 text-xs c-muted">You can select multiple projects and multiple environments.</p>
             </div>
+
+            <p role="note" class="flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200">
+              <kiban-icon name="warning" [size]="14" class="shrink-0" />
+              <span>Installing from this dialog applies the same configuration and credentials to all selected environments. Sharing credentials across environments is not recommended. For separate credentials, install the service individually in each environment from the project page.</span>
+            </p>
 
             @if (projects().length === 0) {
               <div class="rounded-lg border kb-border p-4 text-sm c-muted">No projects available. Create a project first.</div>
@@ -131,7 +136,14 @@ interface CatalogSchemaField { readonly key: string; readonly label: string; rea
                   @for (field of schemaFields(); track field.key) {
                     <label class="block">
                       <span class="text-xs c-muted">{{ field.label }} @if (field.required) { <span>*</span> }</span>
-                      <input class="input mt-1" [type]="field.secret ? 'password' : 'text'" [ngModel]="configurationValues()[field.key]" (ngModelChange)="updateConfigurationValue(field.key, $event)" />
+                      <div class="relative mt-1">
+                        <input class="input" [class.pr-10]="field.secret" [type]="field.secret && !visibleSecrets().has(field.key) ? 'password' : 'text'" [ngModel]="configurationValues()[field.key]" (ngModelChange)="updateConfigurationValue(field.key, $event)" />
+                        @if (field.secret) {
+                          <button class="absolute right-1 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-md c-muted transition-colors hover:c-text" type="button" (click)="toggleSecret(field.key)" [attr.aria-label]="visibleSecrets().has(field.key) ? 'Hide value' : 'Show value'" [attr.aria-pressed]="visibleSecrets().has(field.key)">
+                            <kiban-icon [name]="visibleSecrets().has(field.key) ? 'eye-off' : 'eye'" [size]="12" />
+                          </button>
+                        }
+                      </div>
                     </label>
                   }
                 </div>
@@ -176,6 +188,7 @@ export class CatalogPageComponent {
   protected readonly selectedTargetIds = signal<ReadonlySet<string>>(new Set());
   protected readonly installing = signal(false);
   protected readonly configurationValues = signal<Record<string, string>>({});
+  protected readonly visibleSecrets = signal<ReadonlySet<string>>(new Set());
   protected query = '';
 
   public constructor() {
@@ -191,7 +204,7 @@ export class CatalogPageComponent {
         this.ensureSelectedCategoryStillExists();
         this.message.set(null);
       },
-      error: () => this.message.set('Could not load the service catalog.')
+      error: () => this.message.set('Could not load one-click services.')
     });
   }
 
@@ -212,6 +225,7 @@ export class CatalogPageComponent {
   }
 
   protected openInstallModal(service: CatalogItem): void {
+    this.visibleSecrets.set(new Set());
     this.serviceForInstall.set(service);
     this.selectedTargetIds.set(new Set());
     this.configurationValues.set(this.defaultConfigurationValues(service));
@@ -245,6 +259,13 @@ export class CatalogPageComponent {
 
   protected updateConfigurationValue(key: string, value: string): void {
     this.configurationValues.set({ ...this.configurationValues(), [key]: value });
+  }
+
+  protected toggleSecret(key: string): void {
+    const visible = new Set(this.visibleSecrets());
+    if (visible.has(key)) visible.delete(key);
+    else visible.add(key);
+    this.visibleSecrets.set(visible);
   }
 
   protected installSelectedService(): void {

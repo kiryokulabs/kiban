@@ -3,9 +3,9 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "KIBAN_VALKEY_PASSWORD": {
+    "VALKEY_PASSWORD": {
       "type": "string",
-      "default": "${KIBAN_VALKEY_PASSWORD:-kiban}"
+      "default": "${VALKEY_PASSWORD:-kiban}"
     }
   }
 }

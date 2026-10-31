@@ -2,7 +2,7 @@
   "id": "databasus",
   "name": "Databasus",
   "description": "Open-source database backup tool with Point-In-Time Recovery.",
-  "category": "databases",
+  "category": "backup",
   "author": "Kiban",
   "minimumVersion": "0.1.0",
   "icon": "icon.svg",

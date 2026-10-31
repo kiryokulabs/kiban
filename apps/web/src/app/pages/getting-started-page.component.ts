@@ -96,11 +96,11 @@ import { IconsComponent } from '../shared/icons.component';
           <div class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand/20 text-sm font-semibold text-brand-light">4</div>
           <div class="flex-1">
             <p class="text-sm font-medium kb-text">Install a service</p>
-            <p class="mt-1 text-xs c-muted">Browse the catalog and install what you need.</p>
+            <p class="mt-1 text-xs c-muted">Browse one-click services and install what you need.</p>
             <div class="mt-3 space-y-2">
               <div class="flex items-center gap-2 text-xs c-muted">
                 <kiban-icon name="arrow-left" [size]="12" class="shrink-0" />
-                <span>Go to <strong class="kb-text">Catalog</strong> and pick a service (e.g., PostgreSQL, Grafana, n8n)</span>
+                <span>Go to <strong class="kb-text">Services</strong> and pick a service (e.g., PostgreSQL, Grafana, n8n)</span>
               </div>
               <div class="flex items-center gap-2 text-xs c-muted">
                 <kiban-icon name="arrow-left" [size]="12" class="shrink-0" />

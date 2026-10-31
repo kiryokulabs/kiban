@@ -3,17 +3,17 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "KIBAN_CLICKHOUSE_DB": {
+    "CLICKHOUSE_DB": {
       "type": "string",
-      "default": "${KIBAN_CLICKHOUSE_DB:-kiban}"
+      "default": "${CLICKHOUSE_DB:-kiban}"
     },
-    "KIBAN_CLICKHOUSE_USER": {
+    "CLICKHOUSE_USER": {
       "type": "string",
-      "default": "${KIBAN_CLICKHOUSE_USER:-kiban}"
+      "default": "${CLICKHOUSE_USER:-kiban}"
     },
-    "KIBAN_CLICKHOUSE_PASSWORD": {
+    "CLICKHOUSE_PASSWORD": {
       "type": "string",
-      "default": "${KIBAN_CLICKHOUSE_PASSWORD:-kiban}"
+      "default": "${CLICKHOUSE_PASSWORD:-kiban}"
     }
   }
 }

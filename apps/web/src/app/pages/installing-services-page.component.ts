@@ -15,7 +15,7 @@ import { IconsComponent } from '../shared/icons.component';
           </div>
           <h1 class="text-xl font-semibold kb-text">Installing Services</h1>
         </div>
-        <p class="mt-4 text-sm c-muted">How to install and manage services from the catalog.</p>
+        <p class="mt-4 text-sm c-muted">How to install and manage one-click services.</p>
       </div>
 
       <!-- Catalog overview -->
@@ -25,12 +25,12 @@ import { IconsComponent } from '../shared/icons.component';
             <kiban-icon name="catalog" [size]="16" />
           </div>
           <div>
-            <p class="text-sm font-medium kb-text">The Catalog</p>
+            <p class="text-sm font-medium kb-text">One-Click Services</p>
             <p class="text-xs c-muted">Ready-to-use services you can install with one click.</p>
           </div>
         </div>
         <div class="space-y-3 text-sm c-muted">
-          <p>Kiban includes a curated catalog of self-hosted services: databases, monitoring tools, automation platforms, AI tools, and more.</p>
+          <p>Kiban includes curated one-click services: databases, monitoring tools, automation platforms, AI tools, and more.</p>
           <p>Each service has a default configuration. You can customize ports, credentials, and other settings before installing.</p>
         </div>
       </div>
@@ -40,11 +40,11 @@ import { IconsComponent } from '../shared/icons.component';
         <div class="flex items-start gap-4">
           <div class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand/20 text-sm font-semibold text-brand-light">1</div>
           <div class="flex-1">
-            <p class="text-sm font-medium kb-text">Browse the catalog</p>
+            <p class="text-sm font-medium kb-text">Browse one-click services</p>
             <div class="mt-3 space-y-2">
               <div class="flex items-center gap-2 text-xs c-muted">
                 <kiban-icon name="arrow-left" [size]="12" class="shrink-0" />
-                <span>Go to <strong class="kb-text">Catalog</strong> in the sidebar</span>
+                <span>Go to <strong class="kb-text">Services</strong> in the sidebar</span>
               </div>
               <div class="flex items-center gap-2 text-xs c-muted">
                 <kiban-icon name="arrow-left" [size]="12" class="shrink-0" />

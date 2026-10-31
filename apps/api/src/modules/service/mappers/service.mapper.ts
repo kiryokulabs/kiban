@@ -157,7 +157,8 @@ function findPublicEndpoint(
 export function computeAccessPoints(
   accessPoints: readonly AccessPoint[],
   configuration: Readonly<Record<string, unknown>>,
-  runtime: Readonly<Record<string, unknown>> | null
+  runtime: Readonly<Record<string, unknown>> | null,
+  useInternalConnections = false
 ): readonly AccessPointDto[] | undefined {
   if (accessPoints.length === 0) return undefined;
 
@@ -165,10 +166,12 @@ export function computeAccessPoints(
   const result: AccessPointDto[] = [];
 
   for (const ap of accessPoints) {
+    const internalConnection = useInternalConnections && ap.kind !== 'web';
     const hostPort = runtime !== null ? findHostPort(ap.service, ap.port, runtime) : undefined;
     const publicEndpoint = runtime !== null ? findPublicEndpoint(ap.service, ap.port, runtime) : undefined;
     const credentials = extractCredentials(ap, configuration);
     const hasUsefulInfo =
+      internalConnection ||
       hostPort !== undefined ||
       publicEndpoint !== undefined ||
       credentials.username !== undefined ||
@@ -176,17 +179,19 @@ export function computeAccessPoints(
 
     if (!hasUsefulInfo) continue;
 
+    const connectionHost = internalConnection ? ap.service : host;
+    const connectionPort = internalConnection ? ap.port : hostPort;
     const connectionString =
-      ap.kind !== 'web' && hostPort !== undefined
-        ? buildConnectionString(ap.kind, host, hostPort, credentials.username, credentials.password, credentials.database)
+      ap.kind !== 'web' && connectionPort !== undefined
+        ? buildConnectionString(ap.kind, connectionHost, connectionPort, credentials.username, credentials.password, credentials.database)
         : undefined;
 
     result.push({
       name: ap.name,
       kind: ap.kind,
       port: ap.port,
-      ...(hostPort !== undefined ? { hostPort } : {}),
-      host: publicEndpoint?.host ?? host,
+      ...(hostPort !== undefined && !internalConnection ? { hostPort } : {}),
+      host: publicEndpoint?.host ?? connectionHost,
       ...(publicEndpoint !== undefined ? { url: publicEndpoint.url } : {}),
       ...(credentials.username !== undefined ? { username: credentials.username } : {}),
       ...(credentials.password !== undefined ? { password: credentials.password } : {}),

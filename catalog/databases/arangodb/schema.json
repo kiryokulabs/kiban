@@ -3,9 +3,9 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "KIBAN_ARANGO_PASSWORD": {
+    "ARANGO_PASSWORD": {
       "type": "string",
-      "default": "${KIBAN_ARANGO_PASSWORD:-kiban}"
+      "default": "${ARANGO_PASSWORD:-kiban}"
     }
   }
 }

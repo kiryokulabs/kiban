@@ -157,6 +157,12 @@ export function normalizeComposeDocument(
         if (parsed) ports.push(parsed);
       }
     }
+    if (Array.isArray(raw['expose'])) {
+      for (const entry of raw['expose']) {
+        const parsed = parsePort(entry);
+        if (parsed) ports.push(parsed);
+      }
+    }
 
     const environment: RuntimeEnvironmentEntry[] = [];
     const envRaw = raw['environment'];

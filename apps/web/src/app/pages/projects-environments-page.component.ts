@@ -126,7 +126,7 @@ import { IconsComponent } from '../shared/icons.component';
             <div class="mt-3 space-y-2">
               <div class="flex items-center gap-2 text-xs c-muted">
                 <kiban-icon name="arrow-left" [size]="12" class="shrink-0" />
-                <span>Go to <strong class="kb-text">Catalog</strong> and select a service</span>
+                <span>Go to <strong class="kb-text">Services</strong> and select a service</span>
               </div>
               <div class="flex items-center gap-2 text-xs c-muted">
                 <kiban-icon name="arrow-left" [size]="12" class="shrink-0" />
@@ -176,7 +176,7 @@ import { IconsComponent } from '../shared/icons.component';
       <!-- Next steps -->
       <div class="card-subtle flex items-center gap-3 px-4 py-3">
         <kiban-icon name="check" [size]="14" class="shrink-0 text-green-500" />
-        <p class="text-sm c-muted">Projects are the foundation of Kiban. Once you create one, you can install any service from the catalog.</p>
+        <p class="text-sm c-muted">Projects are the foundation of Kiban. Once you create one, you can install any of the one-click services.</p>
       </div>
     </div>
   `
