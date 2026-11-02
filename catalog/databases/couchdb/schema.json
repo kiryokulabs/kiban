@@ -3,13 +3,13 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "KIBAN_COUCHDB_USER": {
+    "COUCHDB_USER": {
       "type": "string",
-      "default": "${KIBAN_COUCHDB_USER:-admin}"
+      "default": "${COUCHDB_USER:-admin}"
     },
-    "KIBAN_COUCHDB_PASSWORD": {
+    "COUCHDB_PASSWORD": {
       "type": "string",
-      "default": "${KIBAN_COUCHDB_PASSWORD:-kiban}"
+      "default": "${COUCHDB_PASSWORD:-kiban}"
     }
   }
 }

@@ -2,7 +2,7 @@
   "id": "pgweb",
   "name": "pgweb",
   "description": "Web-based PostgreSQL database browser.",
-  "category": "databases",
+  "category": "development",
   "author": "Kiban",
   "minimumVersion": "0.1.0",
   "icon": "icon.svg",

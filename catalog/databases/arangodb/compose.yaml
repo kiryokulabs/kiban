@@ -3,13 +3,19 @@ services:
     image: arangodb:3.12
     restart: unless-stopped
     environment:
-      ARANGO_ROOT_PASSWORD: ${KIBAN_ARANGO_PASSWORD:-kiban}
-      KIBAN_ARANGO_PASSWORD: ${KIBAN_ARANGO_PASSWORD:-kiban}
-    ports:
-      - "${KIBAN_ARANGODB_PORT:-8529}:8529"
+      ARANGO_ROOT_PASSWORD: ${ARANGO_PASSWORD:-kiban}
+      ARANGO_PASSWORD: ${ARANGO_PASSWORD:-kiban}
+    expose:
+      - "8529"
     volumes:
       - arangodb_data:/var/lib/arangodb3
       - arangodb_apps:/var/lib/arangodb3-apps
+    healthcheck:
+      test: ["CMD-SHELL", "arangosh --server.endpoint tcp://127.0.0.1:8529 --server.username root --server.password $${ARANGO_ROOT_PASSWORD} --javascript.execute-string 'db._version()'"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
 volumes:
   arangodb_data:
   arangodb_apps:

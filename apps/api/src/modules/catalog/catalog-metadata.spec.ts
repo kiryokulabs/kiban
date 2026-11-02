@@ -199,6 +199,21 @@ describe('Catalog invariants', () => {
     }
   });
 
+  it('every database schema fallback uses its own property key', () => {
+    for (const def of catalog.filter((definition) => definition.metadata.category === 'databases')) {
+      const rawProps: unknown = def.schema['properties'];
+      if (rawProps === undefined || rawProps === null || typeof rawProps !== 'object' || Array.isArray(rawProps)) continue;
+      for (const [key, rawProperty] of Object.entries(rawProps as Record<string, unknown>)) {
+        if (rawProperty === null || typeof rawProperty !== 'object' || Array.isArray(rawProperty)) continue;
+        const defaultValue = (rawProperty as Record<string, unknown>)['default'];
+        if (typeof defaultValue !== 'string') continue;
+        const variableName = /^\$\{([^:}]+):-.+\}$/.exec(defaultValue)?.[1];
+        if (variableName === undefined) continue;
+        expect(variableName, `${def.id}: schema field "${key}" uses fallback variable "${variableName}"`).toBe(key);
+      }
+    }
+  });
+
   // ── Freeze ───────────────────────────────────────────────────────────────────
 
   it('every definition is deeply frozen', () => {

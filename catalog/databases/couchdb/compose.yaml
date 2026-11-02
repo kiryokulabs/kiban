@@ -3,12 +3,10 @@ services:
     image: couchdb:3
     restart: unless-stopped
     environment:
-      COUCHDB_USER: ${KIBAN_COUCHDB_USER:-admin}
-      COUCHDB_PASSWORD: ${KIBAN_COUCHDB_PASSWORD:-kiban}
-      KIBAN_COUCHDB_USER: ${KIBAN_COUCHDB_USER:-admin}
-      KIBAN_COUCHDB_PASSWORD: ${KIBAN_COUCHDB_PASSWORD:-kiban}
-    ports:
-      - "${KIBAN_COUCHDB_PORT:-5984}:5984"
+      COUCHDB_USER: ${COUCHDB_USER:-admin}
+      COUCHDB_PASSWORD: ${COUCHDB_PASSWORD:-kiban}
+    expose:
+      - "5984"
     volumes:
       - couchdb_data:/opt/couchdb/data
       - couchdb_etc:/opt/couchdb/etc

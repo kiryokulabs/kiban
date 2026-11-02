@@ -52,7 +52,7 @@ import { SkeletonCardComponent } from '../shared/skeleton-card.component';
             <kiban-icon name="box" [size]="24" />
           </div>
           <p class="text-sm font-medium kb-text">No services installed</p>
-          <p class="mt-1 text-xs c-muted">Install a catalog service inside a project environment.</p>
+          <p class="mt-1 text-xs c-muted">Install a one-click service inside a project environment.</p>
         </div>
       } @else {
         <div class="grid grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-2 xl:grid-cols-3">

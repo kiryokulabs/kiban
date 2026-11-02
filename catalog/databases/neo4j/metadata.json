@@ -11,7 +11,11 @@
       "name": "Database",
       "kind": "neo4j",
       "service": "neo4j",
-      "port": 7687
+      "port": 7687,
+      "connection": {
+        "username": "NEO4J_USER",
+        "password": "NEO4J_PASSWORD"
+      }
     },
     {
       "name": "Web UI",

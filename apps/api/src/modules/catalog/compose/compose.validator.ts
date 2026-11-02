@@ -14,6 +14,7 @@ const SERVICE_KEYS = new Set([
   'command',
   'entrypoint',
   'ports',
+  'expose',
   'environment',
   'volumes',
   'restart',
@@ -118,6 +119,17 @@ export function validateComposeDocument(
           }
         } else {
           add(servicePath, 'port entries must be strings or objects');
+        }
+      }
+    }
+
+    const expose = rawService['expose'];
+    if (expose !== undefined && !Array.isArray(expose)) {
+      add(servicePath, '"expose" must be an array');
+    } else if (Array.isArray(expose)) {
+      for (const entry of expose) {
+        if (typeof entry !== 'string' || !/^\d+(\/(tcp|udp))?$/.test(entry)) {
+          add(servicePath, `invalid exposed port entry "${String(entry)}"`);
         }
       }
     }

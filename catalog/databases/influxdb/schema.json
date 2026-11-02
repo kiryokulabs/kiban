@@ -9,19 +9,19 @@
     },
     "DOCKER_INFLUXDB_INIT_USERNAME": {
       "type": "string",
-      "default": "${KIBAN_INFLUXDB_USERNAME:-kiban}"
+      "default": "${DOCKER_INFLUXDB_INIT_USERNAME:-kiban}"
     },
     "DOCKER_INFLUXDB_INIT_PASSWORD": {
       "type": "string",
-      "default": "${KIBAN_INFLUXDB_PASSWORD:-kiban12345}"
+      "default": "${DOCKER_INFLUXDB_INIT_PASSWORD:-kiban12345}"
     },
     "DOCKER_INFLUXDB_INIT_ORG": {
       "type": "string",
-      "default": "${KIBAN_INFLUXDB_ORG:-kiban}"
+      "default": "${DOCKER_INFLUXDB_INIT_ORG:-kiban}"
     },
     "DOCKER_INFLUXDB_INIT_BUCKET": {
       "type": "string",
-      "default": "${KIBAN_INFLUXDB_BUCKET:-default}"
+      "default": "${DOCKER_INFLUXDB_INIT_BUCKET:-default}"
     }
   }
 }

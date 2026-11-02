@@ -9,9 +9,14 @@
   "accessPoints": [
     {
       "name": "PostgreSQL",
-      "kind": "database",
+      "kind": "postgres",
       "service": "timescaledb",
-      "port": 5432
+      "port": 5432,
+      "connection": {
+        "username": "TIMESCALE_USER",
+        "password": "TIMESCALE_PASSWORD",
+        "database": "TIMESCALE_DB"
+      }
     }
   ]
 }

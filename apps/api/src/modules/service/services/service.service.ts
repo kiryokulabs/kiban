@@ -155,7 +155,12 @@ export class ServiceService {
         const definition = catalogMap.get(service.serviceId);
         if (definition) {
           const enriched = { ...base, icon: definition.icon, description: definition.metadata.description };
-          const accessPoints = computeAccessPoints(definition.metadata.accessPoints, service.configuration, service.runtime);
+          const accessPoints = computeAccessPoints(
+            definition.metadata.accessPoints,
+            service.configuration,
+            service.runtime,
+            definition.metadata.category === 'databases'
+          );
           if (accessPoints) {
             return { ...enriched, accessPoints } as InstalledServiceDto;
           }

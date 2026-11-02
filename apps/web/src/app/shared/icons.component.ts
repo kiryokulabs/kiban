@@ -8,7 +8,7 @@ export type KibanIcon =
   | 'chevron-up' | 'external-link' | 'play' | 'stop' | 'restart'
   | 'sun' | 'moon' | 'logout' | 'check' | 'warning' | 'info'
   | 'folder' | 'box' | 'server' | 'eye' | 'eye-off' | 'copy'
-  | 'arrow-left' | 'more-horizontal' | 'filter' | 'grid' | 'list';
+  | 'arrow-left' | 'more-horizontal' | 'filter' | 'grid' | 'list' | 'maximize' | 'minimize';
 
 /**
  * Inline SVG icon component for Kiban.
@@ -31,6 +31,12 @@ export type KibanIcon =
       aria-hidden="true"
     >
       @switch (name) {
+        @case ('maximize') {
+          <path d="M8 3H3v5M16 3h5v5M21 16v5h-5M8 21H3v-5" />
+        }
+        @case ('minimize') {
+          <path d="M3 8h5V3M21 8h-5V3M16 21v-5h5M8 21v-5H3" />
+        }
         @case ('home') {
           <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
           <polyline points="9 22 9 12 15 12 15 22"/>

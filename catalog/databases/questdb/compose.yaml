@@ -2,10 +2,10 @@ services:
   questdb:
     image: questdb/questdb:9.4.3
     restart: unless-stopped
-    ports:
-      - "${KIBAN_QUESTDB_PORT:-9000}:9000"
-      - "8812:8812"
-      - "9009:9009"
+    expose:
+      - "9000"
+      - "8812"
+      - "9009"
     volumes:
       - questdb_data:/var/lib/questdb
     healthcheck:

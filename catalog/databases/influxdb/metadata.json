@@ -17,7 +17,12 @@
       "name": "Database",
       "kind": "influxdb",
       "service": "influxdb",
-      "port": 8086
+      "port": 8086,
+      "connection": {
+        "username": "DOCKER_INFLUXDB_INIT_USERNAME",
+        "password": "DOCKER_INFLUXDB_INIT_PASSWORD",
+        "database": "DOCKER_INFLUXDB_INIT_BUCKET"
+      }
     }
   ]
 }

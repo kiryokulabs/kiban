@@ -15,7 +15,7 @@
     },
     {
       "name": "PostgreSQL Wire",
-      "kind": "database",
+      "kind": "postgres",
       "service": "questdb",
       "port": 8812
     }

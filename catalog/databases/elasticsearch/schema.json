@@ -3,9 +3,9 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "KIBAN_ES_JAVA_OPTS": {
+    "ES_JAVA_OPTS": {
       "type": "string",
-      "default": "${KIBAN_ES_JAVA_OPTS:--Xms512m -Xmx512m}"
+      "default": "${ES_JAVA_OPTS:--Xms512m -Xmx512m}"
     }
   }
 }

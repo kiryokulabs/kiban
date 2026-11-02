@@ -5,11 +5,11 @@
   "properties": {
     "MONGO_INITDB_ROOT_USERNAME": {
       "type": "string",
-      "default": "${KIBAN_MONGO_ROOT_USERNAME:-kiban}"
+      "default": "${MONGO_INITDB_ROOT_USERNAME:-kiban}"
     },
     "MONGO_INITDB_ROOT_PASSWORD": {
       "type": "string",
-      "default": "${KIBAN_MONGO_ROOT_PASSWORD:-kiban}"
+      "default": "${MONGO_INITDB_ROOT_PASSWORD:-kiban}"
     }
   }
 }

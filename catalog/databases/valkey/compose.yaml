@@ -1,13 +1,18 @@
 services:
   valkey:
-    image: valkey/valkey:latest
+    image: valkey/valkey:9.1.3
     restart: unless-stopped
-    command: valkey-server --requirepass ${KIBAN_VALKEY_PASSWORD:-kiban}
+    command: valkey-server --requirepass ${VALKEY_PASSWORD:-kiban}
     environment:
-      KIBAN_VALKEY_PASSWORD: ${KIBAN_VALKEY_PASSWORD:-kiban}
-    ports:
-      - "${KIBAN_VALKEY_PORT:-6379}:6379"
+      VALKEY_PASSWORD: ${VALKEY_PASSWORD:-kiban}
+    expose:
+      - "6379"
     volumes:
       - valkey_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "valkey-cli -a $${VALKEY_PASSWORD} ping | grep PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 volumes:
   valkey_data:

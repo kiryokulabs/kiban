@@ -19,9 +19,9 @@
       "service": "clickhouse",
       "port": 9000,
       "connection": {
-        "username": "KIBAN_CLICKHOUSE_USER",
-        "password": "KIBAN_CLICKHOUSE_PASSWORD",
-        "database": "KIBAN_CLICKHOUSE_DB"
+        "username": "CLICKHOUSE_USER",
+        "password": "CLICKHOUSE_PASSWORD",
+        "database": "CLICKHOUSE_DB"
       }
     }
   ]

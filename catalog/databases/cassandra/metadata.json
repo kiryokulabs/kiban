@@ -9,7 +9,7 @@
   "accessPoints": [
     {
       "name": "CQL",
-      "kind": "database",
+      "kind": "cassandra",
       "service": "cassandra",
       "port": 9042
     }

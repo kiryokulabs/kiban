@@ -13,7 +13,7 @@
       "service": "valkey",
       "port": 6379,
       "connection": {
-        "password": "KIBAN_VALKEY_PASSWORD"
+        "password": "VALKEY_PASSWORD"
       }
     }
   ]

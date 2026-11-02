@@ -224,7 +224,7 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
 
         <!-- Install modal -->
         @if (installEnvironment()) {
-          <kiban-modal title="Install Service" [wide]="true" (close)="closeInstallDialog()">
+          <kiban-modal title="Install Service" [wide]="true" [expandable]="true" [initiallyExpanded]="true" (close)="closeInstallDialog()">
             <div class="mb-5">
               <div class="flex items-center gap-2 text-xs c-muted">
                 <span [class.c-text]="installStep() === 1" [class.c-muted]="installStep() !== 1" class="flex items-center gap-1.5 font-medium">
@@ -294,7 +294,9 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
             <!-- Step 2: Configure -->
             @if (installStep() === 2 && selectedService()) {
               <form (ngSubmit)="goToReview()">
-                <p class="mb-4 text-xs c-muted">Configure the service parameters.</p>
+                @if (hasCredentialFields()) {
+                  <p role="note" class="mb-4 flex items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200"><kiban-icon name="warning" [size]="14" class="shrink-0" />For your security, replace default passwords and secrets with strong, unique values. Redeploying later may not update credentials already configured in the service.</p>
+                }
                 @for (field of schemaFields(); track field.key) {
                   <label class="mt-3 block text-xs">
                     <span class="mb-1.5 block c-muted">
@@ -499,6 +501,7 @@ export class ProjectDetailsPageComponent {
   protected selectableServices(): readonly CatalogItem[] { const searched = this.catalogItems().filter((item) => `${item.name} ${item.description}`.toLowerCase().includes(this.serviceSearch.toLowerCase())); return this.catalogPresenter.visibleItems(searched, this.selectedCatalogCategory()); }
   protected selectService(item: CatalogItem): void { this.selectedService.set(item); this.configurationValues = Object.fromEntries(this.schemaFieldsFor(item).map((field) => [field.key, field.defaultValue])); this.installStep.set(2); }
   protected schemaFields(): readonly SchemaField[] { const item = this.selectedService(); return item ? this.schemaFieldsFor(item) : []; }
+  protected hasCredentialFields(): boolean { return this.schemaFields().some((field) => /password|passwd|secret|token|username|(?:^|_)user(?:_|$)|(?:^|_)auth(?:_|$)|(?:^|_)api_?key(?:_|$)/i.test(field.key)); }
   private schemaFieldsFor(item: CatalogItem): readonly SchemaField[] { const properties = item.schema['properties']; const required = Array.isArray(item.schema['required']) ? item.schema['required'] : []; if (!properties || typeof properties !== 'object' || Array.isArray(properties)) return []; return Object.entries(properties).map(([key, value]) => { const record = value && typeof value === 'object' && !Array.isArray(value) ? value as Readonly<Record<string, unknown>> : {}; const title = typeof record['title'] === 'string' ? record['title'] : key; const defaultValue = resolveSchemaDefaultValue(record['default']); return { key, label: title, required: required.includes(key), defaultValue }; }); }
   protected goToReview(): void { this.installStep.set(3); }
   protected installSelectedService(): void { const env = this.installEnvironment(); const service = this.selectedService(); if (!this.projectId || !env || !service || this.installingService()) return; this.installingService.set(true); this.installedServices.install(this.projectId, env.id, { serviceId: service.id, configuration: this.configurationValues }).subscribe({ next: () => { this.installingService.set(false); this.closeInstallDialog(); this.notifications.success(`${service.name} installed successfully.`); this.loadInstalledServices(env.id); }, error: () => { this.installingService.set(false); this.notifications.error(`Could not install ${service.name}. Check configuration and duplicates.`); } }); }

@@ -13,7 +13,7 @@
       "service": "dragonfly",
       "port": 6379,
       "connection": {
-        "password": "KIBAN_DRAGONFLY_PASSWORD"
+        "password": "DRAGONFLY_PASSWORD"
       }
     }
   ]

@@ -4,13 +4,19 @@ services:
     restart: unless-stopped
     environment:
       DOCKER_INFLUXDB_INIT_MODE: setup
-      DOCKER_INFLUXDB_INIT_USERNAME: ${KIBAN_INFLUXDB_USERNAME:-kiban}
-      DOCKER_INFLUXDB_INIT_PASSWORD: ${KIBAN_INFLUXDB_PASSWORD:-kiban12345}
-      DOCKER_INFLUXDB_INIT_ORG: ${KIBAN_INFLUXDB_ORG:-kiban}
-      DOCKER_INFLUXDB_INIT_BUCKET: ${KIBAN_INFLUXDB_BUCKET:-default}
-    ports:
-      - "${KIBAN_INFLUXDB_PORT:-8086}:8086"
+      DOCKER_INFLUXDB_INIT_USERNAME: ${DOCKER_INFLUXDB_INIT_USERNAME:-kiban}
+      DOCKER_INFLUXDB_INIT_PASSWORD: ${DOCKER_INFLUXDB_INIT_PASSWORD:-kiban12345}
+      DOCKER_INFLUXDB_INIT_ORG: ${DOCKER_INFLUXDB_INIT_ORG:-kiban}
+      DOCKER_INFLUXDB_INIT_BUCKET: ${DOCKER_INFLUXDB_INIT_BUCKET:-default}
+    expose:
+      - "8086"
     volumes:
       - influxdb_data:/var/lib/influxdb2
+    healthcheck:
+      test: ["CMD", "influx", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 volumes:
   influxdb_data:
