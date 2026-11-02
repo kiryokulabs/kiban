@@ -152,9 +152,15 @@ export class ProjectService {
     }
   }
 
-  /** Deletes an environment for a project. */
+  /** Deletes an environment only when it has no installed services. */
   public async deleteEnvironment(projectId: string, environmentId: string): Promise<void> {
     try {
+      if (this.installedServices) {
+        const services = await this.installedServices.list(projectId, environmentId);
+        if (services.length > 0) {
+          throw new ProjectValidationError('Environment must be empty before it can be deleted.');
+        }
+      }
       await this.projects.deleteEnvironment(projectId, environmentId);
     } catch (error: unknown) {
       this.mapProjectError(error);

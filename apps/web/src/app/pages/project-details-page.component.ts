@@ -477,7 +477,16 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
           <kiban-confirm-modal title="Delete service" [message]="deleteInstalledServiceMessage()" confirmLabel="Delete service" [destructive]="true" (cancel)="cancelDeleteInstalledService()" (confirm)="confirmDeleteInstalledService()" />
         }
         @if (environmentPendingDelete(); as environment) {
-          <kiban-confirm-modal title="Delete environment" [message]="deleteEnvironmentMessage()" confirmLabel="Delete environment" [destructive]="true" [confirmationText]="environment.name" (cancel)="cancelDeleteEnvironment()" (confirm)="confirmDeleteEnvironment()" />
+          @if (installedFor(environment.id).length > 0) {
+            <kiban-modal title="Delete environment" (close)="cancelDeleteEnvironment()">
+              <p class="text-sm leading-6 c-muted">{{ deleteEnvironmentMessage() }}</p>
+              <div class="mt-5 flex justify-end">
+                <button class="btn-primary btn" type="button" (click)="cancelDeleteEnvironment()">Close</button>
+              </div>
+            </kiban-modal>
+          } @else {
+            <kiban-confirm-modal title="Delete environment" [message]="deleteEnvironmentMessage()" confirmLabel="Delete environment" [destructive]="true" [confirmationText]="environment.name" (cancel)="cancelDeleteEnvironment()" (confirm)="confirmDeleteEnvironment()" />
+          }
         }
       } @else {
         <kiban-skeleton-project-detail />
@@ -486,44 +495,404 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
   `
 })
 export class ProjectDetailsPageComponent {
-  private readonly route = inject(ActivatedRoute); private readonly projectsService = inject(ProjectsService); private readonly installedServices = inject(InstalledServicesService); private readonly catalogService = inject(CatalogService); private readonly notifications = inject(ToastService); private readonly environmentPresenter = new EnvironmentCardPresenter(); private readonly catalogPresenter = new CatalogPagePresenter();
-  protected readonly detailsPresenter = new ServiceDetailsPresenter();   protected readonly project = signal<ProjectDetails | null>(null); protected readonly message = signal<string | null>(null); protected readonly environmentPendingDelete = signal<EnvironmentItem | null>(null); protected readonly installedServicePendingDelete = signal<InstalledService | null>(null); protected readonly environmentModalOpen = signal(false); protected readonly editingEnvironment = signal<EnvironmentItem | null>(null); protected readonly servicesByEnvironment = signal<Readonly<Record<string, readonly InstalledService[]>>>({}); protected readonly loadingEnvironments = signal<ReadonlySet<string>>(new Set()); protected readonly catalogCategories = signal<readonly CatalogCategory[]>([]); protected readonly catalogItems = signal<readonly CatalogItem[]>([]); protected readonly installEnvironment = signal<EnvironmentItem | null>(null); protected readonly selectedService = signal<CatalogItem | null>(null); protected readonly installStep = signal<InstallStep>(1); protected readonly installingService = signal(false); protected readonly selectedCatalogCategory = signal('all'); protected readonly serviceForDetails = signal<InstalledService | null>(null); protected readonly visiblePasswords = signal<ReadonlySet<number>>(new Set()); protected readonly projectImageFailed = signal(false);
-  protected environmentName = ''; protected environmentDescriptionText = ''; protected serviceSearch = ''; protected configurationValues: Record<string, string> = {}; protected readonly projectId: string | null;
-  public constructor() { this.projectId = this.route.snapshot.paramMap.get('id'); this.loadCatalog(); this.loadProject(); }
-  protected loadProject(): void { if (this.projectId) this.projectsService.getProject(this.projectId).subscribe({ next: (project) => { this.project.set(project); this.projectImageFailed.set(false); for (const environment of project.environments) this.loadInstalledServices(environment.id); }, error: () => this.message.set('Could not load project.') }); }
-  protected loadCatalog(): void { this.catalogService.list().subscribe({ next: (catalog) => { this.catalogCategories.set(catalog.categories); this.catalogItems.set(catalog.items); }, error: () => this.message.set('Could not load catalog.') }); }
-  protected projectImageUrl(): string { return this.projectId ? this.projectsService.projectImageUrl(this.projectId) : ''; }
-  protected installedFor(environmentId: string): readonly InstalledService[] { return this.servicesByEnvironment()[environmentId] ?? []; }
-  protected isEnvironmentLoading(environmentId: string): boolean { return this.loadingEnvironments().has(environmentId); }
-  private loadInstalledServices(environmentId: string): void { if (!this.projectId) return; this.loadingEnvironments.set(new Set([...this.loadingEnvironments(), environmentId])); this.installedServices.list(this.projectId, environmentId).subscribe({ next: (services) => { this.servicesByEnvironment.set({ ...this.servicesByEnvironment(), [environmentId]: services }); this.loadingEnvironments.set(new Set([...this.loadingEnvironments()].filter((id) => id !== environmentId))); }, error: () => { this.loadingEnvironments.set(new Set([...this.loadingEnvironments()].filter((id) => id !== environmentId))); this.message.set('Could not load installed services.'); } }); }
-  protected openInstallDialog(environment: EnvironmentItem): void { this.installEnvironment.set(environment); this.selectedService.set(null); this.installStep.set(1); this.configurationValues = {}; this.serviceSearch = ''; this.selectedCatalogCategory.set('all'); }
-  protected closeInstallDialog(): void { if (this.installingService()) return; this.installEnvironment.set(null); }
-  protected selectableServices(): readonly CatalogItem[] { const searched = this.catalogItems().filter((item) => `${item.name} ${item.description}`.toLowerCase().includes(this.serviceSearch.toLowerCase())); return this.catalogPresenter.visibleItems(searched, this.selectedCatalogCategory()); }
-  protected selectService(item: CatalogItem): void { this.selectedService.set(item); this.configurationValues = Object.fromEntries(this.schemaFieldsFor(item).map((field) => [field.key, field.defaultValue])); this.installStep.set(2); }
-  protected schemaFields(): readonly SchemaField[] { const item = this.selectedService(); return item ? this.schemaFieldsFor(item) : []; }
-  protected hasCredentialFields(): boolean { return this.schemaFields().some((field) => /password|passwd|secret|token|username|(?:^|_)user(?:_|$)|(?:^|_)auth(?:_|$)|(?:^|_)api_?key(?:_|$)/i.test(field.key)); }
-  private schemaFieldsFor(item: CatalogItem): readonly SchemaField[] { const properties = item.schema['properties']; const required = Array.isArray(item.schema['required']) ? item.schema['required'] : []; if (!properties || typeof properties !== 'object' || Array.isArray(properties)) return []; return Object.entries(properties).map(([key, value]) => { const record = value && typeof value === 'object' && !Array.isArray(value) ? value as Readonly<Record<string, unknown>> : {}; const title = typeof record['title'] === 'string' ? record['title'] : key; const defaultValue = resolveSchemaDefaultValue(record['default']); return { key, label: title, required: required.includes(key), defaultValue }; }); }
-  protected goToReview(): void { this.installStep.set(3); }
-  protected installSelectedService(): void { const env = this.installEnvironment(); const service = this.selectedService(); if (!this.projectId || !env || !service || this.installingService()) return; this.installingService.set(true); this.installedServices.install(this.projectId, env.id, { serviceId: service.id, configuration: this.configurationValues }).subscribe({ next: () => { this.installingService.set(false); this.closeInstallDialog(); this.notifications.success(`${service.name} installed successfully.`); this.loadInstalledServices(env.id); }, error: () => { this.installingService.set(false); this.notifications.error(`Could not install ${service.name}. Check configuration and duplicates.`); } }); }
-  protected startInstalledService(service: InstalledService): void { this.installedServices.start(service.id).subscribe({ next: () => this.loadInstalledServices(service.environmentId), error: () => this.message.set('Could not start service.') }); }
-  protected stopInstalledService(service: InstalledService): void { this.installedServices.stop(service.id).subscribe({ next: () => this.loadInstalledServices(service.environmentId), error: () => this.message.set('Could not stop service.') }); }
-  protected restartInstalledService(service: InstalledService): void { this.installedServices.restart(service.id).subscribe({ next: () => this.loadInstalledServices(service.environmentId), error: () => this.message.set('Could not restart service.') }); }
-  protected requestDeleteInstalledService(service: InstalledService): void { this.installedServicePendingDelete.set(service); }
-  protected cancelDeleteInstalledService(): void { this.installedServicePendingDelete.set(null); }
-  protected deleteInstalledServiceMessage(): string { const service = this.installedServicePendingDelete(); return service ? `Delete service "${service.name}"? This will stop and remove its running runtime resources.` : ''; }
-  protected confirmDeleteInstalledService(): void { const service = this.installedServicePendingDelete(); if (!service) return; this.installedServices.delete(service.id).subscribe({ next: () => { this.installedServicePendingDelete.set(null); this.notifications.success(`${service.name} deleted successfully.`); this.loadInstalledServices(service.environmentId); }, error: () => this.notifications.error(`Could not delete ${service.name}.`) }); }
-  protected openDetails(service: InstalledService): void { this.serviceForDetails.set(service); this.visiblePasswords.set(new Set()); }
-  protected closeDetails(): void { this.serviceForDetails.set(null); }
-  protected copyToClipboard(value: string): void { if (typeof navigator !== 'undefined' && navigator.clipboard) navigator.clipboard.writeText(value).catch(() => {}); }
-  protected togglePassword(index: number): void { const current = this.visiblePasswords(); const next = new Set(current); if (next.has(index)) { next.delete(index); } else { next.add(index); } this.visiblePasswords.set(next); }
-  protected configurationKeys(): readonly string[] { return Object.keys(this.configurationValues).filter((key) => this.configurationValues[key]); }
-  protected openEnvironmentModal(): void { this.editingEnvironment.set(null); this.environmentName = ''; this.environmentDescriptionText = ''; this.environmentModalOpen.set(true); }
-  protected openEditEnvironmentModal(environment: EnvironmentItem): void { this.editingEnvironment.set(environment); this.environmentName = environment.name; this.environmentDescriptionText = environment.description ?? ''; this.environmentModalOpen.set(true); }
-  protected closeEnvironmentModal(): void { this.environmentModalOpen.set(false); this.editingEnvironment.set(null); }
-  protected environmentCardDescription(environment: EnvironmentItem): string { return this.environmentPresenter.description(environment); }
-  protected submitEnvironment(): void { if (!this.projectId) return; const name = this.environmentName.trim(); if (!name) { this.message.set('Environment name is required.'); return; } const editing = this.editingEnvironment(); const payload = { name, description: this.environmentDescriptionText.trim() || null }; const request = editing ? this.projectsService.updateEnvironment(this.projectId, editing.id, payload) : this.projectsService.createEnvironment(this.projectId, payload); request.subscribe({ next: () => { this.environmentName = ''; this.environmentDescriptionText = ''; this.closeEnvironmentModal(); this.notifications.success(`${name} ${editing ? 'updated' : 'created'} successfully.`); this.loadProject(); }, error: () => this.notifications.error(`Could not ${editing ? 'update' : 'create'} ${name}. Check the name and try again.`) }); }
-  protected requestDeleteEnvironment(environment: EnvironmentItem): void { this.environmentPendingDelete.set(environment); }
-  protected cancelDeleteEnvironment(): void { this.environmentPendingDelete.set(null); }
-  protected deleteEnvironmentMessage(): string { const environment = this.environmentPendingDelete(); return environment ? `Delete environment "${environment.name}"? This cannot be undone.` : ''; }
-  protected confirmDeleteEnvironment(): void { const environment = this.environmentPendingDelete(); if (!this.projectId || !environment) return; this.projectsService.deleteEnvironment(this.projectId, environment.id).subscribe({ next: () => { this.environmentPendingDelete.set(null); this.notifications.success(`${environment.name} deleted successfully.`); this.loadProject(); }, error: () => this.notifications.error(`Could not delete ${environment.name}.`) }); }
+  private readonly route = inject(ActivatedRoute);
+  private readonly projectsService = inject(ProjectsService);
+  private readonly installedServices = inject(InstalledServicesService);
+  private readonly catalogService = inject(CatalogService);
+  private readonly notifications = inject(ToastService);
+  private readonly environmentPresenter = new EnvironmentCardPresenter();
+  private readonly catalogPresenter = new CatalogPagePresenter();
+  protected readonly detailsPresenter = new ServiceDetailsPresenter();
+  protected readonly project = signal<ProjectDetails | null>(null);
+  protected readonly message = signal<string | null>(null);
+  protected readonly environmentPendingDelete = signal<EnvironmentItem | null>(
+    null,
+  );
+  protected readonly installedServicePendingDelete = signal<InstalledService | null>(null);
+  protected readonly environmentModalOpen = signal(false);
+  protected readonly editingEnvironment = signal<EnvironmentItem | null>(null);
+  protected readonly servicesByEnvironment = signal<Readonly<Record<string, readonly InstalledService[]>>>({});
+  protected readonly loadingEnvironments = signal<ReadonlySet<string>>(new Set(),);
+  protected readonly catalogCategories = signal<readonly CatalogCategory[]>([]);
+  protected readonly catalogItems = signal<readonly CatalogItem[]>([]);
+  protected readonly installEnvironment = signal<EnvironmentItem | null>(null);
+  protected readonly selectedService = signal<CatalogItem | null>(null);
+  protected readonly installStep = signal<InstallStep>(1);
+  protected readonly installingService = signal(false);
+  protected readonly selectedCatalogCategory = signal("all");
+  protected readonly serviceForDetails = signal<InstalledService | null>(null);
+  protected readonly visiblePasswords = signal<ReadonlySet<number>>(new Set());
+  protected readonly projectImageFailed = signal(false);
+  protected environmentName = "";
+  protected environmentDescriptionText = "";
+  protected serviceSearch = "";
+  protected configurationValues: Record<string, string> = {};
+  protected readonly projectId: string | null;
+
+  public constructor() {
+    this.projectId = this.route.snapshot.paramMap.get("id");
+    this.loadCatalog();
+    this.loadProject();
+  }
+
+  protected loadProject(): void {
+    if (this.projectId)
+      this.projectsService.getProject(this.projectId).subscribe({
+        next: (project) => {
+          this.project.set(project);
+          this.projectImageFailed.set(false);
+          for (const environment of project.environments)
+            this.loadInstalledServices(environment.id);
+        },
+        error: () => this.message.set("Could not load project."),
+      });
+  }
+
+  protected loadCatalog(): void {
+    this.catalogService.list().subscribe({
+      next: (catalog) => {
+        this.catalogCategories.set(catalog.categories);
+        this.catalogItems.set(catalog.items);
+      },
+      error: () => this.message.set("Could not load catalog."),
+    });
+  }
+
+  protected projectImageUrl(): string {
+    return this.projectId
+      ? this.projectsService.projectImageUrl(this.projectId)
+      : "";
+  }
+
+  protected installedFor(environmentId: string): readonly InstalledService[] {
+    return this.servicesByEnvironment()[environmentId] ?? [];
+  }
+
+  protected isEnvironmentLoading(environmentId: string): boolean {
+    return this.loadingEnvironments().has(environmentId);
+  }
+
+  private loadInstalledServices(environmentId: string): void {
+    if (!this.projectId) return;
+    this.loadingEnvironments.set(
+      new Set([...this.loadingEnvironments(), environmentId]),
+    );
+    this.installedServices.list(this.projectId, environmentId).subscribe({
+      next: (services) => {
+        this.servicesByEnvironment.set({
+          ...this.servicesByEnvironment(),
+          [environmentId]: services,
+        });
+        this.loadingEnvironments.set(
+          new Set(
+            [...this.loadingEnvironments()].filter(
+              (id) => id !== environmentId,
+            ),
+          ),
+        );
+      },
+      error: () => {
+        this.loadingEnvironments.set(
+          new Set(
+            [...this.loadingEnvironments()].filter(
+              (id) => id !== environmentId,
+            ),
+          ),
+        );
+        this.message.set("Could not load installed services.");
+      },
+    });
+  }
+
+  protected openInstallDialog(environment: EnvironmentItem): void {
+    this.installEnvironment.set(environment);
+    this.selectedService.set(null);
+    this.installStep.set(1);
+    this.configurationValues = {};
+    this.serviceSearch = "";
+    this.selectedCatalogCategory.set("all");
+  }
+
+  protected closeInstallDialog(): void {
+    if (this.installingService()) return;
+    this.installEnvironment.set(null);
+  }
+
+  protected selectableServices(): readonly CatalogItem[] {
+    const searched = this.catalogItems().filter((item) =>
+      `${item.name} ${item.description}`
+        .toLowerCase()
+        .includes(this.serviceSearch.toLowerCase()),
+    );
+    return this.catalogPresenter.visibleItems(
+      searched,
+      this.selectedCatalogCategory(),
+    );
+  }
+
+  protected selectService(item: CatalogItem): void {
+    this.selectedService.set(item);
+    this.configurationValues = Object.fromEntries(
+      this.schemaFieldsFor(item).map((field) => [
+        field.key,
+        field.defaultValue,
+      ]),
+    );
+    this.installStep.set(2);
+  }
+
+  protected schemaFields(): readonly SchemaField[] {
+    const item = this.selectedService();
+    return item ? this.schemaFieldsFor(item) : [];
+  }
+
+  protected hasCredentialFields(): boolean {
+    return this.schemaFields().some((field) =>
+      /password|passwd|secret|token|username|(?:^|_)user(?:_|$)|(?:^|_)auth(?:_|$)|(?:^|_)api_?key(?:_|$)/i.test(
+        field.key,
+      ),
+    );
+  }
+
+  private schemaFieldsFor(item: CatalogItem): readonly SchemaField[] {
+    const properties = item.schema["properties"];
+    const required = Array.isArray(item.schema["required"])
+      ? item.schema["required"]
+      : [];
+    if (
+      !properties ||
+      typeof properties !== "object" ||
+      Array.isArray(properties)
+    )
+      return [];
+    return Object.entries(properties).map(([key, value]) => {
+      const record =
+        value && typeof value === "object" && !Array.isArray(value)
+          ? (value as Readonly<Record<string, unknown>>)
+          : {};
+      const title = typeof record["title"] === "string" ? record["title"] : key;
+      const defaultValue = resolveSchemaDefaultValue(record["default"]);
+      return {
+        key,
+        label: title,
+        required: required.includes(key),
+        defaultValue,
+      };
+    });
+  }
+
+  protected goToReview(): void {
+    this.installStep.set(3);
+  }
+
+  protected installSelectedService(): void {
+    const env = this.installEnvironment();
+    const service = this.selectedService();
+    if (!this.projectId || !env || !service || this.installingService()) return;
+    this.installingService.set(true);
+    this.installedServices
+      .install(this.projectId, env.id, {
+        serviceId: service.id,
+        configuration: this.configurationValues,
+      })
+      .subscribe({
+        next: () => {
+          this.installingService.set(false);
+          this.closeInstallDialog();
+          this.notifications.success(`${service.name} installed successfully.`);
+          this.loadInstalledServices(env.id);
+        },
+        error: () => {
+          this.installingService.set(false);
+          this.notifications.error(
+            `Could not install ${service.name}. Check configuration and duplicates.`,
+          );
+        },
+      });
+  }
+
+  protected startInstalledService(service: InstalledService): void {
+    this.installedServices
+      .start(service.id)
+      .subscribe({
+        next: () => this.loadInstalledServices(service.environmentId),
+        error: () => this.message.set("Could not start service."),
+      });
+  }
+
+  protected stopInstalledService(service: InstalledService): void {
+    this.installedServices
+      .stop(service.id)
+      .subscribe({
+        next: () => this.loadInstalledServices(service.environmentId),
+        error: () => this.message.set("Could not stop service."),
+      });
+  }
+
+  protected restartInstalledService(service: InstalledService): void {
+    this.installedServices
+      .restart(service.id)
+      .subscribe({
+        next: () => this.loadInstalledServices(service.environmentId),
+        error: () => this.message.set("Could not restart service."),
+      });
+  }
+
+  protected requestDeleteInstalledService(service: InstalledService): void {
+    this.installedServicePendingDelete.set(service);
+  }
+
+  protected cancelDeleteInstalledService(): void {
+    this.installedServicePendingDelete.set(null);
+  }
+
+  protected deleteInstalledServiceMessage(): string {
+    const service = this.installedServicePendingDelete();
+    return service
+      ? `Delete service "${service.name}"? This will stop and remove its running runtime resources.`
+      : "";
+  }
+
+  protected confirmDeleteInstalledService(): void {
+    const service = this.installedServicePendingDelete();
+    if (!service) return;
+    this.installedServices.delete(service.id).subscribe({
+      next: () => {
+        this.installedServicePendingDelete.set(null);
+        this.notifications.success(`${service.name} deleted successfully.`);
+        this.loadInstalledServices(service.environmentId);
+      },
+      error: () =>
+        this.notifications.error(`Could not delete ${service.name}.`),
+    });
+  }
+
+  protected openDetails(service: InstalledService): void {
+    this.serviceForDetails.set(service);
+    this.visiblePasswords.set(new Set());
+  }
+
+  protected closeDetails(): void {
+    this.serviceForDetails.set(null);
+  }
+
+  protected copyToClipboard(value: string): void {
+    if (typeof navigator !== "undefined" && navigator.clipboard)
+      navigator.clipboard.writeText(value).catch(() => {});
+  }
+
+  protected togglePassword(index: number): void {
+    const current = this.visiblePasswords();
+    const next = new Set(current);
+    if (next.has(index)) {
+      next.delete(index);
+    } else {
+      next.add(index);
+    }
+    this.visiblePasswords.set(next);
+  }
+
+  protected configurationKeys(): readonly string[] {
+    return Object.keys(this.configurationValues).filter(
+      (key) => this.configurationValues[key],
+    );
+  }
+
+  protected openEnvironmentModal(): void {
+    this.editingEnvironment.set(null);
+    this.environmentName = "";
+    this.environmentDescriptionText = "";
+    this.environmentModalOpen.set(true);
+  }
+
+  protected openEditEnvironmentModal(environment: EnvironmentItem): void {
+    this.editingEnvironment.set(environment);
+    this.environmentName = environment.name;
+    this.environmentDescriptionText = environment.description ?? "";
+    this.environmentModalOpen.set(true);
+  }
+
+  protected closeEnvironmentModal(): void {
+    this.environmentModalOpen.set(false);
+    this.editingEnvironment.set(null);
+  }
+
+  protected environmentCardDescription(environment: EnvironmentItem): string {
+    return this.environmentPresenter.description(environment);
+  }
+
+  protected submitEnvironment(): void {
+    if (!this.projectId) return;
+    const name = this.environmentName.trim();
+    if (!name) {
+      this.message.set("Environment name is required.");
+      return;
+    }
+    const editing = this.editingEnvironment();
+    const payload = {
+      name,
+      description: this.environmentDescriptionText.trim() || null,
+    };
+    const request = editing
+      ? this.projectsService.updateEnvironment(
+          this.projectId,
+          editing.id,
+          payload,
+        )
+      : this.projectsService.createEnvironment(this.projectId, payload);
+    request.subscribe({
+      next: () => {
+        this.environmentName = "";
+        this.environmentDescriptionText = "";
+        this.closeEnvironmentModal();
+        this.notifications.success(
+          `${name} ${editing ? "updated" : "created"} successfully.`,
+        );
+        this.loadProject();
+      },
+      error: () =>
+        this.notifications.error(
+          `Could not ${editing ? "update" : "create"} ${name}. Check the name and try again.`,
+        ),
+    });
+  }
+
+  protected requestDeleteEnvironment(environment: EnvironmentItem): void {
+    this.environmentPendingDelete.set(environment);
+  }
+
+  protected cancelDeleteEnvironment(): void {
+    this.environmentPendingDelete.set(null);
+  }
+
+  protected deleteEnvironmentMessage(): string {
+    const environment = this.environmentPendingDelete();
+    if (!environment) return "";
+    if (this.installedFor(environment.id).length > 0)
+      return `Environment "${environment.name}" has installed services. Delete those services before deleting the environment.`;
+    return `Delete environment "${environment.name}"? This cannot be undone.`;
+  }
+
+  protected confirmDeleteEnvironment(): void {
+    const environment = this.environmentPendingDelete();
+    if (
+      !this.projectId ||
+      !environment ||
+      this.installedFor(environment.id).length > 0
+    )
+      return;
+    this.projectsService
+      .deleteEnvironment(this.projectId, environment.id)
+      .subscribe({
+        next: () => {
+          this.environmentPendingDelete.set(null);
+          this.notifications.success(
+            `${environment.name} deleted successfully.`,
+          );
+          this.loadProject();
+        },
+        error: () =>
+          this.notifications.error(`Could not delete ${environment.name}.`),
+      });
+  }
 }
