@@ -60,6 +60,15 @@ pnpm --filter @kiban/web test
 - **Terminal: TerminalPresenter container options and state labels**
 - **Terminal: TerminalService Socket.IO transport and state machine**
 
+## Authentication security regressions
+
+The API tests also cover real temporary SQLite transactions (concurrent bootstrap,
+password-change rollback, all-session revocation, stale login/rehash rejection and
+persistent attempt limits), HTTP cookie/CSRF/CORS behavior, and live local Socket.IO
+connections with a simulated terminal provider. The socket integration tests need
+permission to listen on an ephemeral localhost port; they do not invoke Docker or
+use real accounts. Password tests verify both legacy and current scrypt hashes.
+
 ## Continuous Integration
 
 GitHub Actions runs unit tests on every push and pull request using:
