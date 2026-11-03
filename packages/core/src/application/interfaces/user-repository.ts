@@ -15,6 +15,8 @@ export interface UserRepository {
   findByEmail(email: string): Promise<User | null>;
   /** Finds a user by identifier. */
   findById(id: string): Promise<User | null>;
-  /** Updates a user's stored password hash. */
-  updatePasswordHash(userId: string, passwordHash: string, updatedAt: Date): Promise<void>;
+  /** Upgrades a password hash only if it has not changed since verification. */
+  updatePasswordHash(userId: string, expectedHash: string, passwordHash: string, updatedAt: Date): Promise<boolean>;
+  /** Changes a verified password and revokes all sessions in a single transaction. */
+  changePasswordAndRevokeSessions(userId: string, expectedHash: string, passwordHash: string, updatedAt: Date): Promise<boolean>;
 }

@@ -12,6 +12,7 @@ const now = new Date('2026-07-29T12:00:00.000Z');
 
 class MemoryUsers implements UserRepository {
   public readonly users = new Map<string, User>();
+  public constructor(private readonly sessions: MemorySessions) {}
 
   public async adminExists(): Promise<boolean> {
     return [...this.users.values()].some((user) => user.role === 'admin');
@@ -45,12 +46,21 @@ class MemoryUsers implements UserRepository {
     return this.users.get(id) ?? null;
   }
 
-  public async updatePasswordHash(userId: string, passwordHash: string, updatedAt: Date): Promise<void> {
+  public async updatePasswordHash(userId: string, expectedHash: string, passwordHash: string, updatedAt: Date): Promise<boolean> {
     const user = this.users.get(userId);
-    if (user) {
-      this.users.set(userId, { ...user, passwordHash, updatedAt });
-    }
+    if (!user || user.passwordHash !== expectedHash) return false;
+    this.users.set(userId, { ...user, passwordHash, updatedAt });
+    return true;
   }
+
+  public async changePasswordAndRevokeSessions(userId: string, expectedHash: string, passwordHash: string, updatedAt: Date): Promise<boolean> {
+    if (!(await this.updatePasswordHash(userId, expectedHash, passwordHash, updatedAt))) return false;
+    for (const session of this.sessions.sessions.values()) {
+      if (session.userId === userId) await this.sessions.revokeByTokenHash(session.tokenHash, updatedAt);
+    }
+    return true;
+  }
+
 }
 
 class MemorySessions implements AuthSessionRepository {
@@ -80,7 +90,7 @@ class MemorySessions implements AuthSessionRepository {
 
 const passwordHasher: PasswordHasher = {
   hash: vi.fn(async (password: string) => `hash:${password}`),
-  verify: vi.fn(async (password: string, hash: string) => hash === `hash:${password}`)
+  verify: vi.fn(async (password: string, hash: string | null) => hash === `hash:${password}`)
 };
 
 const tokenService: SessionTokenService = {
@@ -89,8 +99,8 @@ const tokenService: SessionTokenService = {
 };
 
 const createManager = () => {
-  const users = new MemoryUsers();
   const sessions = new MemorySessions();
+  const users = new MemoryUsers(sessions);
   const manager = new AuthManager(users, sessions, passwordHasher, tokenService, { sessionTtlMs: 60_000, now: () => now });
   return { manager, users, sessions };
 };
@@ -143,4 +153,24 @@ describe('AuthManager', () => {
     await expect(manager.authenticate(login.token)).rejects.toBeInstanceOf(UnauthenticatedError);
     await expect(manager.login({ email: 'admin@example.com', password: 'new-password' })).resolves.toMatchObject({ user: { email: 'admin@example.com' } });
   });
+  it('performs password verification even for an unknown email', async () => {
+    const { manager } = createManager();
+    vi.mocked(passwordHasher.verify).mockClear();
+    await expect(manager.login({ email: 'missing@example.com', password: 'password123' })).rejects.toBeInstanceOf(InvalidCredentialsError);
+    expect(passwordHasher.verify).toHaveBeenCalledWith('password123', null);
+  });
+
+  it('revokes all sessions when changing the password', async () => {
+    const { manager } = createManager();
+    let sequence = 0;
+    vi.mocked(tokenService.createToken).mockImplementation(async () => `token-${++sequence}`);
+    await manager.registerInitialAdmin({ email: 'admin@example.com', password: 'password123' });
+    const first = await manager.login({ email: 'admin@example.com', password: 'password123' });
+    const second = await manager.login({ email: 'admin@example.com', password: 'password123' });
+    await manager.changePassword(first.token, { currentPassword: 'password123', newPassword: 'new-password' });
+    await expect(manager.authenticate(first.token)).rejects.toBeInstanceOf(UnauthenticatedError);
+    await expect(manager.authenticate(second.token)).rejects.toBeInstanceOf(UnauthenticatedError);
+    vi.mocked(tokenService.createToken).mockImplementation(async () => 'opaque-token');
+  });
+
 });

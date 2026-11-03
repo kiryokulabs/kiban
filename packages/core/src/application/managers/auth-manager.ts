@@ -42,19 +42,29 @@ export class AuthManager {
   /** Authenticates a user and creates an opaque session token. */
   public async login(input: LoginInput): Promise<LoginResult> {
     const user = await this.users.findByEmail(this.normalizeEmail(input.email));
-    if (!user || !(await this.passwordHasher.verify(input.password, user.passwordHash))) {
+    const passwordMatches = await this.passwordHasher.verify(input.password, user?.passwordHash ?? null);
+    if (!user || !passwordMatches) {
       throw new InvalidCredentialsError();
     }
 
+    let passwordHash = user.passwordHash;
+    if (this.passwordHasher.needsRehash?.(passwordHash)) {
+      const upgraded = await this.passwordHasher.hash(input.password);
+      if (!(await this.users.updatePasswordHash(user.id, passwordHash, upgraded, this.options.now()))) {
+        throw new InvalidCredentialsError();
+      }
+      passwordHash = upgraded;
+    }
     const token = await this.tokenService.createToken();
     const tokenHash = await this.tokenService.hashToken(token);
     const expiresAt = new Date(this.options.now().getTime() + this.options.sessionTtlMs);
-    await this.sessions.create({ userId: user.id, tokenHash, expiresAt });
+    const session = await this.sessions.create({ userId: user.id, passwordHash, tokenHash, expiresAt });
+    if (!session) throw new InvalidCredentialsError();
     return { token, expiresAt, user };
   }
 
 
-  /** Changes the authenticated user's password and revokes the current session. */
+  /** Changes the authenticated user's password and revokes all sessions atomically. */
   public async changePassword(token: string | null, input: ChangePasswordInput): Promise<void> {
     const authenticated = await this.authenticate(token);
     const passwordMatches = await this.passwordHasher.verify(input.currentPassword, authenticated.user.passwordHash);
@@ -63,8 +73,8 @@ export class AuthManager {
     }
 
     const nextHash = await this.passwordHasher.hash(input.newPassword);
-    await this.users.updatePasswordHash(authenticated.user.id, nextHash, this.options.now());
-    await this.sessions.revokeByTokenHash(authenticated.session.tokenHash, this.options.now());
+    const changed = await this.users.changePasswordAndRevokeSessions(authenticated.user.id, authenticated.user.passwordHash, nextHash, this.options.now());
+    if (!changed) throw new InvalidCredentialsError();
   }
 
   /** Revokes the session represented by an opaque token. */
