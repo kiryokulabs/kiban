@@ -210,7 +210,7 @@ import { ToastService } from '../shared/toast.service';
                 <label class="block">
                   <span class="text-xs c-muted">{{ field.secret ? 'Initial ' + field.label : field.label }} @if (field.required) { <span>*</span> }</span>
                   <div class="relative mt-1">
-                    <input class="input pr-10" [type]="configurationInputType(field)" [ngModel]="configurationValues()[field.key]" (ngModelChange)="updateConfigurationValue(field.key, $event)" />
+                    <input class="input !pr-10" [type]="configurationInputType(field)" [ngModel]="configurationValues()[field.key]" (ngModelChange)="updateConfigurationValue(field.key, $event)" />
                     @if (field.secret) {
                       <button class="absolute right-1 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-md c-muted transition-colors hover:c-text" type="button" (click)="toggleConfigurationSecret(field.key)" [attr.aria-label]="configurationSecretVisible(field.key) ? 'Hide value' : 'Show value'">
                         <kiban-icon [name]="configurationSecretVisible(field.key) ? 'eye-off' : 'eye'" [size]="12" />

@@ -264,7 +264,7 @@ interface SchemaField { readonly key: string; readonly label: string; readonly r
             @if (installStep() === 1) {
               <div class="relative">
                 <kiban-icon name="search" [size]="14" class="absolute left-3 top-1/2 -translate-y-1/2 c-subtle pointer-events-none" />
-                <input name="serviceSearch" [(ngModel)]="serviceSearch" placeholder="Search service..." class="input pl-9" />
+                <input name="serviceSearch" [(ngModel)]="serviceSearch" placeholder="Search service..." class="input !pl-9" />
               </div>
               <div class="mt-3 flex flex-wrap gap-1.5">
                 <button type="button" class="btn gap-1 text-xs px-2.5 py-1.5" [class.btn-primary]="selectedCatalogCategory() === 'all'" [class.btn-ghost]="selectedCatalogCategory() !== 'all'" (click)="selectedCatalogCategory.set('all')">

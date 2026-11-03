@@ -36,7 +36,7 @@ interface CatalogSchemaField { readonly key: string; readonly label: string; rea
           </div>
           <div class="relative w-full lg:max-w-xs">
             <kiban-icon name="search" [size]="14" class="absolute left-3 top-1/2 -translate-y-1/2 c-subtle pointer-events-none" />
-            <input name="catalogSearch" [(ngModel)]="query" (ngModelChange)="loadCatalog()" placeholder="PostgreSQL, Redis, AI..." class="input pl-9" />
+            <input name="catalogSearch" [(ngModel)]="query" (ngModelChange)="loadCatalog()" placeholder="PostgreSQL, Redis, AI..." class="input !pl-9" />
           </div>
         </div>
 
