@@ -69,6 +69,17 @@ connections with a simulated terminal provider. The socket integration tests nee
 permission to listen on an ephemeral localhost port; they do not invoke Docker or
 use real accounts. Password tests verify both legacy and current scrypt hashes.
 
+## SMTP coverage
+
+SMTP tests cover authenticated read access, administrator-only writes/test sends, strict
+validation, write-only passwords,
+encrypted persistence across restarts, isolated SMTP settings writes, and key permissions.
+Local integration fixtures exercise unauthenticated SMTP, TLS, STARTTLS, unavailable
+STARTTLS and untrusted certificates. They listen only on ephemeral localhost ports and
+generate temporary self-signed test certificates with OpenSSL; no email is sent to the
+internet. Frontend tests cover the Notifications page/sidebar, operator read-only access, loading,
+saving, preserved credentials and test-send errors.
+
 ## Continuous Integration
 
 GitHub Actions runs unit tests on every push and pull request using:
