@@ -5,11 +5,11 @@ import { describe, expect, it, vi } from 'vitest';
 import type { AuthService } from '../services/auth.service';
 import { Public, SessionAuthGuard } from './session-auth.guard';
 
-const httpContext = (request: { readonly cookies?: Readonly<Record<string, string | undefined>>; readonly url?: string; readonly method?: string }, handler: () => unknown = () => undefined): ExecutionContext => ({
+const httpContext = (request: { readonly cookies?: Readonly<Record<string, string | undefined>>; readonly url?: string; readonly method?: string; readonly headers?: Readonly<Record<string, string>> }, handler: () => unknown = () => undefined): ExecutionContext => ({
   getHandler: () => handler,
   getClass: () => class TestController {},
   getType: () => 'http',
-  switchToHttp: () => ({ getRequest: () => request }),
+  switchToHttp: () => ({ getRequest: () => ({ method: 'GET', headers: {}, ...request }) }),
   switchToWs: () => ({ getClient: () => ({}) })
 }) as unknown as ExecutionContext;
 
@@ -45,7 +45,7 @@ describe('SessionAuthGuard', () => {
     class PublicController { @Public() public login(): void {} }
     const handler = PublicController.prototype.login;
 
-    await expect(guard.canActivate(httpContext({ url: '/api/auth/login', method: 'POST' }, handler))).resolves.toBe(true);
+    await expect(guard.canActivate(httpContext({ url: '/api/auth/login', method: 'POST', headers: { 'x-kiban-request': '1' } }, handler))).resolves.toBe(true);
 
     expect(auth.me).not.toHaveBeenCalled();
   });
@@ -58,4 +58,10 @@ describe('SessionAuthGuard', () => {
 
     expect(auth.me).toHaveBeenCalledWith('socket-token');
   });
+  it('rejects state changes without the same-origin API header, even on public routes', async () => {
+    const guard = new SessionAuthGuard(authService(), new Reflector());
+    class PublicController { @Public() public login(): void {} }
+    await expect(guard.canActivate(httpContext({ method: 'POST', headers: {} }, PublicController.prototype.login))).rejects.toMatchObject({ status: 403 });
+  });
+
 });

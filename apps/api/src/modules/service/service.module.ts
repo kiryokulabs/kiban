@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { InstalledServiceManager } from '@kiban/core';
 import type { CatalogRepository, RuntimeProvider } from '@kiban/core';
 import { toSettingKey } from '@kiban/shared';
+import { AuthModule } from '../auth/auth.module';
 import { DatabaseModule } from '../../database/database.module';
 import { CatalogModule } from '../catalog/catalog.module';
 import { CATALOG_REPOSITORY } from '../catalog/interfaces/catalog.constants';
@@ -24,7 +25,7 @@ import { TerminalSessionService } from './terminal/terminal-session.service';
 import { TERMINAL_PROVIDER } from './terminal/terminal.types';
 
 @Module({
-  imports: [DatabaseModule, CatalogModule],
+  imports: [DatabaseModule, CatalogModule, AuthModule],
   controllers: [ServiceController, RuntimeController],
   providers: [
     ServiceService,

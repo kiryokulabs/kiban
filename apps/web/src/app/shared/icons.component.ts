@@ -2,7 +2,7 @@ import { Component, Input } from '@angular/core';
 
 export type KibanIcon =
   | 'home' | 'projects' | 'catalog' | 'installed' | 'users'
-  | 'logs' | 'settings' | 'profile' | 'activity'
+  | 'mail' | 'bell' | 'logs' | 'settings' | 'profile' | 'activity'
   | 'plus' | 'search' | 'refresh' | 'edit' | 'trash' | 'x'
   | 'menu' | 'chevron-left' | 'chevron-right' | 'chevron-down'
   | 'chevron-up' | 'external-link' | 'play' | 'stop' | 'restart'
@@ -71,6 +71,14 @@ export type KibanIcon =
           <line x1="16" y1="13" x2="8" y2="13"/>
           <line x1="16" y1="17" x2="8" y2="17"/>
           <line x1="10" y1="9" x2="8" y2="9"/>
+        }
+        @case ('mail') {
+          <rect x="2" y="4" width="20" height="16" rx="2" />
+          <path d="m22 6-10 7L2 6" />
+        }
+        @case ('bell') {
+          <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+          <path d="M10 21h4" />
         }
         @case ('settings') {
           <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.09a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>

@@ -12,7 +12,8 @@ export type HttpApplication = Pick<NestFastifyApplication, 'register' | 'enableC
 export async function configureHttpApplication(app: HttpApplication): Promise<void> {
   await app.register(fastifyCookie);
   app.setGlobalPrefix(API_PREFIX);
-  app.enableCors({ origin: true, credentials: true });
+  // Angular and the API share an origin through the bundled/development proxy.
+  // Do not allow credentialed cross-origin requests.
 }
 
 export function apiPort(env: Readonly<Record<string, string | undefined>> = process.env): number {
@@ -23,6 +24,11 @@ export function apiPort(env: Readonly<Record<string, string | undefined>> = proc
   if (!Number.isInteger(port) || port < 1 || port > 65535) return DEFAULT_API_PORT;
 
   return port;
+}
+
+/** Trust only the local/reverse-proxy networks, never arbitrary public peers. */
+export function apiTrustedProxies(env: Readonly<Record<string, string | undefined>> = process.env): string[] {
+  return (env['KIBAN_TRUSTED_PROXIES'] ?? 'loopback,uniquelocal').split(',').map((value) => value.trim()).filter(Boolean);
 }
 
 export async function bootstrap(): Promise<void> {
@@ -42,7 +48,7 @@ export async function bootstrap(): Promise<void> {
     throw error;
   }
 
-  const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter({ logger: true }));
+  const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter({ logger: true, trustProxy: apiTrustedProxies() }));
   await configureHttpApplication(app);
   await app.listen(apiPort(), '0.0.0.0');
 }

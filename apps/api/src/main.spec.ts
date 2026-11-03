@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { API_PREFIX, apiPort, configureHttpApplication, type HttpApplication } from './main';
+import { API_PREFIX, apiPort, apiTrustedProxies, configureHttpApplication, type HttpApplication } from './main';
 
 describe('API bootstrap HTTP configuration', () => {
   it('keeps every HTTP endpoint behind the /api prefix', async () => {
@@ -13,7 +13,7 @@ describe('API bootstrap HTTP configuration', () => {
 
     expect(API_PREFIX).toBe('api');
     expect(app.setGlobalPrefix).toHaveBeenCalledWith(API_PREFIX);
-    expect(app.enableCors).toHaveBeenCalledWith({ origin: true, credentials: true });
+    expect(app.enableCors).not.toHaveBeenCalled();
   });
 
   it('uses port 3000 by default for packaged runtime compatibility', () => {
@@ -23,4 +23,10 @@ describe('API bootstrap HTTP configuration', () => {
   it('allows local development to move the API away from occupied ports', () => {
     expect(apiPort({ KIBAN_API_PORT: '3100' })).toBe(3100);
   });
+  it('bounds proxy trust and allows explicitly configuring or disabling it', () => {
+    expect(apiTrustedProxies({})).toEqual(['loopback', 'uniquelocal']);
+    expect(apiTrustedProxies({ KIBAN_TRUSTED_PROXIES: '127.0.0.1, 172.20.0.0/16' })).toEqual(['127.0.0.1', '172.20.0.0/16']);
+    expect(apiTrustedProxies({ KIBAN_TRUSTED_PROXIES: '' })).toEqual([]);
+  });
+
 });

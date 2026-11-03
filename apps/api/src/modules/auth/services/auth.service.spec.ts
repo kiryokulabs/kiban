@@ -3,10 +3,16 @@ import { describe, expect, it, vi } from 'vitest';
 import { AdminRegistrationClosedError, AuthManager, InvalidCredentialsError, UnauthenticatedError } from '@kiban/core';
 import { AUTH_MANAGER } from '../interfaces/auth.constants';
 import { AuthService } from './auth.service';
+import type { LoginRateLimiter } from './login-rate-limiter';
 
 const user = { id: 'user-1', email: 'admin@example.com', role: 'admin' as const };
 
-const createService = (manager: Partial<AuthManager>) => new AuthService(manager as AuthManager);
+const createService = (manager: Partial<AuthManager>) => {
+  const now = new Date();
+  const auth: Partial<AuthManager> = { authenticate: vi.fn(async () => ({ user: { ...user, passwordHash: 'hash', createdAt: now, updatedAt: now }, session: { id: 'session-1', userId: user.id, tokenHash: 'hash', createdAt: now, expiresAt: new Date(Date.now() + 60_000) } })), ...manager };
+  const limiter: Pick<LoginRateLimiter, 'consume'> = { consume: vi.fn(async () => undefined) };
+  return new AuthService(auth as AuthManager, limiter as LoginRateLimiter);
+};
 
 describe('API AuthService', () => {
   it('returns bootstrap status from core auth manager', async () => {
@@ -62,4 +68,9 @@ describe('API AuthService', () => {
     const service = createService({ changePassword: vi.fn() });
     await expect(service.changePassword('token', { currentPassword: 'password123', newPassword: 'short' })).rejects.toBeInstanceOf(BadRequestException);
   });
+  it.each([null, {}, [], { email: 'admin@example.com' }, { email: 123, password: 'password123' }, { email: 'admin@example.com', password: 123 }])('rejects malformed login payloads as bad requests', async (payload) => {
+    const service = createService({ login: vi.fn() });
+    await expect(service.login(payload)).rejects.toBeInstanceOf(BadRequestException);
+  });
+
 });

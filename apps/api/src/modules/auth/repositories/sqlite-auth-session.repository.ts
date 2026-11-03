@@ -17,10 +17,14 @@ export class SqliteAuthSessionRepository implements AuthSessionRepository {
   public constructor(private readonly database: DatabaseService) {}
 
   /** Creates a persisted session row. */
-  public async create(input: CreateAuthSessionInput): Promise<AuthSession> {
+  public async create(input: CreateAuthSessionInput): Promise<AuthSession | null> {
     const session: AuthSession = { id: randomUUID(), userId: input.userId, tokenHash: input.tokenHash, expiresAt: input.expiresAt, createdAt: new Date() };
-    await this.database.run('INSERT INTO auth_sessions (id, user_id, token_hash, expires_at, created_at, revoked_at) VALUES (?, ?, ?, ?, ?, NULL)', [session.id, session.userId, session.tokenHash, session.expiresAt, session.createdAt]);
-    return session;
+    const created = await this.database.get<AuthSessionRow>(
+      `INSERT INTO auth_sessions (id, user_id, token_hash, expires_at, created_at, revoked_at)
+       SELECT ?, ?, ?, ?, ?, NULL FROM users WHERE id = ? AND password_hash = ? RETURNING *`,
+      [session.id, session.userId, session.tokenHash, session.expiresAt, session.createdAt, session.userId, input.passwordHash]
+    );
+    return created ? this.toDomain(created) : null;
   }
 
   /** Finds a valid non-expired non-revoked session by token hash. */
