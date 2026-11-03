@@ -1,4 +1,5 @@
 import { Body, Controller, Get, HttpCode, Post, Req, Res } from '@nestjs/common';
+import { TLSSocket } from 'node:tls';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import type { AuthResponseDto, BootstrapStatusDto, ChangePasswordDto, LoginDto, RegisterAdminDto } from '../dto/auth.dto';
 import { AUTH_SESSION_COOKIE_NAME } from '../interfaces/auth.constants';
@@ -19,20 +20,20 @@ export class AuthController {
   /** Creates the initial admin account; disabled once an admin exists. */
   @Public()
   @Post('register-admin')
-  public registerAdmin(@Body() dto: RegisterAdminDto): Promise<AuthResponseDto> {
-    return this.auth.registerAdmin(dto);
+  public registerAdmin(@Body() dto: RegisterAdminDto, @Req() request: FastifyRequest): Promise<AuthResponseDto> {
+    return this.auth.registerAdmin(dto, request.ip);
   }
 
   /** Logs in and writes an httpOnly session cookie. */
   @Public()
   @Post('login')
   @HttpCode(200)
-  public async login(@Body() dto: LoginDto, @Res({ passthrough: true }) reply: FastifyReply): Promise<AuthResponseDto> {
-    const result = await this.auth.login(dto);
+  public async login(@Body() dto: LoginDto, @Req() request: FastifyRequest, @Res({ passthrough: true }) reply: FastifyReply): Promise<AuthResponseDto> {
+    const result = await this.auth.login(dto, request.ip);
     reply.setCookie(AUTH_SESSION_COOKIE_NAME, result.token, {
       httpOnly: true,
       sameSite: 'lax',
-      secure: false,
+      secure: request.raw.socket instanceof TLSSocket || (request.protocol === 'https' && (request.ips?.length ?? 0) > 1),
       path: '/',
       expires: result.expiresAt
     });

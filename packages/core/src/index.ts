@@ -32,3 +32,7 @@ export * from './application/managers/user-preferences-manager.js';
 export * from './domain/services/installed-service.js';
 export * from './application/interfaces/installed-service-repository.js';
 export * from './application/managers/installed-service-manager.js';
+
+export * from './domain/mail/smtp-settings.js';
+export * from './application/interfaces/smtp-settings.js';
+export * from './application/managers/smtp-settings-manager.js';

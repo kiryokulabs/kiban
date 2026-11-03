@@ -67,6 +67,14 @@ export class DatabaseService implements OnModuleInit {
         updated_at INTEGER NOT NULL
       );
 
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_users_single_admin ON users(role) WHERE role = 'admin';
+
+      CREATE TABLE IF NOT EXISTS auth_login_attempts (
+        key TEXT PRIMARY KEY,
+        attempts INTEGER NOT NULL,
+        expires_at INTEGER NOT NULL
+      );
+
       CREATE TABLE IF NOT EXISTS auth_sessions (
         id TEXT PRIMARY KEY,
         user_id TEXT NOT NULL,

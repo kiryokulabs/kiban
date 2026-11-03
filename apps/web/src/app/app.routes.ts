@@ -29,6 +29,7 @@ export const routes: Routes = [
   { path: 'monitoring', component: MonitoringPageComponent, title: 'Monitoring · Kiban' },
   { path: 'users', component: UsersPageComponent, title: 'Users · Kiban' },
   { path: 'logs', component: LogsPageComponent, title: 'Logs · Kiban' },
+  { path: 'notifications', loadComponent: () => import('./pages/notifications-page.component').then(m => m.NotificationsPageComponent), title: 'Notifications — Kiban' },
   { path: 'settings', component: SettingsPageComponent, title: 'Settings · Kiban' },
   { path: 'learn/getting-started', component: GettingStartedPageComponent, title: 'Getting Started · Kiban' },
   { path: 'learn/projects-environments', component: ProjectsEnvironmentsPageComponent, title: 'Projects & Environments · Kiban' },

@@ -101,7 +101,7 @@ The API revokes the server-side session and clears the cookie.
 | `GET` | `/auth/bootstrap-status` | Returns whether initial admin setup is required. |
 | `POST` | `/auth/register-admin` | Creates the first admin account only. |
 | `POST` | `/auth/login` | Creates an authenticated session and sets an httpOnly cookie. |
-| `POST` | `/auth/change-password` | Changes the current user password and revokes the current session. |
+| `POST` | `/auth/change-password` | Changes the current user password and revokes all their sessions. |
 | `POST` | `/auth/logout` | Revokes the current session and clears the cookie. |
 | `GET` | `/auth/me` | Returns the current authenticated user. |
 
@@ -239,20 +239,66 @@ pnpm -w run db:reset:dev
 
 Only use reset in development.
 
-## Security notes
+## Security
 
-Current implementation:
+The backend is the sole authority for identity, roles, session expiration and revocation.
+Angular's user state is only for display. No authentication tokens are stored in browser
+storage or returned in JSON responses.
 
-- Uses httpOnly cookie sessions.
-- Does not store tokens in `localStorage`.
-- Stores only hashed session tokens.
-- Uses scrypt for password hashing.
-- Disables public registration after first admin creation.
+### Local and VPS access
 
-Future hardening:
+- Localhost and direct `http://IP:8080` access remain available for installation and recovery.
+- HTTP does **not** encrypt passwords or session cookies. For a VPS, use HTTPS through the
+  Instance Domain, or access the HTTP installation address through a trusted SSH tunnel/VPN.
+- HTTPS logins set `Secure`, `HttpOnly`, `SameSite=Lax` session cookies. HTTP installation
+  access uses `HttpOnly` and `SameSite=Lax` without `Secure` so local bootstrap still works.
+- The bundled Nginx proxy preserves the original host/port and HTTPS protocol from Traefik.
+  Trusted proxy networks default to loopback and private networks for the bundled deployment.
+  Keep the API internal. For a custom proxy/network, restrict `KIBAN_TRUSTED_PROXIES` to
+  the proxy's IP/CIDR list (comma-separated); an empty value disables proxy trust.
+  Never put untrusted clients in those trusted networks. TLS proxies must overwrite
+  `X-Forwarded-Proto` and supply the client address in `X-Forwarded-For`.
 
-- Set `secure: true` for cookies in production HTTPS environments.
-- Add CSRF protection before exposing non-local deployments.
-- Add session management UI.
-- Add password rotation and recovery flow.
-- Add audit logs for auth events.
+### Browser request protection
+
+Angular and the API share an origin via the bundled or development proxy. Credentialed
+cross-origin API access is disabled. Every state-changing HTTP API request, including
+login, registration and logout, must include `X-Kiban-Request: 1`. Angular adds it only
+for relative `/api/` requests. External web pages cannot send that custom header without
+an approved CORS preflight. Cookie-authenticated scripts/CLI clients must add it too.
+
+The terminal additionally validates the exact browser origin, including scheme and port.
+For same-origin polling GETs without an Origin header, it validates the Referer origin instead.
+Only the current localhost/IP installation address or persisted HTTPS Instance Domain is
+accepted; installed-service subdomains are not trusted dashboard origins.
+
+### Passwords and sessions
+
+- New hashes use scrypt `N=32768, r=8, p=3` (OWASP's 32 MiB profile), a random 16-byte salt
+  and explicit stored parameters. Existing hashes remain valid and are upgraded on successful
+  login using a compare-and-set update, never overwriting a concurrent password change.
+- Login performs both legacy/current verification work even for nonexistent accounts or
+  malformed stored hashes, with a generic invalid-credentials response.
+- Credentials and password changes are runtime-validated; malformed bodies and unexpected
+  fields return 400. Passwords are never trimmed and are limited to 1024 UTF-8 bytes.
+- Session tokens contain 48 random bytes; only SHA-256 token hashes are persisted.
+- Initial admin creation is atomic and protected by a partial unique database index. If an
+  existing database already contains multiple admins, startup fails rather than silently
+  deleting accounts; resolve that inconsistency explicitly before upgrading.
+- Password changes and revocation of **all** user sessions commit in one transaction.
+  Stale concurrent logins/rehashes cannot recreate access using the old password.
+- WebSockets authenticate independently of the global HTTP guard, revalidate before opening
+  a terminal or forwarding input/resize, and close on session expiration. Logout and password
+  changes close matching sockets immediately in the API process; a 30-second backend recheck
+  also detects deletion/revocation by other processes. These checks never rely on Angular.
+
+### Login abuse protection
+
+Login and bootstrap registration are limited before password hashing: 10 attempts per
+normalized email and 100 per client IP in a fixed 15-minute window. Counters persist in
+SQLite across API restarts, store hashed keys instead of raw email/IP values, and expire
+automatically. Requests above the limit return 429; they do not disable the account,
+change its password or revoke existing sessions. Trusted proxy configuration determines
+which forwarded client addresses the backend accepts.
+
+Password recovery and MFA are not implemented by these changes.

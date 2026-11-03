@@ -22,7 +22,8 @@ const createRepository = (): UserRepository => {
     deleteById: vi.fn(async (id: string) => { users.delete(id); }),
     findByEmail: vi.fn(async (email: string) => [...users.values()].find((user) => user.email === email) ?? null),
     findById: vi.fn(async (id: string) => users.get(id) ?? null),
-    updatePasswordHash: vi.fn(async () => undefined)
+    updatePasswordHash: vi.fn(async () => true),
+    changePasswordAndRevokeSessions: vi.fn(async () => true)
   };
 };
 

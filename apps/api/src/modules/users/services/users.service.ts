@@ -1,8 +1,9 @@
 import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { AuthManager, CannotDeleteAdminUserError, ForbiddenUserActionError, InvalidCredentialsError, isUserTheme, UnauthenticatedError, UserManager, UserNotFoundError, UserPreferencesManager } from '@kiban/core';
 import { AUTH_MANAGER } from '../../auth/interfaces/auth.constants';
-import type { CreateOperatorDto, UpdateUserThemeDto, UserDto, UserPreferencesDto } from '../dto/users.dto';
+import type { UpdateUserThemeDto, UserDto, UserPreferencesDto } from '../dto/users.dto';
 import { USER_MANAGER, USER_PREFERENCES_MANAGER } from '../interfaces/users.constants';
+import { parseCredentials } from '../../auth/services/auth-validation';
 import { mapPublicUserToDto } from '../mappers/users.mapper';
 
 @Injectable()
@@ -21,8 +22,8 @@ export class UsersService {
   }
 
   /** Creates an operator account. */
-  public async createOperator(token: string | undefined, dto: CreateOperatorDto): Promise<UserDto> {
-    this.assertCreateOperatorDto(dto);
+  public async createOperator(token: string | undefined, payload: unknown): Promise<UserDto> {
+    const dto = parseCredentials(payload);
     const actor = await this.authenticate(token);
     try {
       const user = await this.users.createOperator(actor, dto);
@@ -66,15 +67,6 @@ export class UsersService {
         throw new UnauthorizedException(error.message);
       }
       throw error;
-    }
-  }
-
-  private assertCreateOperatorDto(dto: CreateOperatorDto): void {
-    if (!dto.email.includes('@')) {
-      throw new BadRequestException('A valid email is required.');
-    }
-    if (dto.password.length < 8) {
-      throw new BadRequestException('A password of at least 8 characters is required.');
     }
   }
 

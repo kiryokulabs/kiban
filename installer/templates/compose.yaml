@@ -6,6 +6,7 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: production
+      KIBAN_TRUSTED_PROXIES: ${KIBAN_TRUSTED_PROXIES-loopback,uniquelocal}
       HOME: ${KIBAN_USER_HOME}
       KIBAN_VERSION: ${KIBAN_VERSION}
       KIBAN_DOMAIN_PROTOCOL: ${KIBAN_DOMAIN_PROTOCOL:-http}
