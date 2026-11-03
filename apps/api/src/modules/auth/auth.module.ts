@@ -8,12 +8,18 @@ import { SqliteUserRepository } from './repositories/sqlite-user.repository';
 import { AuthService } from './services/auth.service';
 import { NodePasswordHasherService } from './services/node-password-hasher.service';
 import { NodeSessionTokenService } from './services/node-session-token.service';
+import { AuthTransportPolicy } from './services/auth-transport-policy';
+import { LoginRateLimiter } from './services/login-rate-limiter';
+import { SqliteSettingsRepository } from '../settings/repositories/sqlite-settings.repository';
 
 @Module({
   imports: [DatabaseModule],
   controllers: [AuthController],
   providers: [
     AuthService,
+    LoginRateLimiter,
+    AuthTransportPolicy,
+    SqliteSettingsRepository,
     SqliteUserRepository,
     SqliteAuthSessionRepository,
     NodePasswordHasherService,
@@ -29,6 +35,6 @@ import { NodeSessionTokenService } from './services/node-session-token.service';
       inject: [SqliteUserRepository, SqliteAuthSessionRepository, NodePasswordHasherService, NodeSessionTokenService]
     }
   ],
-  exports: [AuthService, AUTH_MANAGER, SqliteUserRepository, NodePasswordHasherService]
+  exports: [AuthService, AuthTransportPolicy, AUTH_MANAGER, SqliteUserRepository, NodePasswordHasherService]
 })
 export class AuthModule {}

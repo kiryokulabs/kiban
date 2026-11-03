@@ -1,4 +1,4 @@
-import { CanActivate, ExecutionContext, Injectable, SetMetadata, UnauthorizedException } from '@nestjs/common';
+import { CanActivate, ExecutionContext, ForbiddenException, Injectable, SetMetadata, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import type { FastifyRequest } from 'fastify';
 import { AUTH_SESSION_COOKIE_NAME } from '../interfaces/auth.constants';
@@ -15,6 +15,12 @@ export class SessionAuthGuard implements CanActivate {
   public constructor(private readonly auth: AuthService, private readonly reflector: Reflector) {}
 
   public async canActivate(context: ExecutionContext): Promise<boolean> {
+    if (context.getType() === 'http') {
+      const request = context.switchToHttp().getRequest<FastifyRequest>();
+      if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method) && request.headers['x-kiban-request'] !== '1') {
+        throw new ForbiddenException('Same-origin API request required.');
+      }
+    }
     if (this.isPublic(context)) return true;
 
     const token = this.sessionToken(context);
