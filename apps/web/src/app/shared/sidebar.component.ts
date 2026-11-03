@@ -43,17 +43,6 @@ export interface LearnItem {
             <span class="badge text-[10px] px-1.5 py-0.5 leading-none badge-danger">beta</span>
           </div>
         }
-        @if (layout.canCollapse(displayMode())) {
-          <button
-            class="btn-icon hidden md:inline-flex"
-            type="button"
-            (click)="toggleCollapse()"
-            [attr.aria-label]="collapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
-            [title]="collapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
-          >
-            <kiban-icon [name]="collapsed() ? 'chevron-right' : 'chevron-left'" [size]="14" />
-          </button>
-        }
       </div>
 
       @if (displayMode() === 'mobile') {
@@ -114,6 +103,21 @@ export interface LearnItem {
         }
       </nav>
 
+      @if (layout.canCollapse(displayMode())) {
+        <div class="hidden px-2.5 py-2 md:flex" [class.justify-center]="collapsed()" [class.justify-end]="!collapsed()">
+          <button
+            class="btn-icon"
+            type="button"
+            (click)="toggleCollapse()"
+            [attr.aria-expanded]="!collapsed()"
+            [attr.aria-label]="collapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
+            [title]="collapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
+          >
+            <kiban-icon [name]="collapsed() ? 'panel-left-open' : 'panel-left-close'" [size]="16" />
+          </button>
+        </div>
+      }
+
       <!-- Footer area -->
       <div class="border-t kb-border px-2 py-2" [class.flex-col]="collapsed()">
         <!-- Theme toggle -->
@@ -125,9 +129,9 @@ export interface LearnItem {
           [title]="collapsed() ? themeLabel() : themeLabel()"
         >
           @if (isDark()) {
-            <kiban-icon name="sun" [size]="16" class="shrink-0" />
-          } @else {
             <kiban-icon name="moon" [size]="16" class="shrink-0" />
+          } @else {
+            <kiban-icon name="sun" [size]="16" class="shrink-0" />
           }
           @if (!collapsed()) {
             <span class="truncate">{{ themeLabel() }}</span>
