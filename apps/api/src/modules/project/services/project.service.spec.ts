@@ -191,4 +191,42 @@ describe('API ProjectService environments', () => {
     await service.deleteEnvironment('project-1', 'environment-1');
     expect(deleteEnvironment).toHaveBeenCalledWith('project-1', 'environment-1');
   });
+
+  it('does not delete an environment with installed services', async () => {
+    const deleteEnvironment = vi.fn(async () => undefined);
+    const list = vi.fn(async () => [{ id: 'service-1' }]);
+    const service = createService({ deleteEnvironment }, { list });
+
+    await expect(service.deleteEnvironment('project-1', 'environment-1')).rejects.toThrow('Environment must be empty before it can be deleted.');
+    expect(list).toHaveBeenCalledWith('project-1', 'environment-1');
+    expect(deleteEnvironment).not.toHaveBeenCalled();
+  });
+
+  it('deletes an empty environment after checking its installed services', async () => {
+    const deleteEnvironment = vi.fn(async () => undefined);
+    const list = vi.fn(async () => []);
+    const service = createService({ deleteEnvironment }, { list });
+
+    await service.deleteEnvironment('project-1', 'environment-1');
+
+    expect(list).toHaveBeenCalledWith('project-1', 'environment-1');
+    expect(deleteEnvironment).toHaveBeenCalledWith('project-1', 'environment-1');
+  });
+
+  it('does not delete an environment when checking installed services fails', async () => {
+    const deleteEnvironment = vi.fn(async () => undefined);
+    const error = new Error('Could not list services.');
+    const service = createService({ deleteEnvironment }, { list: vi.fn(async () => { throw error; }) });
+
+    await expect(service.deleteEnvironment('project-1', 'environment-1')).rejects.toBe(error);
+    expect(deleteEnvironment).not.toHaveBeenCalled();
+  });
+
+  it('maps a missing environment to not found without deleting it', async () => {
+    const deleteEnvironment = vi.fn(async () => undefined);
+    const service = createService({ deleteEnvironment }, { list: vi.fn(async () => { throw new ProjectNotFoundError(); }) });
+
+    await expect(service.deleteEnvironment('project-1', 'missing')).rejects.toBeInstanceOf(NotFoundException);
+    expect(deleteEnvironment).not.toHaveBeenCalled();
+  });
 });

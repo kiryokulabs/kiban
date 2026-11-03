@@ -4,7 +4,7 @@ export type KibanIcon =
   | 'home' | 'projects' | 'catalog' | 'installed' | 'users'
   | 'mail' | 'bell' | 'logs' | 'settings' | 'profile' | 'activity'
   | 'plus' | 'search' | 'refresh' | 'edit' | 'trash' | 'x'
-  | 'menu' | 'chevron-left' | 'chevron-right' | 'chevron-down'
+  | 'panel-left-open' | 'panel-left-close' | 'menu' | 'chevron-left' | 'chevron-right' | 'chevron-down'
   | 'chevron-up' | 'external-link' | 'play' | 'stop' | 'restart'
   | 'sun' | 'moon' | 'logout' | 'check' | 'warning' | 'info'
   | 'folder' | 'box' | 'server' | 'eye' | 'eye-off' | 'copy'
@@ -120,6 +120,14 @@ export type KibanIcon =
           <line x1="3" y1="12" x2="21" y2="12"/>
           <line x1="3" y1="6" x2="21" y2="6"/>
           <line x1="3" y1="18" x2="21" y2="18"/>
+        }
+        @case ('panel-left-open') {
+          <rect x="3" y="3" width="18" height="18" rx="2" />
+          <path d="M9 3v18m5-12 3 3-3 3" />
+        }
+        @case ('panel-left-close') {
+          <rect x="3" y="3" width="18" height="18" rx="2" />
+          <path d="M9 3v18m7-12-3 3 3 3" />
         }
         @case ('chevron-left') {
           <polyline points="15 18 9 12 15 6"/>

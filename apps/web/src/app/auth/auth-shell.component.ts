@@ -55,14 +55,14 @@ import { IconsComponent } from '../shared/icons.component';
                 <span class="mb-1.5 block c-muted">Email</span>
                 <div class="relative">
                   <kiban-icon name="profile" [size]="14" class="absolute left-3 top-1/2 -translate-y-1/2 c-subtle pointer-events-none" />
-                  <input name="email" type="email" autocomplete="email" [(ngModel)]="email" class="input pl-9" required />
+                  <input name="email" type="email" autocomplete="email" [(ngModel)]="email" class="input !pl-9" required />
                 </div>
               </label>
               <label class="block text-xs">
                 <span class="mb-1.5 block c-muted">Password</span>
                 <div class="relative">
                   <kiban-icon name="eye" [size]="14" class="absolute left-3 top-1/2 -translate-y-1/2 c-subtle pointer-events-none" />
-                  <input name="password" type="password" [autocomplete]="requiresAdminSetup() ? 'new-password' : 'current-password'" [(ngModel)]="password" class="input pl-9" required minlength="8" />
+                  <input name="password" type="password" [autocomplete]="requiresAdminSetup() ? 'new-password' : 'current-password'" [(ngModel)]="password" class="input !pl-9" required minlength="8" />
                 </div>
               </label>
 
