@@ -14,10 +14,11 @@ import { SettingsModule } from './modules/settings/settings.module';
 import { StackModule } from './modules/stack/stack.module';
 import { SystemModule } from './modules/system/system.module';
 import { UsersModule } from './modules/users/users.module';
+import { SmtpModule } from './modules/smtp/smtp.module';
 import { SessionAuthGuard } from './modules/auth/guards/session-auth.guard';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, ProjectModule, PluginModule, CatalogModule, DockerModule, HealthModule, SettingsModule, LogsModule, StackModule, ServiceModule, UsersModule, SystemModule, MonitoringModule],
+  imports: [DatabaseModule, AuthModule, ProjectModule, PluginModule, CatalogModule, DockerModule, HealthModule, SettingsModule, LogsModule, StackModule, ServiceModule, UsersModule, SystemModule, MonitoringModule, SmtpModule],
   providers: [{ provide: APP_GUARD, useClass: SessionAuthGuard }]
 })
 export class AppModule {}
