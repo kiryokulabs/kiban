@@ -1,7 +1,8 @@
 import { Component, inject, signal } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../auth/auth.service';
-import type { UserListItem } from '../users/users.models';
+import type { UserListItem, UserLoginActivity } from '../users/users.models';
 import { UsersService } from '../users/users.service';
 import { IconsComponent } from '../shared/icons.component';
 import { ToastService } from '../shared/toast.service';
@@ -10,9 +11,9 @@ import { ConfirmModalComponent } from '../shared/confirm-modal.component';
 @Component({
   selector: 'kiban-users-page',
   standalone: true,
-  imports: [FormsModule, IconsComponent, ConfirmModalComponent],
+  imports: [FormsModule, IconsComponent, ConfirmModalComponent, DatePipe],
   template: `
-    <div class="space-y-6 max-w-3xl">
+    <div class="space-y-6">
       <!-- Header -->
       <div>
         <div class="flex items-center gap-2.5">
@@ -30,6 +31,8 @@ import { ConfirmModalComponent } from '../shared/confirm-modal.component';
           <p class="text-sm c-muted">Only the administrator can manage users.</p>
         </div>
       } @else {
+        <div class="grid gap-6 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] xl:items-start">
+        <div class="min-w-0 space-y-6">
         <!-- Create operator -->
         <div class="card p-5">
           <div class="flex items-center gap-2 mb-4">
@@ -96,6 +99,59 @@ import { ConfirmModalComponent } from '../shared/confirm-modal.component';
             }
           </div>
         </div>
+        </div>
+        <section class="card min-w-0 overflow-hidden" aria-labelledby="login-activity-heading">
+          <div class="flex items-center gap-2 border-b kb-border px-5 py-3">
+            <kiban-icon name="activity" [size]="14" class="c-muted" />
+            <h2 id="login-activity-heading" class="text-sm font-medium kb-text">Login activity</h2>
+          </div>
+          @if (activityLoading()) {
+            <p class="px-5 py-4 text-xs c-muted" role="status">Loading login activity...</p>
+          } @else if (activityError()) {
+            <p class="px-5 py-4 text-xs text-red-500" role="alert">Could not load login activity. Reload the page to try again.</p>
+          } @else {
+            <div class="divide-y kb-border">
+              @for (user of users(); track user.id) {
+                @let login = activity().get(user.id);
+                <div class="space-y-3 px-5 py-4">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <p class="min-w-0 break-all text-sm font-medium kb-text">{{ user.email }}</p>
+                    <span class="badge text-[9px] px-1 py-0.5 leading-none">{{ user.role }}</span>
+                  </div>
+                  @if (login) {
+                    <dl class="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-2 text-xs">
+                      <dt class="c-muted">Last login</dt>
+                      <dd class="kb-text">{{ login.lastLoginAt ? (login.lastLoginAt | date:'medium') : 'Not recorded' }}</dd>
+                      <dt class="c-muted">Login IP</dt>
+                      <dd class="break-all font-mono kb-text">{{ login.lastLoginIp ?? 'Not recorded' }}</dd>
+                      <dt class="c-muted">Active sessions</dt>
+                      <dd class="kb-text">{{ login.activeSessions }}</dd>
+                    </dl>
+                    @if (login.currentSession; as session) {
+                      <div class="card-subtle space-y-2 p-3">
+                        <p class="text-xs font-medium text-brand-light">Current session</p>
+                        <dl class="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-2 text-xs">
+                          <dt class="c-muted">Started</dt>
+                          <dd class="kb-text">{{ session.createdAt | date:'medium' }}</dd>
+                          <dt class="c-muted">Expires</dt>
+                          <dd class="kb-text">{{ session.expiresAt | date:'medium' }}</dd>
+                          <dt class="c-muted">Login IP</dt>
+                          <dd class="break-all font-mono kb-text">{{ session.ipAddress ?? 'Not recorded' }}</dd>
+                        </dl>
+                      </div>
+                    }
+                  } @else {
+                    <p class="text-xs c-muted">Not recorded</p>
+                  }
+                </div>
+              } @empty {
+                <p class="px-5 py-4 text-xs c-muted">No users found.</p>
+              }
+            </div>
+            <p class="border-t kb-border px-5 py-3 text-xs c-muted">Active sessions are unexpired and not revoked; they do not indicate whether a user is online. IP addresses are recorded for new logins only.</p>
+          }
+        </section>
+        </div>
       }
 
       @if (userPendingDelete(); as user) {
@@ -118,6 +174,9 @@ export class UsersPageComponent {
 
   protected readonly users = signal<readonly UserListItem[]>([]);
   protected readonly loading = signal(false);
+  protected readonly activity = signal<ReadonlyMap<string, UserLoginActivity>>(new Map());
+  protected readonly activityLoading = signal(true);
+  protected readonly activityError = signal(false);
   protected readonly deleting = signal<string | null>(null);
   protected readonly userPendingDelete = signal<UserListItem | null>(null);
   protected readonly message = signal<string | null>(null);
@@ -130,6 +189,12 @@ export class UsersPageComponent {
   }
 
   protected loadUsers(): void {
+    this.activityLoading.set(true);
+    this.activityError.set(false);
+    this.usersService.listActivity().subscribe({
+      next: activity => { this.activity.set(new Map(activity.map(row => [row.userId, row]))); this.activityLoading.set(false); },
+      error: () => { this.activity.set(new Map()); this.activityError.set(true); this.activityLoading.set(false); }
+    });
     this.usersService.listUsers().subscribe({ next: (users) => this.users.set(users), error: () => undefined });
   }
 
