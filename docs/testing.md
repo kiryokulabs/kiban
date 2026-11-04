@@ -94,3 +94,13 @@ Workflow file:
 ```txt
 .github/workflows/tests.yml
 ```
+
+## User login activity
+
+Core tests verify administrator authorization before reading account activity. HTTP/SQLite
+integration tests cover legacy-schema migration and repeat initialization, successful vs
+failed logins, IPv4/IPv6, trusted/untrusted proxy forwarding, anonymous/operator rejection,
+paired latest-login date/IP, expiry/logout/password-change session counts, current-session
+metadata and exclusion of secrets. Fixtures use temporary databases and simulated HTTP
+requests; they never modify the installation database. Web tests cover the authenticated
+activity request, account/activity loading, failure isolation and responsive panel layout.
