@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Req } from '@nestjs/common';
 import type { FastifyRequest } from 'fastify';
 import { AUTH_SESSION_COOKIE_NAME } from '../../auth/interfaces/auth.constants';
-import type { CreateOperatorDto, UpdateUserThemeDto, UserDto, UserPreferencesDto } from '../dto/users.dto';
+import type { CreateOperatorDto, UpdateUserThemeDto, UserDto, UserPreferencesDto, UserLoginActivityDto } from '../dto/users.dto';
 import { UsersService } from '../services/users.service';
 
 @Controller('users')
@@ -12,6 +12,12 @@ export class UsersController {
   @Get()
   public list(@Req() request: FastifyRequest): Promise<readonly UserDto[]> {
     return this.users.listUsers(this.readSessionCookie(request));
+  }
+
+  /** Lists safe login activity for the administrator, including their current session. */
+  @Get('activity')
+  public activity(@Req() request: FastifyRequest): Promise<readonly UserLoginActivityDto[]> {
+    return this.users.listActivity(this.readSessionCookie(request));
   }
 
   /** Creates an operator account. */
