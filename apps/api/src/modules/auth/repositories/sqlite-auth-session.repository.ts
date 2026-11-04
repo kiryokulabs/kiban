@@ -5,6 +5,7 @@ import { DatabaseService, SqliteRow } from '../../../database/database.service';
 
 interface AuthSessionRow extends SqliteRow {
   readonly id: string;
+  readonly ip_address: string | null;
   readonly user_id: string;
   readonly token_hash: string;
   readonly expires_at: number;
@@ -20,9 +21,9 @@ export class SqliteAuthSessionRepository implements AuthSessionRepository {
   public async create(input: CreateAuthSessionInput): Promise<AuthSession | null> {
     const session: AuthSession = { id: randomUUID(), userId: input.userId, tokenHash: input.tokenHash, expiresAt: input.expiresAt, createdAt: new Date() };
     const created = await this.database.get<AuthSessionRow>(
-      `INSERT INTO auth_sessions (id, user_id, token_hash, expires_at, created_at, revoked_at)
-       SELECT ?, ?, ?, ?, ?, NULL FROM users WHERE id = ? AND password_hash = ? RETURNING *`,
-      [session.id, session.userId, session.tokenHash, session.expiresAt, session.createdAt, session.userId, input.passwordHash]
+      `INSERT INTO auth_sessions (id, user_id, token_hash, expires_at, created_at, revoked_at, ip_address)
+       SELECT ?, ?, ?, ?, ?, NULL, ? FROM users WHERE id = ? AND password_hash = ? RETURNING *`,
+      [session.id, session.userId, session.tokenHash, session.expiresAt, session.createdAt, input.ipAddress ?? null, session.userId, input.passwordHash]
     );
     return created ? this.toDomain(created) : null;
   }
@@ -39,7 +40,7 @@ export class SqliteAuthSessionRepository implements AuthSessionRepository {
   }
 
   private toDomain(row: AuthSessionRow): AuthSession {
-    const base = { id: row.id, userId: row.user_id, tokenHash: row.token_hash, expiresAt: new Date(row.expires_at), createdAt: new Date(row.created_at) };
+    const base = { ipAddress: row.ip_address ?? null, id: row.id, userId: row.user_id, tokenHash: row.token_hash, expiresAt: new Date(row.expires_at), createdAt: new Date(row.created_at) };
     return row.revoked_at ? { ...base, revokedAt: new Date(row.revoked_at) } : base;
   }
 }

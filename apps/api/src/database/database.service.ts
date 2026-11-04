@@ -135,6 +135,7 @@ export class DatabaseService implements OnModuleInit {
       CREATE INDEX IF NOT EXISTS idx_monitoring_samples_lookup ON monitoring_samples(scope, resource_id, captured_at);
     `);
 
+    await this.addColumnIfMissing('auth_sessions', 'ip_address', 'TEXT');
     await this.addColumnIfMissing('environments', 'description', 'TEXT');
     await this.addColumnIfMissing('installed_services', 'runtime_json', 'TEXT');
   }
