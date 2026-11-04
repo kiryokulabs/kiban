@@ -19,6 +19,7 @@ const createRepository = (): UserRepository => {
       return user;
     }),
     list: vi.fn(async () => [...users.values()]),
+    listActivity: vi.fn(async () => []),
     deleteById: vi.fn(async (id: string) => { users.delete(id); }),
     findByEmail: vi.fn(async (email: string) => [...users.values()].find((user) => user.email === email) ?? null),
     findById: vi.fn(async (id: string) => users.get(id) ?? null),
@@ -33,6 +34,15 @@ const passwordHasher: PasswordHasher = {
 };
 
 describe('UserManager', () => {
+  it('lets only the admin read account activity and does not query it for operators', async () => {
+    const repository = createRepository();
+    const manager = new UserManager(repository, passwordHasher);
+    await expect(manager.listActivity(operator)).rejects.toBeInstanceOf(ForbiddenUserActionError);
+    expect(repository.listActivity).not.toHaveBeenCalled();
+    await expect(manager.listActivity(admin)).resolves.toEqual([]);
+    expect(repository.listActivity).toHaveBeenCalledWith(expect.any(Date));
+  });
+
   it('allows admin to list users without password hashes', async () => {
     const manager = new UserManager(createRepository(), passwordHasher);
     await expect(manager.listUsers(admin)).resolves.toEqual([
