@@ -1,6 +1,7 @@
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable, SetMetadata, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import type { FastifyRequest } from 'fastify';
+import type { AuthenticatedRequest } from '../interfaces/authenticated-request';
 import { AUTH_SESSION_COOKIE_NAME } from '../interfaces/auth.constants';
 import { AuthService } from '../services/auth.service';
 
@@ -26,7 +27,8 @@ export class SessionAuthGuard implements CanActivate {
     const token = this.sessionToken(context);
     if (!token) throw new UnauthorizedException('Authentication required.');
 
-    await this.auth.me(token);
+    const { user } = await this.auth.me(token);
+    if (context.getType() === 'http') context.switchToHttp().getRequest<AuthenticatedRequest>().user = user;
     return true;
   }
 

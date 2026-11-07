@@ -1,7 +1,7 @@
 import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { AuthManager, CannotDeleteAdminUserError, ForbiddenUserActionError, InvalidCredentialsError, isUserTheme, UnauthenticatedError, UserManager, UserNotFoundError, UserPreferencesManager } from '@kiban/core';
 import { AUTH_MANAGER } from '../../auth/interfaces/auth.constants';
-import type { UpdateUserThemeDto, UserDto, UserPreferencesDto } from '../dto/users.dto';
+import type { UpdateUserThemeDto, UserDto, UserPreferencesDto, UserLoginActivityDto } from '../dto/users.dto';
 import { USER_MANAGER, USER_PREFERENCES_MANAGER } from '../interfaces/users.constants';
 import { parseCredentials } from '../../auth/services/auth-validation';
 import { mapPublicUserToDto } from '../mappers/users.mapper';
@@ -12,7 +12,7 @@ export class UsersService {
 
   /** Lists users visible to the administrator. */
   public async listUsers(token: string | undefined): Promise<readonly UserDto[]> {
-    const actor = await this.authenticate(token);
+    const { user: actor } = await this.authenticate(token);
     try {
       const users = await this.users.listUsers(actor);
       return users.map(mapPublicUserToDto);
@@ -21,10 +21,29 @@ export class UsersService {
     }
   }
 
+  /** Returns all account summaries plus safe details of this administrator's current session. */
+  public async listActivity(token: string | undefined): Promise<readonly UserLoginActivityDto[]> {
+    const { user, session } = await this.authenticate(token);
+    try {
+      const activity = await this.users.listActivity(user);
+      return activity.map(row => ({
+        userId: row.userId,
+        lastLoginAt: row.lastLoginAt?.toISOString() ?? null,
+        lastLoginIp: row.lastLoginIp,
+        activeSessions: row.activeSessions,
+        currentSession: row.userId === user.id ? {
+          createdAt: session.createdAt.toISOString(), expiresAt: session.expiresAt.toISOString(), ipAddress: session.ipAddress ?? null
+        } : null
+      }));
+    } catch (error: unknown) {
+      this.mapUserManagementError(error);
+    }
+  }
+
   /** Creates an operator account. */
   public async createOperator(token: string | undefined, payload: unknown): Promise<UserDto> {
     const dto = parseCredentials(payload);
-    const actor = await this.authenticate(token);
+    const { user: actor } = await this.authenticate(token);
     try {
       const user = await this.users.createOperator(actor, dto);
       return mapPublicUserToDto(user);
@@ -35,7 +54,7 @@ export class UsersService {
 
   /** Deletes an operator account. */
   public async deleteUser(token: string | undefined, userId: string): Promise<void> {
-    const actor = await this.authenticate(token);
+    const { user: actor } = await this.authenticate(token);
     try {
       await this.users.deleteUser(actor, userId);
     } catch (error: unknown) {
@@ -45,7 +64,7 @@ export class UsersService {
 
   /** Returns preferences for the authenticated user. */
   public async getPreferences(token: string | undefined): Promise<UserPreferencesDto> {
-    const actor = await this.authenticate(token);
+    const { user: actor } = await this.authenticate(token);
     return { theme: await this.preferences.getTheme(actor.id) };
   }
 
@@ -54,14 +73,14 @@ export class UsersService {
     if (!dto || typeof dto.theme !== 'string' || !isUserTheme(dto.theme)) {
       throw new BadRequestException('Unsupported theme.');
     }
-    const actor = await this.authenticate(token);
+    const { user: actor } = await this.authenticate(token);
     await this.preferences.setTheme(actor.id, dto.theme);
   }
 
   private async authenticate(token: string | undefined) {
     try {
       const session = await this.auth.authenticate(token ?? null);
-      return session.user;
+      return session;
     } catch (error: unknown) {
       if (error instanceof UnauthenticatedError || error instanceof InvalidCredentialsError) {
         throw new UnauthorizedException(error.message);

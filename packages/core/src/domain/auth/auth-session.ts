@@ -3,6 +3,7 @@ import type { User } from '../users/user.js';
 export interface AuthSession {
   readonly id: string;
   readonly userId: string;
+  readonly ipAddress?: string | null;
   readonly tokenHash: string;
   readonly expiresAt: Date;
   readonly createdAt: Date;

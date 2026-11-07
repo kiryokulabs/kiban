@@ -149,7 +149,7 @@ export class AppComponent {
     { label: 'Installed Services', path: '/installed', icon: 'installed' },
     { label: 'Monitoring', path: '/monitoring', icon: 'activity' },
     { label: 'Users', path: '/users', icon: 'users', adminOnly: true },
-    { label: 'Logs', path: '/logs', icon: 'logs' },
+    { label: 'Events', path: '/events', icon: 'logs' },
     { label: 'Notifications', path: '/notifications', icon: 'bell' },
     { label: 'Settings', path: '/settings', icon: 'settings' },
   ]);

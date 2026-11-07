@@ -8,7 +8,12 @@ import type { UserRepository } from '../interfaces/user-repository.js';
 
 export interface BootstrapStatus { readonly requiresAdminSetup: boolean; }
 export interface RegisterAdminInput { readonly email: string; readonly password: string; }
-export interface LoginInput { readonly email: string; readonly password: string; }
+export interface LoginInput {
+  readonly email: string;
+  readonly password: string;
+  /** Optional client IP supplied by the trusted backend transport, never the credentials payload. */
+  readonly ipAddress?: string | null;
+}
 export interface ChangePasswordInput { readonly currentPassword: string; readonly newPassword: string; }
 
 export interface AuthManagerOptions { readonly sessionTtlMs: number; readonly now: () => Date; }
@@ -58,7 +63,7 @@ export class AuthManager {
     const token = await this.tokenService.createToken();
     const tokenHash = await this.tokenService.hashToken(token);
     const expiresAt = new Date(this.options.now().getTime() + this.options.sessionTtlMs);
-    const session = await this.sessions.create({ userId: user.id, passwordHash, tokenHash, expiresAt });
+    const session = await this.sessions.create({ userId: user.id, passwordHash, tokenHash, expiresAt, ipAddress: input.ipAddress ?? null });
     if (!session) throw new InvalidCredentialsError();
     return { token, expiresAt, user };
   }

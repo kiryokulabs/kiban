@@ -30,6 +30,8 @@ class MemoryUsers implements UserRepository {
     return user;
   }
 
+  public async listActivity() { return []; }
+
   public async list(): Promise<readonly User[]> {
     return [...this.users.values()];
   }

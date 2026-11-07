@@ -1,14 +1,16 @@
-import { SlicePipe } from '@angular/common';
+import { DatePipe, SlicePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import type { ProjectSummary } from '../projects/projects.models';
+import { ActivityApiService } from '../activity/activity-api.service';
+import { ACTIVITY_PRESENTATION, type ActivityEvent } from '../activity/activity.models';
 import { ProjectsService } from '../projects/projects.service';
 import { IconsComponent } from '../shared/icons.component';
 
 @Component({
   selector: 'kiban-home-page',
   standalone: true,
-  imports: [RouterLink, SlicePipe, IconsComponent],
+  imports: [RouterLink, SlicePipe, IconsComponent, DatePipe],
   template: `
     <div class="space-y-6">
       <!-- Welcome -->
@@ -23,6 +25,8 @@ import { IconsComponent } from '../shared/icons.component';
         </div>
       </div>
 
+      <div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem] xl:items-start">
+      <div class="min-w-0 space-y-6">
       <!-- Dashboard stats -->
       <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div class="card p-4">
@@ -85,7 +89,7 @@ import { IconsComponent } from '../shared/icons.component';
         </div>
       } @else {
         <div>
-          <h2 class="text-sm font-semibold kb-text mb-3">Recent Projects</h2>
+          <h2 class="text-sm font-semibold kb-text mb-3">Projects</h2>
           <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             @for (project of projects(); track project.id) {
               <a [routerLink]="['/projects', project.id]" class="card p-4 transition hover:border-brand/30 hover:bg-hover/30 group">
@@ -117,11 +121,56 @@ import { IconsComponent } from '../shared/icons.component';
           </div>
         </div>
       }
+      </div>
+
+      <aside class="card min-w-0 overflow-hidden" aria-labelledby="recent-activity-heading">
+        <div class="flex items-center justify-between gap-3 border-b kb-border px-5 py-3">
+          <div class="flex items-center gap-2">
+            <kiban-icon name="activity" [size]="14" class="c-muted" />
+            <h2 id="recent-activity-heading" class="text-sm font-medium kb-text">Recent activity</h2>
+          </div>
+        </div>
+        @if (activityLoading()) {
+          <p class="px-5 py-4 text-xs c-muted" role="status">Loading recent activity...</p>
+        } @else if (activityError()) {
+          <p class="px-5 py-4 text-xs text-red-500" role="alert">Could not load recent activity. Reload the page to try again.</p>
+        } @else {
+          <ol class="divide-y kb-border">
+            @for (event of activity(); track event.id) {
+              <li class="flex items-start gap-3 px-5 py-4">
+                <div class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand/10 text-brand-light">
+                  <kiban-icon [name]="activityPresentation[event.action].icon" [size]="15" />
+                </div>
+                <div class="min-w-0 flex-1">
+                  <p class="break-words text-sm font-medium kb-text">{{ event.resourceName }} {{ activityPresentation[event.action].verb }}</p>
+                  <p class="mt-1 break-words text-xs c-muted">{{ event.projectName }}@if (event.environmentName) { / {{ event.environmentName }} }</p>
+                  <!-- <p class="mt-2 truncate text-xs c-subtle" [title]="event.actorEmail">{{ event.actorEmail }}</p>
+                  <p class="mt-1 text-[11px] c-subtle">{{ event.createdAt | date:'medium' }}</p> -->
+                </div>
+              </li>
+            } @empty {
+              <li class="px-5 py-8 text-center text-xs c-muted">No activity yet.</li>
+            }
+          </ol>
+        }
+        <footer class="border-t kb-border px-5 py-3">
+          <a routerLink="/events" class="inline-flex items-center gap-1.5 text-xs text-brand-light hover:underline">
+            View all events
+            <kiban-icon name="chevron-right" [size]="12" />
+          </a>
+        </footer>
+      </aside>
+      </div>
     </div>
   `
 })
 export class HomePageComponent {
   private readonly projectsService = inject(ProjectsService);
+  private readonly activityApi = inject(ActivityApiService);
+  protected readonly activityPresentation = ACTIVITY_PRESENTATION;
+  protected readonly activity = signal<readonly ActivityEvent[]>([]);
+  protected readonly activityLoading = signal(true);
+  protected readonly activityError = signal(false);
   protected readonly projects = signal<readonly ProjectSummary[]>([]);
   private readonly failedProjectImages = signal<ReadonlySet<string>>(new Set());
 
@@ -142,6 +191,10 @@ export class HomePageComponent {
   }
 
   public constructor() {
+    this.activityApi.recent().subscribe({
+      next: events => { this.activity.set(events); this.activityLoading.set(false); },
+      error: () => { this.activityError.set(true); this.activityLoading.set(false); }
+    });
     this.projectsService.listProjects().subscribe({ next: (projects) => { this.projects.set(projects); this.failedProjectImages.set(new Set()); }, error: () => undefined });
   }
 }

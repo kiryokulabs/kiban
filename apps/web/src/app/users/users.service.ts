@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import type { Observable } from 'rxjs';
-import type { CreateOperatorRequest, UserListItem } from './users.models';
+import type { CreateOperatorRequest, UserListItem, UserLoginActivity } from './users.models';
 
 @Injectable({ providedIn: 'root' })
 export class UsersService {
@@ -12,6 +12,11 @@ export class UsersService {
   /** Lists users. Only admin can call this endpoint successfully. */
   public listUsers(): Observable<readonly UserListItem[]> {
     return this.http.get<readonly UserListItem[]>(`${this.apiUrl}/users`, { withCredentials: true });
+  }
+
+  /** Reads login activity; authorization and current-session detection belong to the backend. */
+  public listActivity(): Observable<readonly UserLoginActivity[]> {
+    return this.http.get<readonly UserLoginActivity[]>(`${this.apiUrl}/users/activity`, { withCredentials: true });
   }
 
   /** Creates an operator account. */

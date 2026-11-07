@@ -2,6 +2,8 @@ import type { AuthSession } from '../../domain/auth/auth-session.js';
 
 export interface CreateAuthSessionInput {
   readonly userId: string;
+  /** Backend-observed client IP. Absent for sessions created before activity recording. */
+  readonly ipAddress?: string | null;
   /** Password hash verified by login; prevents issuing sessions for stale credentials. */
   readonly passwordHash: string;
   readonly tokenHash: string;

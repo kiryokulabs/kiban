@@ -1,4 +1,4 @@
-import type { CreateAdminUserInput, CreateOperatorUserInput, User } from '../../domain/users/user.js';
+import type { CreateAdminUserInput, CreateOperatorUserInput, User, UserLoginActivity } from '../../domain/users/user.js';
 
 export interface UserRepository {
   /** Returns true when at least one admin user exists. */
@@ -9,6 +9,8 @@ export interface UserRepository {
   createOperator(input: CreateOperatorUserInput): Promise<User>;
   /** Lists all users in the installation. */
   list(): Promise<readonly User[]>;
+  /** Lists login metadata with sessions counted as active only before expiry and revocation. */
+  listActivity(now: Date): Promise<readonly UserLoginActivity[]>;
   /** Deletes a user by identifier. */
   deleteById(id: string): Promise<void>;
   /** Finds a user by email address. */

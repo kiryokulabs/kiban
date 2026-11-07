@@ -36,3 +36,6 @@ export * from './application/managers/installed-service-manager.js';
 export * from './domain/mail/smtp-settings.js';
 export * from './application/interfaces/smtp-settings.js';
 export * from './application/managers/smtp-settings-manager.js';
+
+export * from './domain/activity/activity-event.js';
+export * from './application/interfaces/activity-repository.js';

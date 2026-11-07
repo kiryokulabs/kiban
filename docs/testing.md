@@ -94,3 +94,31 @@ Workflow file:
 ```txt
 .github/workflows/tests.yml
 ```
+
+## User login activity
+
+Core tests verify administrator authorization before reading account activity. HTTP/SQLite
+integration tests cover legacy-schema migration and repeat initialization, successful vs
+failed logins, IPv4/IPv6, trusted/untrusted proxy forwarding, anonymous/operator rejection,
+paired latest-login date/IP, expiry/logout/password-change session counts, current-session
+metadata and exclusion of secrets. Fixtures use temporary databases and simulated HTTP
+requests; they never modify the installation database. Web tests cover the authenticated
+activity request, account/activity loading, failure isolation and responsive panel layout.
+
+## Dashboard operational activity
+
+Activity tests use real temporary SQLite persistence, HTTP controllers/session guards,
+project/service managers and a simulated runtime (no Docker). They cover all explicit
+project/environment CRUD and service lifecycle events, authenticated operator access,
+anonymous rejection, server-side actor attribution, surviving deleted resources, failed
+operations/runtime outcomes, populated deletion guards, auxiliary-storage failures,
+restart persistence, bounded 1,000-event retention and the fixed newest-five response.
+Frontend tests cover the authenticated read, real-event loading and unavailable-history
+state without sample-data fallback.
+
+
+Events/Logs navigation tests cover the shared Events sidebar entry, default Events route,
+bookmarkable button-style links, active state and backwards-compatible `/logs` redirect.
+History tests cover authenticated fixed-size pagination, empty/end pages, invalid and
+repeated page parameters, deterministic ordering and an unchanged five-event dashboard.
+Frontend tests also cover page loading, request overlap prevention and read failures.

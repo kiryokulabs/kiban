@@ -1,3 +1,4 @@
+import { isIP } from 'node:net';
 import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { AdminRegistrationClosedError, AuthManager, InvalidCredentialsError, UnauthenticatedError } from '@kiban/core';
 import type { AuthenticatedSession } from '@kiban/core';
@@ -39,7 +40,7 @@ export class AuthService {
     const dto = parseCredentials(payload);
     await this.limiter.consume(ip, dto.email);
     try {
-      const result = await this.auth.login(dto);
+      const result = await this.auth.login({ ...dto, ipAddress: isIP(ip) ? ip : null });
       return { token: result.token, expiresAt: result.expiresAt, response: { user: mapUserToAuthUserDto(result.user) } };
     } catch (error: unknown) {
       if (error instanceof InvalidCredentialsError) throw new UnauthorizedException(error.message);

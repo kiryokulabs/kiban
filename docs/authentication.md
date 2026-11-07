@@ -302,3 +302,26 @@ change its password or revoke existing sessions. Trusted proxy configuration det
 which forwarded client addresses the backend accepts.
 
 Password recovery and MFA are not implemented by these changes.
+
+### Administrator account activity
+
+The Users page displays an activity panel for the administrator and all operators.
+`GET /api/users/activity` requires an authenticated administrator, just like user management.
+It returns each account's latest successful login date/IP and the count of sessions that
+are both unexpired and unrevoked. Active sessions are not an online/presence indicator.
+Dates are displayed in the browser's local timezone.
+
+Only the requesting administrator's current session includes safe details (start, expiry,
+and login IP); this may differ from that account's latest login on another device. No
+session identifiers, tokens, token hashes or password hashes are returned.
+
+For new successful logins, the backend records Fastify's client IP on the existing session
+row using the existing trusted-proxy policy. Credentials payloads cannot supply that IP.
+No proxy, domain, TLS or cookie configuration is changed. In development the observed IP
+may be loopback if the development proxy does not forward the client's address.
+
+An additive nullable `auth_sessions.ip_address` migration preserves existing accounts and
+sessions. Older sessions retain their timestamps but their IP is shown as "Not recorded".
+Last-login metadata includes revoked/expired sessions, so logout does not erase it. Activity
+is read when opening the page and reloaded after account changes; it is not live tracking.
+No geolocation or external IP lookup is performed.

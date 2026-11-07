@@ -1,7 +1,11 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { describe, expect, it, vi } from 'vitest';
 import { ProjectManager, ProjectNotFoundError, ProjectValidationError } from '@kiban/core';
+import { ActivityService } from '../../activity/activity.service';
 import { ProjectService } from './project.service';
+
+const actor = { id: 'admin', email: 'admin@example.com', role: 'admin' as const };
+const activity = new ActivityService({ append: async () => undefined, listRecent: async () => [], listPage: async () => ({ items: [], page: 1, hasMore: false, total: 0 }) });
 
 const details = {
   project: { id: 'project-1', name: 'CrossMetrics', description: 'Analytics', createdAt: new Date('2026-07-29T12:00:00.000Z'), updatedAt: new Date('2026-07-29T12:00:00.000Z') },
@@ -14,14 +18,14 @@ const createService = (
   manager: Partial<ProjectManager>,
   installedServices?: { list: (projectId: string, environmentId: string) => Promise<readonly { readonly id: string }[]> },
   imageStorage?: { save: (projectId: string, image: { readonly contentType: string; readonly data: Buffer }) => Promise<void>; find: (projectId: string) => Promise<{ readonly contentType: string; readonly data: Buffer } | null>; delete: (projectId: string) => Promise<void> }
-) => new ProjectService(manager as ProjectManager, installedServices, imageStorage);
+) => new ProjectService({ getProject: async () => details, ...manager } as ProjectManager, activity, installedServices, imageStorage);
 
 describe('API ProjectService', () => {
   it('creates a project and maps environments to DTOs', async () => {
     const createProject = vi.fn(async () => details);
     const service = createService({ createProject });
 
-    await expect(service.create({ name: 'CrossMetrics', description: 'Analytics' })).resolves.toEqual({
+    await expect(service.create({ name: 'CrossMetrics', description: 'Analytics' }, actor)).resolves.toEqual({
       id: 'project-1',
       name: 'CrossMetrics',
       description: 'Analytics',
@@ -34,12 +38,12 @@ describe('API ProjectService', () => {
 
   it('rejects unknown create payload fields', async () => {
     const service = createService({ createProject: vi.fn() });
-    await expect(service.create({ name: 'CrossMetrics', extra: true })).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.create({ name: 'CrossMetrics', extra: true }, actor)).rejects.toBeInstanceOf(BadRequestException);
   });
 
   it('maps validation errors to bad request', async () => {
     const service = createService({ createProject: vi.fn(async () => { throw new ProjectValidationError('Invalid project name.'); }) });
-    await expect(service.create({ name: '' })).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.create({ name: '' }, actor)).rejects.toBeInstanceOf(BadRequestException);
   });
 
   it('lists project summaries', async () => {
@@ -60,7 +64,7 @@ describe('API ProjectService', () => {
   it('updates a project', async () => {
     const updateProject = vi.fn(async () => ({ ...details, project: { ...details.project, name: 'Updated', description: null } }));
     const service = createService({ updateProject });
-    await expect(service.update('project-1', { name: 'Updated', description: null })).resolves.toMatchObject({ id: 'project-1', name: 'Updated', description: null });
+    await expect(service.update('project-1', { name: 'Updated', description: null }, actor)).resolves.toMatchObject({ id: 'project-1', name: 'Updated', description: null });
     expect(updateProject).toHaveBeenCalledWith('project-1', { name: 'Updated', description: null });
   });
 
@@ -118,7 +122,7 @@ describe('API ProjectService', () => {
   it('deletes a project', async () => {
     const deleteProject = vi.fn(async () => undefined);
     const service = createService({ deleteProject });
-    await service.delete('project-1');
+    await service.delete('project-1', actor);
     expect(deleteProject).toHaveBeenCalledWith('project-1');
   });
 
@@ -128,7 +132,7 @@ describe('API ProjectService', () => {
     const deleteImageStorage = vi.fn(async () => { calls.push('image-storage'); });
     const service = createService({ deleteProject }, undefined, { save: vi.fn(), find: vi.fn(), delete: deleteImageStorage });
 
-    await service.delete('project-1');
+    await service.delete('project-1', actor);
 
     expect(deleteImageStorage).toHaveBeenCalledWith('project-1');
     expect(deleteProject).toHaveBeenCalledWith('project-1');
@@ -147,7 +151,7 @@ describe('API ProjectService', () => {
     const list = vi.fn(async (_projectId: string, environmentId: string) => environmentId === 'environment-1' ? [] : [{ id: 'service-1' }]);
     const service = createService({ getProject, deleteProject }, { list });
 
-    await expect(service.delete('project-1')).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.delete('project-1', actor)).rejects.toBeInstanceOf(BadRequestException);
 
     expect(list).toHaveBeenCalledWith('project-1', 'environment-1');
     expect(list).toHaveBeenCalledWith('project-1', 'environment-2');
@@ -164,20 +168,20 @@ describe('API ProjectService environments', () => {
   it('creates a custom environment', async () => {
     const createEnvironment = vi.fn(async () => ({ id: 'environment-2', projectId: 'project-1', name: 'QA', slug: 'qa', type: 'custom' as const, description: 'Quality checks', createdAt: details.project.createdAt, updatedAt: details.project.updatedAt }));
     const service = createService({ createEnvironment });
-    await expect(service.createEnvironment('project-1', { name: 'QA', description: 'Quality checks' })).resolves.toMatchObject({ name: 'QA', type: 'custom', description: 'Quality checks', status: 'Empty' });
+    await expect(service.createEnvironment('project-1', { name: 'QA', description: 'Quality checks' }, actor)).resolves.toMatchObject({ name: 'QA', type: 'custom', description: 'Quality checks', status: 'Empty' });
     expect(createEnvironment).toHaveBeenCalledWith('project-1', { name: 'QA', description: 'Quality checks' });
   });
 
   it('rejects unknown environment payload fields', async () => {
     const service = createService({ createEnvironment: vi.fn() });
-    await expect(service.createEnvironment('project-1', { name: 'QA', description: null, extra: true })).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.createEnvironment('project-1', { name: 'QA', description: null, extra: true }, actor)).rejects.toBeInstanceOf(BadRequestException);
   });
 
   it('updates an environment', async () => {
     const updateEnvironment = vi.fn(async () => ({ ...details.environments[0]!, name: 'Local', slug: 'local', description: 'Local development' }));
     const service = createService({ updateEnvironment });
 
-    await expect(service.updateEnvironment('project-1', 'environment-1', { name: 'Local', description: 'Local development' })).resolves.toMatchObject({
+    await expect(service.updateEnvironment('project-1', 'environment-1', { name: 'Local', description: 'Local development' }, actor)).resolves.toMatchObject({
       name: 'Local',
       slug: 'local',
       description: 'Local development'
@@ -188,7 +192,7 @@ describe('API ProjectService environments', () => {
   it('deletes an environment', async () => {
     const deleteEnvironment = vi.fn(async () => undefined);
     const service = createService({ deleteEnvironment });
-    await service.deleteEnvironment('project-1', 'environment-1');
+    await service.deleteEnvironment('project-1', 'environment-1', actor);
     expect(deleteEnvironment).toHaveBeenCalledWith('project-1', 'environment-1');
   });
 
@@ -197,7 +201,7 @@ describe('API ProjectService environments', () => {
     const list = vi.fn(async () => [{ id: 'service-1' }]);
     const service = createService({ deleteEnvironment }, { list });
 
-    await expect(service.deleteEnvironment('project-1', 'environment-1')).rejects.toThrow('Environment must be empty before it can be deleted.');
+    await expect(service.deleteEnvironment('project-1', 'environment-1', actor)).rejects.toThrow('Environment must be empty before it can be deleted.');
     expect(list).toHaveBeenCalledWith('project-1', 'environment-1');
     expect(deleteEnvironment).not.toHaveBeenCalled();
   });
@@ -207,7 +211,7 @@ describe('API ProjectService environments', () => {
     const list = vi.fn(async () => []);
     const service = createService({ deleteEnvironment }, { list });
 
-    await service.deleteEnvironment('project-1', 'environment-1');
+    await service.deleteEnvironment('project-1', 'environment-1', actor);
 
     expect(list).toHaveBeenCalledWith('project-1', 'environment-1');
     expect(deleteEnvironment).toHaveBeenCalledWith('project-1', 'environment-1');
@@ -218,7 +222,7 @@ describe('API ProjectService environments', () => {
     const error = new Error('Could not list services.');
     const service = createService({ deleteEnvironment }, { list: vi.fn(async () => { throw error; }) });
 
-    await expect(service.deleteEnvironment('project-1', 'environment-1')).rejects.toBe(error);
+    await expect(service.deleteEnvironment('project-1', 'environment-1', actor)).rejects.toBe(error);
     expect(deleteEnvironment).not.toHaveBeenCalled();
   });
 
@@ -226,7 +230,7 @@ describe('API ProjectService environments', () => {
     const deleteEnvironment = vi.fn(async () => undefined);
     const service = createService({ deleteEnvironment }, { list: vi.fn(async () => { throw new ProjectNotFoundError(); }) });
 
-    await expect(service.deleteEnvironment('project-1', 'missing')).rejects.toBeInstanceOf(NotFoundException);
+    await expect(service.deleteEnvironment('project-1', 'missing', actor)).rejects.toBeInstanceOf(NotFoundException);
     expect(deleteEnvironment).not.toHaveBeenCalled();
   });
 });

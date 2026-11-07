@@ -118,6 +118,20 @@ export class DatabaseService implements OnModuleInit {
         FOREIGN KEY (environment_id) REFERENCES environments(id) ON DELETE CASCADE
       );
 
+      CREATE TABLE IF NOT EXISTS activity_events (
+        id TEXT PRIMARY KEY,
+        action TEXT NOT NULL,
+        actor_id TEXT NOT NULL,
+        actor_email TEXT NOT NULL,
+        resource_id TEXT NOT NULL,
+        resource_name TEXT NOT NULL,
+        project_id TEXT NOT NULL,
+        project_name TEXT NOT NULL,
+        environment_id TEXT,
+        environment_name TEXT,
+        created_at INTEGER NOT NULL
+      );
+
       CREATE TABLE IF NOT EXISTS monitoring_samples (
         id TEXT PRIMARY KEY,
         scope TEXT NOT NULL,
@@ -135,6 +149,7 @@ export class DatabaseService implements OnModuleInit {
       CREATE INDEX IF NOT EXISTS idx_monitoring_samples_lookup ON monitoring_samples(scope, resource_id, captured_at);
     `);
 
+    await this.addColumnIfMissing('auth_sessions', 'ip_address', 'TEXT');
     await this.addColumnIfMissing('environments', 'description', 'TEXT');
     await this.addColumnIfMissing('installed_services', 'runtime_json', 'TEXT');
   }

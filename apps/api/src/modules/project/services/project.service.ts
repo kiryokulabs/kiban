@@ -1,3 +1,5 @@
+import type { ActivityAction, Environment, PublicUser } from '@kiban/core';
+import { ActivityService } from '../../activity/activity.service';
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { ProjectManager, ProjectNotFoundError, ProjectValidationError } from '@kiban/core';
 import type { CreateEnvironmentDto, CreateProjectDto, EnvironmentDto, ProjectDetailsDto, ProjectSettingsDto, ProjectSummaryDto, SaveProjectImageDto, UpdateEnvironmentDto, UpdateProjectDto } from '../dto/project.dto';
@@ -13,6 +15,7 @@ interface InstalledServicesForProjectDeletion {
 export class ProjectService {
   public constructor(
     @Inject(PROJECT_MANAGER) private readonly projects: ProjectManager,
+    private readonly activity: ActivityService,
     private readonly installedServices?: InstalledServicesForProjectDeletion,
     private readonly imageStorage?: ProjectImageStorage
   ) {}
@@ -33,20 +36,24 @@ export class ProjectService {
   }
 
   /** Creates a project with default system environments. */
-  public async create(payload: unknown): Promise<ProjectDetailsDto> {
+  public async create(payload: unknown, actor: PublicUser): Promise<ProjectDetailsDto> {
     const dto = this.parseCreate(payload);
     try {
-      return mapProjectDetailsToDto(await this.projects.createProject(dto));
+      const details = await this.projects.createProject(dto);
+      await this.recordProject(actor, 'project.created', details.project);
+      return mapProjectDetailsToDto(details);
     } catch (error: unknown) {
       this.mapProjectError(error);
     }
   }
 
   /** Updates editable project fields. */
-  public async update(id: string, payload: unknown): Promise<ProjectDetailsDto> {
+  public async update(id: string, payload: unknown, actor: PublicUser): Promise<ProjectDetailsDto> {
     const dto = this.parseUpdate(payload);
     try {
-      return mapProjectDetailsToDto(await this.projects.updateProject(id, dto));
+      const details = await this.projects.updateProject(id, dto);
+      await this.recordProject(actor, 'project.updated', details.project);
+      return mapProjectDetailsToDto(details);
     } catch (error: unknown) {
       this.mapProjectError(error);
     }
@@ -104,10 +111,10 @@ export class ProjectService {
   }
 
   /** Deletes a project only when none of its environments has installed services. */
-  public async delete(id: string): Promise<void> {
+  public async delete(id: string, actor: PublicUser): Promise<void> {
     try {
+      const details = await this.projects.getProject(id);
       if (this.installedServices) {
-        const details = await this.projects.getProject(id);
         for (const environment of details.environments) {
           const services = await this.installedServices.list(id, environment.id);
           if (services.length > 0) {
@@ -117,6 +124,7 @@ export class ProjectService {
       }
       if (this.imageStorage) await this.imageStorage.delete(id);
       await this.projects.deleteProject(id);
+      await this.recordProject(actor, 'project.deleted', details.project);
     } catch (error: unknown) {
       this.mapProjectError(error);
     }
@@ -133,28 +141,35 @@ export class ProjectService {
   }
 
   /** Creates a custom environment for a project. */
-  public async createEnvironment(projectId: string, payload: unknown): Promise<EnvironmentDto> {
+  public async createEnvironment(projectId: string, payload: unknown, actor: PublicUser): Promise<EnvironmentDto> {
     const dto = this.parseEnvironmentPayload(payload);
     try {
-      return mapEnvironmentToDto(await this.projects.createEnvironment(projectId, dto));
+      const environment = await this.projects.createEnvironment(projectId, dto);
+      await this.recordEnvironment(actor, 'environment.created', environment);
+      return mapEnvironmentToDto(environment);
     } catch (error: unknown) {
       this.mapProjectError(error);
     }
   }
 
   /** Updates editable environment fields. */
-  public async updateEnvironment(projectId: string, environmentId: string, payload: unknown): Promise<EnvironmentDto> {
+  public async updateEnvironment(projectId: string, environmentId: string, payload: unknown, actor: PublicUser): Promise<EnvironmentDto> {
     const dto: UpdateEnvironmentDto = this.parseEnvironmentPayload(payload);
     try {
-      return mapEnvironmentToDto(await this.projects.updateEnvironment(projectId, environmentId, dto));
+      const environment = await this.projects.updateEnvironment(projectId, environmentId, dto);
+      await this.recordEnvironment(actor, 'environment.updated', environment);
+      return mapEnvironmentToDto(environment);
     } catch (error: unknown) {
       this.mapProjectError(error);
     }
   }
 
   /** Deletes an environment only when it has no installed services. */
-  public async deleteEnvironment(projectId: string, environmentId: string): Promise<void> {
+  public async deleteEnvironment(projectId: string, environmentId: string, actor: PublicUser): Promise<void> {
     try {
+      const details = await this.projects.getProject(projectId);
+      const environment = details.environments.find(item => item.id === environmentId);
+      if (!environment) throw new ProjectNotFoundError();
       if (this.installedServices) {
         const services = await this.installedServices.list(projectId, environmentId);
         if (services.length > 0) {
@@ -162,9 +177,21 @@ export class ProjectService {
         }
       }
       await this.projects.deleteEnvironment(projectId, environmentId);
+      await this.recordEnvironment(actor, 'environment.deleted', environment);
     } catch (error: unknown) {
       this.mapProjectError(error);
     }
+  }
+
+  private async recordProject(actor: PublicUser, action: ActivityAction, project: { readonly id: string; readonly name: string }): Promise<void> {
+    await this.activity.record(actor, action, async () => ({ resourceId: project.id, resourceName: project.name, projectId: project.id, projectName: project.name, environmentId: null, environmentName: null }));
+  }
+
+  private async recordEnvironment(actor: PublicUser, action: ActivityAction, environment: Environment): Promise<void> {
+    await this.activity.record(actor, action, async () => {
+      const { project } = await this.projects.getProject(environment.projectId);
+      return { resourceId: environment.id, resourceName: environment.name, projectId: project.id, projectName: project.name, environmentId: environment.id, environmentName: environment.name };
+    });
   }
 
   private parseCreate(payload: unknown): CreateProjectDto {

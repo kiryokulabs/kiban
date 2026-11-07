@@ -1,6 +1,6 @@
 import { AdminRegistrationClosedError } from '@kiban/core';
 import { Injectable } from '@nestjs/common';
-import type { CreateAdminUserInput, CreateOperatorUserInput, User, UserRepository, UserRole } from '@kiban/core';
+import type { CreateAdminUserInput, CreateOperatorUserInput, User, UserRepository, UserRole, UserLoginActivity } from '@kiban/core';
 import { randomUUID } from 'node:crypto';
 import { DatabaseService, SqliteRow } from '../../../database/database.service';
 
@@ -11,6 +11,13 @@ interface UserRow extends SqliteRow {
   readonly role: string;
   readonly created_at: number;
   readonly updated_at: number;
+}
+
+interface UserActivityRow extends SqliteRow {
+  readonly user_id: string;
+  readonly last_login_at: number | null;
+  readonly last_login_ip: string | null;
+  readonly active_sessions: number;
 }
 
 @Injectable()
@@ -49,6 +56,20 @@ export class SqliteUserRepository implements UserRepository {
   public async list(): Promise<readonly User[]> {
     const rows = await this.database.all<UserRow>('SELECT * FROM users ORDER BY created_at ASC');
     return rows.map((row) => this.toDomain(row));
+  }
+
+  /** Reads metadata in one query; latest login survives logout and session expiry. */
+  public async listActivity(now: Date): Promise<readonly UserLoginActivity[]> {
+    const rows = await this.database.all<UserActivityRow>(`
+      SELECT u.id AS user_id, latest.created_at AS last_login_at, latest.ip_address AS last_login_ip,
+        (SELECT COUNT(*) FROM auth_sessions active
+         WHERE active.user_id = u.id AND active.revoked_at IS NULL AND active.expires_at > ?) AS active_sessions
+      FROM users u
+      LEFT JOIN auth_sessions latest ON latest.id = (
+        SELECT s.id FROM auth_sessions s WHERE s.user_id = u.id ORDER BY s.created_at DESC, s.rowid DESC LIMIT 1
+      )
+      ORDER BY u.created_at, u.id`, [now]);
+    return rows.map(row => ({ userId: row.user_id, lastLoginAt: row.last_login_at === null ? null : new Date(row.last_login_at), lastLoginIp: row.last_login_ip, activeSessions: row.active_sessions }));
   }
 
   /** Deletes a user by id. */

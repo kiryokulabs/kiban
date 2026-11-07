@@ -1,4 +1,5 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, StreamableFile } from '@nestjs/common';
+import type { AuthenticatedRequest } from '../../auth/interfaces/authenticated-request';
+import { Body, Req, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, StreamableFile } from '@nestjs/common';
 import type { EnvironmentDto, ProjectDetailsDto, ProjectSettingsDto, ProjectSummaryDto } from '../dto/project.dto';
 import { ProjectService } from '../services/project.service';
 
@@ -40,41 +41,41 @@ export class ProjectController {
 
   /** Creates a project and its default environments. */
   @Post()
-  public create(@Body() body: unknown): Promise<ProjectDetailsDto> {
-    return this.projects.create(body);
+  public create(@Body() body: unknown, @Req() request: AuthenticatedRequest): Promise<ProjectDetailsDto> {
+    return this.projects.create(body, request.user);
   }
 
   /** Updates project editable fields. */
   @Patch(':id')
-  public update(@Param('id') id: string, @Body() body: unknown): Promise<ProjectDetailsDto> {
-    return this.projects.update(id, body);
+  public update(@Param('id') id: string, @Body() body: unknown, @Req() request: AuthenticatedRequest): Promise<ProjectDetailsDto> {
+    return this.projects.update(id, body, request.user);
   }
 
   /** Deletes a project and its environments. */
   @Delete(':id')
   @HttpCode(204)
-  public delete(@Param('id') id: string): Promise<void> {
-    return this.projects.delete(id);
+  public delete(@Param('id') id: string, @Req() request: AuthenticatedRequest): Promise<void> {
+    return this.projects.delete(id, request.user);
   }
 
 
   /** Creates a custom environment for a project. */
   @Post(':id/environments')
-  public createEnvironment(@Param('id') id: string, @Body() body: unknown): Promise<EnvironmentDto> {
-    return this.projects.createEnvironment(id, body);
+  public createEnvironment(@Param('id') id: string, @Body() body: unknown, @Req() request: AuthenticatedRequest): Promise<EnvironmentDto> {
+    return this.projects.createEnvironment(id, body, request.user);
   }
 
   /** Updates environment editable fields. */
   @Patch(':id/environments/:environmentId')
-  public updateEnvironment(@Param('id') id: string, @Param('environmentId') environmentId: string, @Body() body: unknown): Promise<EnvironmentDto> {
-    return this.projects.updateEnvironment(id, environmentId, body);
+  public updateEnvironment(@Param('id') id: string, @Param('environmentId') environmentId: string, @Body() body: unknown, @Req() request: AuthenticatedRequest): Promise<EnvironmentDto> {
+    return this.projects.updateEnvironment(id, environmentId, body, request.user);
   }
 
   /** Deletes an environment for a project. */
   @Delete(':id/environments/:environmentId')
   @HttpCode(204)
-  public deleteEnvironment(@Param('id') id: string, @Param('environmentId') environmentId: string): Promise<void> {
-    return this.projects.deleteEnvironment(id, environmentId);
+  public deleteEnvironment(@Param('id') id: string, @Param('environmentId') environmentId: string, @Req() request: AuthenticatedRequest): Promise<void> {
+    return this.projects.deleteEnvironment(id, environmentId, request.user);
   }
 
   /** Lists environments for a project. */

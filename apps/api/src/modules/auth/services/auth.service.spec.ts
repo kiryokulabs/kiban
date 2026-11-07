@@ -15,6 +15,15 @@ const createService = (manager: Partial<AuthManager>) => {
 };
 
 describe('API AuthService', () => {
+  it('passes only the backend-observed IP into successful login processing', async () => {
+    const login = vi.fn(async () => ({ token: 'token', expiresAt: new Date(), user: { ...user, passwordHash: 'hash', createdAt: new Date(), updatedAt: new Date() } }));
+    const service = createService({ login });
+    await service.login({ email: user.email, password: 'password123' }, '2001:db8::1');
+    expect(login).toHaveBeenCalledWith({ email: user.email, password: 'password123', ipAddress: '2001:db8::1' });
+    await expect(service.login({ email: user.email, password: 'password123', ipAddress: '198.51.100.1' }, '192.0.2.1')).rejects.toBeInstanceOf(BadRequestException);
+    expect(login).toHaveBeenCalledTimes(1);
+  });
+
   it('returns bootstrap status from core auth manager', async () => {
     const service = createService({ getBootstrapStatus: vi.fn(async () => ({ requiresAdminSetup: true })) });
     await expect(service.bootstrapStatus()).resolves.toEqual({ requiresAdminSetup: true });

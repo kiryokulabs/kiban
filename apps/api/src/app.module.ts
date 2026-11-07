@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { DatabaseModule } from './database/database.module';
+import { ActivityModule } from './modules/activity/activity.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CatalogModule } from './modules/catalog/catalog.module';
 import { DockerModule } from './modules/docker/docker.module';
@@ -18,7 +19,7 @@ import { SmtpModule } from './modules/smtp/smtp.module';
 import { SessionAuthGuard } from './modules/auth/guards/session-auth.guard';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, ProjectModule, PluginModule, CatalogModule, DockerModule, HealthModule, SettingsModule, LogsModule, StackModule, ServiceModule, UsersModule, SystemModule, MonitoringModule, SmtpModule],
+  imports: [DatabaseModule, AuthModule, ActivityModule, ProjectModule, PluginModule, CatalogModule, DockerModule, HealthModule, SettingsModule, LogsModule, StackModule, ServiceModule, UsersModule, SystemModule, MonitoringModule, SmtpModule],
   providers: [{ provide: APP_GUARD, useClass: SessionAuthGuard }]
 })
 export class AppModule {}

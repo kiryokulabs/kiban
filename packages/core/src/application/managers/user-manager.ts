@@ -1,5 +1,5 @@
 import { CannotDeleteAdminUserError, ForbiddenUserActionError, UserNotFoundError } from '../../domain/users/user-errors.js';
-import type { PublicUser, User } from '../../domain/users/user.js';
+import type { PublicUser, User, UserLoginActivity } from '../../domain/users/user.js';
 import type { PasswordHasher } from '../interfaces/password-hasher.js';
 import type { UserRepository } from '../interfaces/user-repository.js';
 
@@ -14,6 +14,12 @@ export class UserManager {
     this.assertAdmin(actor);
     const users = await this.users.list();
     return users.map((user) => this.toPublicUser(user));
+  }
+
+  /** Reads login metadata only after administrator authorization. */
+  public async listActivity(actor: User): Promise<readonly UserLoginActivity[]> {
+    this.assertAdmin(actor);
+    return this.users.listActivity(new Date());
   }
 
   /** Creates an operator account. Only the administrator can create users. */
