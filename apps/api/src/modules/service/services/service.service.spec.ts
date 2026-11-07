@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { InstalledService, RuntimeProvider, ServiceDefinition } from '@kiban/core';
+import { ActivityService } from '../../activity/activity.service';
 import { ServiceService } from './service.service';
 
 const installed = (overrides: Partial<InstalledService> = {}): InstalledService => ({
@@ -50,7 +51,7 @@ const createService = (items: readonly InstalledService[], runtime: RuntimeProvi
   const catalog = { listServiceDefinitions: async () => [definition] };
   const environments = { findById: async () => ({ id: 'env-1', projectId: 'project-1', name: 'Development', slug: 'development', type: 'system', description: null, createdAt: new Date(), updatedAt: new Date() }) };
   const projects = { findById: async () => ({ id: 'project-1', name: 'Project', description: null, createdAt: new Date(), updatedAt: new Date() }) };
-  return new ServiceService({ ...manager, ...overrides } as never, runtime, catalog as never, environments as never, projects as never);
+  return new ServiceService({ ...manager, ...overrides } as never, runtime, catalog as never, environments as never, projects as never, new ActivityService({ append: async () => undefined, listRecent: async () => [], listPage: async () => ({ items: [], page: 1, hasMore: false, total: 0 }) }));
 };
 
 describe('ServiceService runtime state enrichment', () => {

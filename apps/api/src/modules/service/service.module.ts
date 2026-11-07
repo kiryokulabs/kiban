@@ -1,3 +1,4 @@
+import { ActivityModule } from '../activity/activity.module';
 import { Module } from '@nestjs/common';
 import { InstalledServiceManager } from '@kiban/core';
 import type { CatalogRepository, RuntimeProvider } from '@kiban/core';
@@ -25,7 +26,7 @@ import { TerminalSessionService } from './terminal/terminal-session.service';
 import { TERMINAL_PROVIDER } from './terminal/terminal.types';
 
 @Module({
-  imports: [DatabaseModule, CatalogModule, AuthModule],
+  imports: [ActivityModule, DatabaseModule, CatalogModule, AuthModule],
   controllers: [ServiceController, RuntimeController],
   providers: [
     ServiceService,

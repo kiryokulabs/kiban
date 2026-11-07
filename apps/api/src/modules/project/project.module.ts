@@ -1,3 +1,5 @@
+import { ActivityModule } from '../activity/activity.module';
+import { ActivityService } from '../activity/activity.service';
 import { Module } from '@nestjs/common';
 import { ProjectManager } from '@kiban/core';
 import { DatabaseModule } from '../../database/database.module';
@@ -13,10 +15,10 @@ import { ProjectService } from './services/project.service';
 import { FilesystemProjectImageStorage } from './storage/filesystem-project-image.storage';
 
 @Module({
-  imports: [DatabaseModule, ServiceModule],
+  imports: [ActivityModule, DatabaseModule, ServiceModule],
   controllers: [ProjectController],
   providers: [
-    { provide: ProjectService, useFactory: (projects: ProjectManager, services: ServiceService, images: FilesystemProjectImageStorage): ProjectService => new ProjectService(projects, services, images), inject: [PROJECT_MANAGER, ServiceService, PROJECT_IMAGE_STORAGE] },
+    { provide: ProjectService, useFactory: (projects: ProjectManager, services: ServiceService, images: FilesystemProjectImageStorage, activity: ActivityService): ProjectService => new ProjectService(projects, activity, services, images), inject: [PROJECT_MANAGER, ServiceService, PROJECT_IMAGE_STORAGE, ActivityService] },
     { provide: PROJECT_IMAGE_STORAGE, useFactory: (): FilesystemProjectImageStorage => new FilesystemProjectImageStorage() },
     SqliteProjectRepository,
     SqliteEnvironmentRepository,

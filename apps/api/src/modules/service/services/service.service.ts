@@ -1,3 +1,5 @@
+import type { ActivityAction, PublicUser } from '@kiban/core';
+import { ActivityService } from '../../activity/activity.service';
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InstalledServiceManager, parseRuntimePublicEndpoints, ProjectNotFoundError, ProjectValidationError } from '@kiban/core';
 import type { InstalledService, RuntimeProvider, RuntimePublicEndpoint, ServiceDefinition } from '@kiban/core';
@@ -20,7 +22,8 @@ export class ServiceService {
     @Inject(RUNTIME_PROVIDER) private readonly runtime: RuntimeProvider,
     private readonly catalog: CatalogService,
     private readonly environments: SqliteEnvironmentRepository,
-    private readonly projects: SqliteProjectRepository
+    private readonly projects: SqliteProjectRepository,
+    private readonly activity: ActivityService
   ) {}
 
   /** Lists every installed service. */
@@ -40,11 +43,13 @@ export class ServiceService {
   }
 
   /** Installs a catalog service in an environment. */
-  public async install(projectId: string, environmentId: string, payload: unknown): Promise<InstalledServiceDto> {
+  public async install(projectId: string, environmentId: string, payload: unknown, actor: PublicUser): Promise<InstalledServiceDto> {
     const dto = this.parseInstallPayload(payload);
     try {
       const installed = await this.services.install(projectId, environmentId, dto);
-      return await this.enrichOne(installed);
+      const result = await this.enrichOne(installed);
+      if (installed.status === 'running') await this.recordActivity(actor, 'service.installed', installed);
+      return result;
     } catch (error: unknown) { this.mapError(error); }
   }
 
@@ -71,9 +76,14 @@ export class ServiceService {
   }
 
   /** Saves configuration and recreates runtime resources when the runtime requires it. */
-  public async updateConfiguration(id: string, payload: unknown): Promise<InstalledServiceDto> {
+  public async updateConfiguration(id: string, payload: unknown, actor: PublicUser): Promise<InstalledServiceDto> {
     const configuration = this.parseConfigurationPayload(payload);
-    try { return await this.enrichOne(await this.services.updateConfiguration(id, configuration)); } catch (error: unknown) { this.mapError(error); }
+    try {
+      const service = await this.services.updateConfiguration(id, configuration);
+      const result = await this.enrichOne(service);
+      if (service.status === 'running') await this.recordActivity(actor, 'service.redeployed', service);
+      return result;
+    } catch (error: unknown) { this.mapError(error); }
   }
 
   /** Updates the public domain used to access one installed service. */
@@ -93,8 +103,13 @@ export class ServiceService {
   }
 
   /** Recreates runtime resources using current configuration. */
-  public async recreate(id: string): Promise<InstalledServiceDto> {
-    try { return await this.enrichOne(await this.services.recreate(id)); } catch (error: unknown) { this.mapError(error); }
+  public async recreate(id: string, actor: PublicUser): Promise<InstalledServiceDto> {
+    try {
+      const service = await this.services.recreate(id);
+      const result = await this.enrichOne(service);
+      if (service.status === 'running') await this.recordActivity(actor, 'service.redeployed', service);
+      return result;
+    } catch (error: unknown) { this.mapError(error); }
   }
 
   /** Returns runtime metadata for an installed service. */
@@ -111,23 +126,49 @@ export class ServiceService {
   }
 
   /** Removes one installed service record and its runtime data. */
-  public async delete(id: string): Promise<void> {
-    try { await this.services.delete(id); } catch (error: unknown) { this.mapError(error); }
+  public async delete(id: string, actor: PublicUser): Promise<void> {
+    try {
+      const service = await this.services.get(id);
+      await this.services.delete(id);
+      await this.recordActivity(actor, 'service.deleted', service);
+    } catch (error: unknown) { this.mapError(error); }
   }
 
   /** Starts an installed service. */
-  public async start(id: string): Promise<InstalledServiceDto> {
-    try { return await this.enrichOne(await this.services.start(id)); } catch (error: unknown) { this.mapError(error); }
+  public async start(id: string, actor: PublicUser): Promise<InstalledServiceDto> {
+    try {
+      const service = await this.services.start(id);
+      const result = await this.enrichOne(service);
+      if (service.status === 'running') await this.recordActivity(actor, 'service.started', service);
+      return result;
+    } catch (error: unknown) { this.mapError(error); }
   }
 
   /** Stops an installed service. */
-  public async stop(id: string): Promise<InstalledServiceDto> {
-    try { return await this.enrichOne(await this.services.stop(id)); } catch (error: unknown) { this.mapError(error); }
+  public async stop(id: string, actor: PublicUser): Promise<InstalledServiceDto> {
+    try {
+      const service = await this.services.stop(id);
+      const result = await this.enrichOne(service);
+      if (service.status === 'stopped') await this.recordActivity(actor, 'service.stopped', service);
+      return result;
+    } catch (error: unknown) { this.mapError(error); }
   }
 
   /** Restarts an installed service. */
-  public async restart(id: string): Promise<InstalledServiceDto> {
-    try { return await this.enrichOne(await this.services.restart(id)); } catch (error: unknown) { this.mapError(error); }
+  public async restart(id: string, actor: PublicUser): Promise<InstalledServiceDto> {
+    try {
+      const service = await this.services.restart(id);
+      const result = await this.enrichOne(service);
+      if (service.status === 'running') await this.recordActivity(actor, 'service.restarted', service);
+      return result;
+    } catch (error: unknown) { this.mapError(error); }
+  }
+
+  private async recordActivity(actor: PublicUser, action: ActivityAction, service: InstalledService): Promise<void> {
+    await this.activity.record(actor, action, async () => {
+      const location = await this.findLocation(service.environmentId);
+      return { resourceId: service.id, resourceName: service.name, projectId: location.project.id, projectName: location.project.name, environmentId: location.environment.id, environmentName: location.environment.name };
+    });
   }
 
   private async loadCatalogMap(): Promise<Map<string, ServiceDefinition>> {
