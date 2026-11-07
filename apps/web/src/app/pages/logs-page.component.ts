@@ -1,4 +1,5 @@
 import { Component, OnDestroy, inject, signal } from '@angular/core';
+import { EventsHeaderComponent } from '../activity/events-header.component';
 import { FormsModule } from '@angular/forms';
 import { LogsService } from '../logs/logs.service';
 import { IconsComponent } from '../shared/icons.component';
@@ -6,17 +7,10 @@ import { IconsComponent } from '../shared/icons.component';
 @Component({
   selector: 'kiban-logs-page',
   standalone: true,
-  imports: [FormsModule, IconsComponent],
+  imports: [FormsModule, IconsComponent, EventsHeaderComponent],
   template: `
     <div class="space-y-6">
-      <div>
-        <div class="flex items-center gap-2.5">
-          <div class="grid h-7 w-7 place-items-center rounded-lg bg-brand/20 text-brand-light">
-            <kiban-icon name="logs" [size]="15" />
-          </div>
-          <h1 class="text-xl font-semibold kb-text">Logs</h1>
-        </div>
-      </div>
+      <kiban-events-header active="logs" />
 
       <div class="card p-4 flex flex-col min-h-80 max-h-[40rem]">
         <div class="flex items-center justify-between gap-2">
