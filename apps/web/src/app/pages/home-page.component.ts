@@ -90,7 +90,7 @@ import { IconsComponent } from '../shared/icons.component';
       } @else {
         <div>
           <h2 class="text-sm font-semibold kb-text mb-3">Projects</h2>
-          <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <div class="grid gap-3 sm:grid-cols-1 xl:grid-cols-2">
             @for (project of projects(); track project.id) {
               <a [routerLink]="['/projects', project.id]" class="card p-4 transition hover:border-brand/30 hover:bg-hover/30 group">
                 <div class="flex items-start justify-between gap-3">
@@ -154,7 +154,7 @@ import { IconsComponent } from '../shared/icons.component';
           </ol>
         }
         <footer class="border-t kb-border px-5 py-3">
-          <a routerLink="/events" class="inline-flex items-center gap-1.5 text-xs text-brand-light hover:underline">
+          <a routerLink="/server" class="inline-flex items-center gap-1.5 text-xs text-brand-light hover:underline">
             View all events
             <kiban-icon name="chevron-right" [size]="12" />
           </a>
