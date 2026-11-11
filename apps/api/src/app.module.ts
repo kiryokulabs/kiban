@@ -1,3 +1,4 @@
+import { ServerModule } from './modules/server/server.module';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { DatabaseModule } from './database/database.module';
@@ -19,7 +20,7 @@ import { SmtpModule } from './modules/smtp/smtp.module';
 import { SessionAuthGuard } from './modules/auth/guards/session-auth.guard';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, ActivityModule, ProjectModule, PluginModule, CatalogModule, DockerModule, HealthModule, SettingsModule, LogsModule, StackModule, ServiceModule, UsersModule, SystemModule, MonitoringModule, SmtpModule],
+  imports: [ServerModule, DatabaseModule, AuthModule, ActivityModule, ProjectModule, PluginModule, CatalogModule, DockerModule, HealthModule, SettingsModule, LogsModule, StackModule, ServiceModule, UsersModule, SystemModule, MonitoringModule, SmtpModule],
   providers: [{ provide: APP_GUARD, useClass: SessionAuthGuard }]
 })
 export class AppModule {}
