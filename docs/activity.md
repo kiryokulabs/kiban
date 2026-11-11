@@ -4,18 +4,19 @@ The Dashboard's right column shows the five newest successful operations through
 `GET /api/activity`. Both authenticated administrators and operators can read it.
 It is operational history, not a security audit log or an online presence indicator.
 
-The sidebar **Events** entry opens `/events` by default. Button-style navigation switches
-between that retained history and **Logs** at `/events/logs`; the old `/logs` URL redirects
-to the latter. Both views remain available to all authenticated users. The technical logs
+The sidebar **Server** entry opens `/server` with Events selected by default. Button-style navigation switches
+between that retained history and **Logs** at `/server/logs`; the old `/events/logs` and `/logs` URLs redirect
+to the latter. The Docker Images tab is documented in
+[Server images](./server-images.md). Both activity/log views remain available to all authenticated users. The technical logs
 keep their existing data source and controls; they are not mixed into operational events.
 
 `GET /api/activity/history?page=1` returns `{ items, page, hasMore, total }`, with 10 items per
 page. The page number must be an integer from 1 to 100, matching the 1,000-event retention
 cap. A missing page defaults to 1. Invalid pages return 400, anonymous requests return 401.
 The newest-five dashboard endpoint is unchanged. Pagination changes only the API request,
-not the browser URL: the Events page remains `/events` without page query parameters.
+not the browser URL: the Events page remains `/server` without page query parameters.
 The history footer shows the current retained-event total across all pages, not a lifetime
-count. The dashboard activity footer links to `/events`.
+count. The dashboard activity footer links to `/server`.
 
 ## Events
 

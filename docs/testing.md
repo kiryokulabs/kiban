@@ -122,3 +122,31 @@ bookmarkable button-style links, active state and backwards-compatible `/logs` r
 History tests cover authenticated fixed-size pagination, empty/end pages, invalid and
 repeated page parameters, deterministic ordering and an unchanged five-event dashboard.
 Frontend tests also cover page loading, request overlap prevention and read failures.
+
+
+## Server images
+
+Core tests verify admin-only deletion. Provider/HTTP tests cover all-daemon image listing,
+references from running/stopped/external containers, stale listings, full-ID validation,
+CSRF/role enforcement, missing images, Docker conflicts, malformed metadata and unavailable
+sockets. An isolated fake Unix-socket Engine verifies actual HTTP request paths and the
+fixed `force=false&noprune=true` delete flags; no real Docker images are removed. Web tests
+cover Server routes and legacy redirects, read-only operator access, confirmation, duplicate
+request prevention, deletion failure feedback and authenticated API calls.
+
+Image-tag regressions additionally cover separate rows sharing one image ID, per-tag
+confirmation/API calls, malformed selectors, tag reassignment, a new stopped-container
+reference during tag resolution, and sequential tagged deletion through the simulated
+Unix socket while preserving the other tag. No real images are removed by these tests.
+
+Service-association regressions match image IDs and actual container project labels to
+installed runtime metadata, deduplicate repeated containers, support multiple services
+sharing an image and keep external/unknown associations empty without exposing secrets.
+Frontend tests retain that information on each tag row and render an empty service cell
+when there is no known Kiban service.
+
+Core-image regressions cover the exact internal Compose project/service identities,
+stopped core containers, protection of every tag, old unused image cleanup, unrelated
+Traefik deployments and shared core/user image IDs. HTTP tests verify operator-visible
+core metadata and backend rejection of forged admin deletion flags; UI tests verify the
+KibanOS Core label, warning and deletion guards.
