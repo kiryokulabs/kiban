@@ -30,7 +30,7 @@ describe('Dashboard recent activity', () => {
   it('links to Events from a footer inside the recent activity card', () => {
     const source = readFileSync(resolve(process.cwd(), 'src/app/pages/home-page.component.ts'), 'utf8');
     const card = source.match(/<aside[^>]*aria-labelledby="recent-activity-heading"[\s\S]*?<\/aside>/)?.[0] ?? '';
-    expect(card).toMatch(/<footer[\s\S]*routerLink="\/events"[\s\S]*<\/footer>/);
+    expect(card).toMatch(/<footer[\s\S]*routerLink="\/server"[\s\S]*<\/footer>/);
   });
 
   it('reads only authenticated real activity, without a caller-controlled limit', () => {

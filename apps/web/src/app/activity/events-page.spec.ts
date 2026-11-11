@@ -28,20 +28,20 @@ const createPage = () => {
 };
 
 describe('Events and Logs navigation', () => {
-  it('uses a single Events sidebar entry, defaults to Events and preserves old log bookmarks', () => {
+  it('uses a single Server sidebar entry, defaults to Events and preserves old log bookmarks', () => {
     const sidebar = read('app.component.ts');
-    expect(sidebar).toContain("{ label: 'Events', path: '/events', icon: 'logs' }");
+    expect(sidebar).toContain("{ label: 'Server', path: '/server', icon: 'logs' }");
     expect(sidebar).not.toContain("{ label: 'Logs', path:");
     const routes = read('app.routes.ts');
-    expect(routes).toContain("path: 'events', loadComponent:");
-    expect(routes).toContain("{ path: 'events/logs', component: LogsPageComponent");
-    expect(routes).toContain("{ path: 'logs', redirectTo: 'events/logs', pathMatch: 'full' }");
+    expect(routes).toContain("path: 'server', loadComponent:");
+    expect(routes).toContain("{ path: 'server/logs', component: LogsPageComponent");
+    expect(routes).toContain("{ path: 'logs', redirectTo: 'server/logs', pathMatch: 'full' }");
   });
 
   it('uses button-style links like Project Settings, not a local tab that cannot be bookmarked', () => {
     const header = read('activity/events-header.component.ts');
-    expect(header).toContain('routerLink="/events"');
-    expect(header).toContain('routerLink="/events/logs"');
+    expect(header).toContain('routerLink="/server"');
+    expect(header).toContain('routerLink="/server/logs"');
     expect(header).toContain('btn gap-1.5');
     expect(header).toContain('[class.btn-ghost]');
     expect(header).toContain('[attr.aria-current]');
