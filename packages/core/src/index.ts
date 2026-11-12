@@ -39,3 +39,6 @@ export * from './application/managers/smtp-settings-manager.js';
 
 export * from './domain/activity/activity-event.js';
 export * from './application/interfaces/activity-repository.js';
+
+export * from './domain/runtime/runtime-image.js';
+export * from './application/managers/runtime-images-manager.js';
